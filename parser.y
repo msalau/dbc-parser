@@ -17,8 +17,8 @@ void yyerror(const char *s);
 // we can return ints or floats or strings cleanly.  Bison implements this
 // mechanism with the %union directive:
 %union {
-  int ival;
-  float fval;
+  int ival[4];
+  float fval[2];
   char *sval;
 }
 
@@ -26,13 +26,12 @@ void yyerror(const char *s);
 %define parse.error verbose
 
 %token TAG_VERSION TAG_BO TAG_SG
-%token SIG_LIMITS SIG_SCALE SIG_POS
 %token ENDL
 
 // Define the "terminal symbol" token types I'm going to use (in CAPS
 // by convention), and associate each with a field of the %union:
-%token <ival> INT
-%token <fval> FLOAT
+%token <ival> INT SIG_POS
+%token <fval> FLOAT SIG_LIMITS SIG_CONV
 %token <sval> TEXT NAME
 
 %%
@@ -58,13 +57,13 @@ frame:          frame_def signals
 
 frame_def:      TAG_BO INT NAME ':' INT NAME end
                 {
-                  printf("Frame: %s with id %i\n", $3, $2);
+                  printf("Frame: %s with id %i\n", $3, $2[0]);
                 };
 
 signals:        signal_def signals
         |       signal_def;
 
-signal_def:     TAG_SG NAME ':' SIG_POS SIG_SCALE SIG_LIMITS TEXT NAME end
+signal_def:     TAG_SG NAME ':' SIG_POS SIG_CONV SIG_LIMITS TEXT NAME end
                 {
                   printf("Signal: %s\n", $2);
                 };
