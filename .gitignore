@@ -3,3 +3,8 @@
 *.yy.[ch]
 *.tab.[ch]
 *.o
+*.output
+*.xml
+*.dot
+*.png
+*.html
