@@ -36,8 +36,8 @@
 [0-9]+            { yylval.ival[0] = atoi(yytext); return INT; }
 
 [0-9]+\|[0-9]+@1[+-] { return SIG_POS; }
-\([0-9]*\.?[0-9]+,[0-9]*\.?[0-9]+\) { return SIG_CONV; }
-\[[+-]?[0-9]*\.?[0-9]+\|[0-9]*\.?[0-9]+\] { return SIG_LIMITS; }
+\([+-]?[0-9]*\.?[0-9]+,[+-]?[0-9]*\.?[0-9]+\) { return SIG_CONV; }
+\[[+-]?[0-9]*\.?[0-9]+\|[+-]?[0-9]*\.?[0-9]+\] { return SIG_LIMITS; }
 
 [:;,\(\)\[\]\|]   { return yytext[0]; }
 \n                { return ENDL; }
