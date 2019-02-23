@@ -42,28 +42,20 @@ entries:        entry entries
         |       entry;
 
 entry:          version
-        |       frames;
+        |       frame
+        |       signal;
 
 version:        TAG_VERSION TEXT end
                 {
                   printf("Version: %s\n", $2);
                 };
 
-frames:         frame frames
-        |       frame;
-
-frame:          frame_def signals
-        |       frame_def;
-
-frame_def:      TAG_BO INT NAME ':' INT NAME end
+frame:          TAG_BO INT NAME ':' INT NAME end
                 {
                   printf("Frame: %s with id %i\n", $3, $2[0]);
                 };
 
-signals:        signal_def signals
-        |       signal_def;
-
-signal_def:     TAG_SG NAME ':' SIG_POS SIG_CONV SIG_LIMITS TEXT NAME end
+signal:         TAG_SG NAME ':' SIG_POS SIG_CONV SIG_LIMITS TEXT NAME end
                 {
                   printf("Signal: %s\n", $2);
                 };
