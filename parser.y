@@ -48,16 +48,22 @@ entry:          version
 version:        TAG_VERSION TEXT end
                 {
                   printf("Version: %s\n", $2);
+                  free($2);
                 };
 
 frame:          TAG_BO INT NAME ':' INT NAME end
                 {
                   printf("Frame: %s with id %i\n", $3, $2[0]);
+                  free($3);
+                  free($6);
                 };
 
 signal:         TAG_SG NAME ':' SIG_POS SIG_CONV SIG_LIMITS TEXT NAME end
                 {
                   printf("Signal: %s\n", $2);
+                  free($2);
+                  free($7);
+                  free($8);
                 };
 
 end:            ENDL end
