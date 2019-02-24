@@ -35,7 +35,13 @@
 [0-9]+\.[0-9]+    { yylval.fval[0] = atof(yytext); return FLOAT; }
 [0-9]+            { yylval.ival[0] = atoi(yytext); return INT; }
 
-[0-9]+\|[0-9]+@1[+-] { return SIG_POS; }
+[0-9]+\|[0-9]+@[01][+-] {
+    yylval.ival[0] = atoi(yytext);
+    yylval.ival[1] = atoi(strchr(yytext, '|') + 1);
+    yylval.ival[2] = atoi(strchr(yytext, '@') + 1);
+    yylval.ival[3] = (strchr(yytext, '@') + 2)[0] == '-';
+    return SIG_POS;
+}
 
 \([+-]?[0-9]*\.?[0-9]+,[+-]?[0-9]*\.?[0-9]+\) {
     yylval.fval[0] = atof(yytext + 1);

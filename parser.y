@@ -60,7 +60,10 @@ frame:          TAG_BO INT NAME ':' INT NAME end
 
 signal:         TAG_SG NAME ':' SIG_POS SIG_CONV SIG_LIMITS TEXT NAME end
                 {
-                  printf("Signal: %s (%f,%f) [%f.%f] %s, Receiver: %s\n", $2, $5[0], $5[1], $6[0], $6[1], $7, $8);
+                  printf("Signal: %s %i|%i@%i%c (%f,%f) [%f.%f] %s, receiver: %s\n",
+                         $2,
+                         $4[0],$4[1], $4[2], ($4[3] ? '-' : '+'),
+                         $5[0], $5[1], $6[0], $6[1], $7, $8);
                   free($2);
                   free($7);
                   free($8);
