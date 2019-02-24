@@ -60,7 +60,7 @@ signal:         TAG_SG NAME ':' SIG_POS SIG_CONV SIG_LIMITS TEXT NAME end
                   printf("Signal: %s\n", $2);
                 };
 
-end:            end ENDL
+end:            ENDL end
         |       ENDL;
 
 %%
