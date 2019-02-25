@@ -25,7 +25,7 @@ void yyerror(const char *s);
 %locations
 %define parse.error verbose
 
-%token TAG_VERSION TAG_BO TAG_SG TAG_CM
+%token TAG_VERSION TAG_BO TAG_SG TAG_CM TAG_CM_BO
 %token ENDL
 
 // Define the "terminal symbol" token types I'm going to use (in CAPS
@@ -44,6 +44,7 @@ entries:        entry entries
 entry:          version
         |       frame_with_signals
         |       comment
+        |       comment_frame
                 ;
 
 version:        TAG_VERSION TEXT end
@@ -82,6 +83,12 @@ comment:        TAG_CM TEXT ';' end
                 {
                   printf("Comment: %s\n", $2);
                   free($2);
+                };
+
+comment_frame:  TAG_CM_BO INT TEXT ';' end
+                {
+                  printf("Comment for frame %i: %s\n", $2[0], $3);
+                  free($3);
                 };
 
 end:            ENDL end
