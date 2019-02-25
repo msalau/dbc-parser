@@ -25,7 +25,7 @@ void yyerror(const char *s);
 %locations
 %define parse.error verbose
 
-%token TAG_VERSION TAG_BO TAG_SG
+%token TAG_VERSION TAG_BO TAG_SG TAG_CM
 %token ENDL
 
 // Define the "terminal symbol" token types I'm going to use (in CAPS
@@ -76,6 +76,12 @@ signal:         TAG_SG NAME ':' SIG_POS SIG_CONV SIG_LIMITS TEXT NAME end
                   free($2);
                   free($7);
                   free($8);
+                };
+
+comment:        TAG_CM TEXT ';' end
+                {
+                  printf("Comment: %s\n", $2);
+                  free($2);
                 };
 
 end:            ENDL end

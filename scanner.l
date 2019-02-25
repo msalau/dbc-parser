@@ -31,6 +31,7 @@
 ^VERSION          { return TAG_VERSION; }
 ^BO_              { return TAG_BO; }
 ^[ \t]*SG_        { return TAG_SG; }
+^CM_              { return TAG_CM; }
 [a-zA-Z_][a-zA-Z0-9_]* { yylval.sval = strdup(yytext); return NAME; }
 [0-9]+\.[0-9]+    { yylval.fval[0] = atof(yytext); return FLOAT; }
 [0-9]+            { yylval.ival[0] = atoi(yytext); return INT; }
