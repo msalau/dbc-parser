@@ -42,14 +42,23 @@ entries:        entry entries
         |       entry;
 
 entry:          version
-        |       frame
-        |       signal;
+        |       frame_with_signals
+        |       comment
+                ;
 
 version:        TAG_VERSION TEXT end
                 {
                   printf("Version: %s\n", $2);
                   free($2);
                 };
+
+frame_with_signals:
+                frame signals
+        ;
+
+signals:        signal signals
+        |       signal
+        ;
 
 frame:          TAG_BO INT NAME ':' INT NAME end
                 {
