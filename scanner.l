@@ -27,7 +27,6 @@
 %%
 
 [ \t]             ;
-["]([^"]|\\["])*["]     { yylval.sval = strdup(yytext); return TEXT; }
 ^VERSION[ ]       { return TAG_VERSION; }
 ^BO_[ ]           { return TAG_BO; }
 ^[ \t]*SG_[ ]     { return TAG_SG; }
@@ -61,5 +60,6 @@
 
 [:;]              { return yytext[0]; }
 \n                { return ENDL; }
+["][^"]*["]       { yylval.sval = strdup(yytext); return TEXT; }
 
 %%
