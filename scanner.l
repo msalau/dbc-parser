@@ -24,16 +24,21 @@
 
 %}
 
+SPC [ \r\n\t]
+
 %%
 
-[ \t]             ;
-^VERSION[ ]       { return TAG_VERSION; }
-^BO_[ ]           { return TAG_BO; }
-^[ \t]*SG_[ ]     { return TAG_SG; }
-^CM_[ \t]+BO_[ ]  { return TAG_CM_BO; }
-^CM_[ \t]+SG_[ ]  { return TAG_CM_SG; }
-^CM_[ ]           { return TAG_CM; }
-^VAL_[ ]          { return TAG_VAL; }
+{SPC}                     ;
+
+^VERSION{SPC}             { return TAG_VERSION; }
+{SPC}VERSION{SPC}         { return TAG_VERSION; }
+{SPC}BO_{SPC}             { return TAG_BO; }
+{SPC}SG_{SPC}             { return TAG_SG; }
+{SPC}CM_{SPC}+BO_{SPC}    { return TAG_CM_BO; }
+{SPC}CM_{SPC}+SG_{SPC}    { return TAG_CM_SG; }
+{SPC}CM_{SPC}             { return TAG_CM; }
+{SPC}VAL_{SPC}            { return TAG_VAL; }
+
 [a-zA-Z_][a-zA-Z0-9_]* { yylval.sval = strdup(yytext); return NAME; }
 [0-9]+\.[0-9]+    { yylval.fval[0] = atof(yytext); return FLOAT; }
 [0-9]+            { yylval.ival[0] = atoi(yytext); return INT; }
@@ -59,7 +64,6 @@
 }
 
 [:;]              { return yytext[0]; }
-\n                { return ENDL; }
 ["][^"]*["]       { yylval.sval = strdup(yytext); return TEXT; }
 
 %%

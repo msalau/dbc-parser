@@ -26,7 +26,6 @@ void yyerror(const char *s);
 %define parse.error verbose
 
 %token TAG_VERSION TAG_BO TAG_SG TAG_CM TAG_CM_BO TAG_CM_SG TAG_VAL
-%token ENDL
 
 // Define the "terminal symbol" token types I'm going to use (in CAPS
 // by convention), and associate each with a field of the %union:
@@ -49,7 +48,7 @@ entry:          version
         |       signal_values
                 ;
 
-version:        TAG_VERSION TEXT end
+version:        TAG_VERSION TEXT
                 {
                   printf("Version: %s\n", $2);
                   free($2);
@@ -63,14 +62,14 @@ signals:        signal signals
         |       signal
         ;
 
-frame:          TAG_BO INT NAME ':' INT NAME end
+frame:          TAG_BO INT NAME ':' INT NAME
                 {
                   printf("Frame: %s with id %i, length %i, sender %s\n", $3, $2[0], $5[0], $6);
                   free($3);
                   free($6);
                 };
 
-signal:         TAG_SG NAME ':' SIG_POS SIG_CONV SIG_LIMITS TEXT NAME end
+signal:         TAG_SG NAME ':' SIG_POS SIG_CONV SIG_LIMITS TEXT NAME
                 {
                   printf("Signal: %s %i|%i@%i%c (%f,%f) [%f.%f] %s, receiver: %s\n",
                          $2,
@@ -81,19 +80,19 @@ signal:         TAG_SG NAME ':' SIG_POS SIG_CONV SIG_LIMITS TEXT NAME end
                   free($8);
                 };
 
-comment:        TAG_CM TEXT ';' end
+comment:        TAG_CM TEXT ';'
                 {
                   printf("Comment: %s\n", $2);
                   free($2);
                 };
 
-comment_frame:  TAG_CM_BO INT TEXT ';' end
+comment_frame:  TAG_CM_BO INT TEXT ';'
                 {
                   printf("Comment for frame %i: %s\n", $2[0], $3);
                   free($3);
                 };
 
-comment_signal: TAG_CM_SG INT NAME TEXT ';' end
+comment_signal: TAG_CM_SG INT NAME TEXT ';'
                 {
                   printf("Comment for signal %s in frame %i: %s\n", $3, $2[0], $4);
                   free($3);
@@ -103,7 +102,7 @@ comment_signal: TAG_CM_SG INT NAME TEXT ';' end
 signal_values:  TAG_VAL INT NAME {
                   printf("Values for signal %s in frame %i\n", $3, $2[0]);
                   free($3);
-                } values ';' end {
+                } values ';' {
                   printf("end of values\n");
                 };
 
@@ -115,10 +114,6 @@ value:          INT TEXT
                   printf("Value: %i = %s\n", $1[0], $2);
                   free($2);
                 };
-
-end:            ENDL end
-        |       ENDL;
-
 %%
 
 int main(int argc, char** argv)
