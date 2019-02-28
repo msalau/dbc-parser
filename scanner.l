@@ -33,14 +33,13 @@ SIGN [+-]
 
 {SPC}                     ;
 
-^VERSION{SPC}             { return TAG_VERSION; }
-{SPC}VERSION{SPC}         { return TAG_VERSION; }
-{SPC}BO_{SPC}             { return TAG_BO; }
-{SPC}SG_{SPC}             { return TAG_SG; }
-{SPC}CM_{SPC}+BO_{SPC}    { return TAG_CM_BO; }
-{SPC}CM_{SPC}+SG_{SPC}    { return TAG_CM_SG; }
-{SPC}CM_{SPC}             { return TAG_CM; }
-{SPC}VAL_{SPC}            { return TAG_VAL; }
+VERSION{SPC}              { return TAG_VERSION; }
+BO_{SPC}                  { return TAG_BO; }
+SG_{SPC}                  { return TAG_SG; }
+CM_{SPC}+BO_{SPC}         { return TAG_CM_BO; }
+CM_{SPC}+SG_{SPC}         { return TAG_CM_SG; }
+CM_{SPC}                  { return TAG_CM; }
+VAL_{SPC}                 { return TAG_VAL; }
 
 [a-zA-Z_][a-zA-Z0-9_]*    { yylval.sval = strdup(yytext); return NAME; }
 {SIGN}?{INT}\.{INT}       { yylval.fval[0] = atof(yytext); return FLOAT; }
