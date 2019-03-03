@@ -10,7 +10,7 @@ test: parse test.dbc
 		./$< <test.dbc
 
 clean:
-		-rm -f parse *.tab.c *.tab.h *.yy.c *.yy.h *.o *.png *.dot *.html
+		-rm -f parse *.tab.c *.tab.h *.yy.c *.yy.h *.o *.png *.dot *.html *.xml *.output
 
 .PRECIOUS: %.yy.c %.yy.h %.tab.c %.tab.h %.xml %.dot
 
