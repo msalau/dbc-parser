@@ -71,16 +71,19 @@ frame:          TAG_BO UINT NAME ':' UINT NAME
                   free($6);
                 };
 
-signal:         TAG_SG NAME ':' UINT '|' UINT '@' UINT SIGN '(' float ',' float ')' '[' float '|' float ']' TEXT NAME
+signal:         TAG_SG NAME ':' UINT '|' UINT '@' UINT SIGN '(' float ',' float ')' '[' float '|' float ']' TEXT names
                 {
-                  printf("Signal: %s %i|%i@%i%c (%f,%f) [%f.%f] %s, receiver: %s\n",
+                  printf("Signal: %s %i|%i@%i%c (%f,%f) [%f.%f] %s\n",
                          $2,
                          $4, $6, $8, ($9 ? '+' : '-'),
-                         $11, $13, $16, $18, $20, $21);
+                         $11, $13, $16, $18, $20);
                   free($2);
                   free($20);
-                  free($21);
                 };
+
+names:          NAME names { free($1); }
+        |       NAME       { free($1); }
+        ;
 
 float:          FLOAT { $$ = $1; }
         |       INT   { $$ = (double)$1; }
