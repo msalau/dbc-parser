@@ -17,9 +17,9 @@ void yyerror(const char *s);
 // we can return ints or floats or strings cleanly.  Bison implements this
 // mechanism with the %union directive:
 %union {
-  int ival[4];
-  float fval[2];
-  char *sval;
+  int    ival;
+  double fval;
+  char  *sval;
 }
 
 %locations
@@ -29,9 +29,11 @@ void yyerror(const char *s);
 
 // Define the "terminal symbol" token types I'm going to use (in CAPS
 // by convention), and associate each with a field of the %union:
-%token <ival> INT SIG_POS
-%token <fval> FLOAT SIG_LIMITS SIG_CONV
+%token <ival> INT UINT SIGN
+%token <fval> FLOAT
 %token <sval> TEXT NAME
+
+%type <fval> float
 
 %%
 
@@ -62,23 +64,28 @@ signals:        signal signals
         |       signal
         ;
 
-frame:          TAG_BO INT NAME ':' INT NAME
+frame:          TAG_BO UINT NAME ':' UINT NAME
                 {
-                  printf("Frame: %s with id %i, length %i, sender %s\n", $3, $2[0], $5[0], $6);
+                  printf("Frame: %s with id %i, length %i, sender %s\n", $3, $2, $5, $6);
                   free($3);
                   free($6);
                 };
 
-signal:         TAG_SG NAME ':' SIG_POS SIG_CONV SIG_LIMITS TEXT NAME
+signal:         TAG_SG NAME ':' UINT '|' UINT '@' UINT SIGN '(' float ',' float ')' '[' float '|' float ']' TEXT NAME
                 {
                   printf("Signal: %s %i|%i@%i%c (%f,%f) [%f.%f] %s, receiver: %s\n",
                          $2,
-                         $4[0],$4[1], $4[2], ($4[3] ? '-' : '+'),
-                         $5[0], $5[1], $6[0], $6[1], $7, $8);
+                         $4, $6, $8, ($9 ? '+' : '-'),
+                         $11, $13, $16, $18, $20, $21);
                   free($2);
-                  free($7);
-                  free($8);
+                  free($20);
+                  free($21);
                 };
+
+float:          FLOAT { $$ = $1; }
+        |       INT   { $$ = (double)$1; }
+        |       UINT  { $$ = (double)$1; }
+        ;
 
 comment:        TAG_CM TEXT ';'
                 {
@@ -86,21 +93,21 @@ comment:        TAG_CM TEXT ';'
                   free($2);
                 };
 
-comment_frame:  TAG_CM_BO INT TEXT ';'
+comment_frame:  TAG_CM_BO UINT TEXT ';'
                 {
-                  printf("Comment for frame %i: %s\n", $2[0], $3);
+                  printf("Comment for frame %i: %s\n", $2, $3);
                   free($3);
                 };
 
-comment_signal: TAG_CM_SG INT NAME TEXT ';'
+comment_signal: TAG_CM_SG UINT NAME TEXT ';'
                 {
-                  printf("Comment for signal %s in frame %i: %s\n", $3, $2[0], $4);
+                  printf("Comment for signal %s in frame %i: %s\n", $3, $2, $4);
                   free($3);
                   free($4);
                 };
 
-signal_values:  TAG_VAL INT NAME {
-                  printf("Values for signal %s in frame %i\n", $3, $2[0]);
+signal_values:  TAG_VAL UINT NAME {
+                  printf("Values for signal %s in frame %i\n", $3, $2);
                   free($3);
                 } values ';' {
                   printf("end of values\n");
@@ -109,11 +116,12 @@ signal_values:  TAG_VAL INT NAME {
 values:         value values
         |       value;
 
-value:          INT TEXT
+value:          UINT TEXT
                 {
-                  printf("Value: %i = %s\n", $1[0], $2);
+                  printf("Value: %i = %s\n", $1, $2);
                   free($2);
                 };
+
 %%
 
 int main(int argc, char** argv)

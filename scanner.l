@@ -25,8 +25,8 @@
 %}
 
 SPC [ \r\n\t]
-NUM [+-]?[0-9]*\.?[0-9]+([Ee][+-][0-9]+)?
-INT [0-9]+
+FLOAT [+-]?[0-9]+\.[0-9]+([Ee][+-][0-9]+)?
+NUM [0-9]+
 SIGN [+-]
 
 %%
@@ -42,30 +42,12 @@ CM_{SPC}                  { return TAG_CM; }
 VAL_{SPC}                 { return TAG_VAL; }
 
 [a-zA-Z_][a-zA-Z0-9_]*    { yylval.sval = strdup(yytext); return NAME; }
-{SIGN}?{INT}\.{INT}       { yylval.fval[0] = atof(yytext); return FLOAT; }
-{SIGN}?{INT}              { yylval.ival[0] = atoi(yytext); return INT; }
+{FLOAT}                   { yylval.fval = atof(yytext); return FLOAT; }
+{NUM}                     { yylval.ival = atoi(yytext); return UINT; }
+{SIGN}{NUM}               { yylval.ival = atoi(yytext); return INT; }
 
-{INT}\|{INT}@[01]{SIGN} {
-    yylval.ival[0] = atoi(yytext);
-    yylval.ival[1] = atoi(strchr(yytext, '|') + 1);
-    yylval.ival[2] = atoi(strchr(yytext, '@') + 1);
-    yylval.ival[3] = (strchr(yytext, '@') + 2)[0] == '-';
-    return SIG_POS;
-}
-
-\({SIGN}?{NUM},{SIGN}?{NUM}\) {
-    yylval.fval[0] = atof(yytext + 1);
-    yylval.fval[1] = atof(strchr(yytext, ',') + 1);
-    return SIG_CONV;
-}
-
-\[{SIGN}?{NUM}\|{SIGN}?{NUM}\] {
-    yylval.fval[0] = atof(yytext + 1);
-    yylval.fval[1] = atof(strchr(yytext, '|') + 1);
-    return SIG_LIMITS;
-}
-
-[:;]              { return yytext[0]; }
-["][^"]*["]       { yylval.sval = strdup(yytext); return TEXT; }
+{SIGN}                    { yylval.ival = (yytext[0] == '+' ? 1 : 0); return SIGN; }
+[:;@,\|\[\]\(\)]          { return yytext[0]; }
+["][^"]*["]               { yylval.sval = strdup(yytext); return TEXT; }
 
 %%
