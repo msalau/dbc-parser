@@ -102,10 +102,10 @@ comment_signal: TAG_CM_SG UINT NAME TEXT ';'
                 };
 
 signal_values:  TAG_VAL UINT NAME {
-                  printf("Values for signal %s in frame %i\n", $3, $2);
+                  printf("Values for signal %s in frame %i:", $3, $2);
                   free($3);
                 } values ';' {
-                  printf("end of values\n");
+                  printf(";\n");
                 };
 
 values:         value values
@@ -113,7 +113,7 @@ values:         value values
 
 value:          UINT TEXT
                 {
-                  printf("Value: %i = %s\n", $1, $2);
+                  printf(" %i=%s", $1, $2);
                   free($2);
                 };
 
