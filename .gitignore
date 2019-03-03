@@ -8,3 +8,7 @@
 *.dot
 *.png
 *.html
+
+/GPATH
+/GRTAGS
+/GTAGS
