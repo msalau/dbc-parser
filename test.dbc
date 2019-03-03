@@ -11,9 +11,9 @@ BO_ 67 TestMsg2: 8 ECU1
 
 BO_ 68 TestMsg3: 8 ECU1
  SG_ TestMsg3Voltage : 0|16@1- (0.001,0) [-32.768|32.767] "V" ECU2
- SG_ TestMsg3Current : 16|16@1- (0.001,0) [-32.768|32.767] "A" ECU2
- SG_ TestMsg3Power : 32|16@1+ (0.001e+1,0) [0|65.535] "W" ECU2
- SG_ TestMsg3Energy : 48|16@1+ (0.001,100) [100|165.535] "kWh" ECU2
+ SG_ TestMsg3Current : 16|16@1- (.001,0) [-32.768|32.767] "A" ECU2
+ SG_ TestMsg3Power : 32|16@1+ (1.0e-3,0) [0|65.535] "W" ECU2
+ SG_ TestMsg3Energy : 48|16@1+ (0.001,100) [1.e2|165.535] "kWh" ECU2
 
 CM_ "This is a file
 comment
