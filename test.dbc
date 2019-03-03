@@ -1,0 +1,24 @@
+VERSION "v1"
+
+BO_ 66 TestMsg1: 8 ECU1
+ SG_ TestMsg1Voltage : 0|16@1- (0.001,0) [-32.768|32.767] "V" ECU2
+ SG_ TestMsg1Current : 16|16@1- (0.001,0) [-32.768|32.767] "A" ECU2
+ SG_ TestMsg1Power : 32|16@1+ (0.001,0) [0|65.535] "W" ECU2
+ SG_ TestMsg1Energy : 48|16@1+ (0.001,100) [100|165.535] "kWh" ECU2
+
+BO_ 67 TestMsg2: 8 ECU1
+ SG_ TestMsg2Signal : 0|16@1+ (1,0) [0|10] "Enum" ECU2
+
+BO_ 68 TestMsg3: 8 ECU1
+ SG_ TestMsg3Voltage : 0|16@1- (0.001,0) [-32.768|32.767] "V" ECU2
+ SG_ TestMsg3Current : 16|16@1- (0.001,0) [-32.768|32.767] "A" ECU2
+ SG_ TestMsg3Power : 32|16@1+ (0.001e+1,0) [0|65.535] "W" ECU2
+ SG_ TestMsg3Energy : 48|16@1+ (0.001,100) [100|165.535] "kWh" ECU2
+
+CM_ "This is a file
+comment
+that spans several lines";
+
+CM_ BO_ 66 "This is a frame comment";
+CM_ SG_ 66 TestMsg1Current "This is a signal comment";
+VAL_ 67 TestMsg2Signal  0 "NOP"  1 "ACT0"  2 "ACT2";
