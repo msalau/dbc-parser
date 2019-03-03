@@ -46,7 +46,7 @@ VAL_{SPC}                 { return TAG_VAL; }
 {NUM}                     { yylval.ival = atoi(yytext); return UINT; }
 {SIGN}{NUM}               { yylval.ival = atoi(yytext); return INT; }
 
-{SIGN}                    { yylval.ival = (yytext[0] == '+' ? 1 : 0); return SIGN; }
+{SIGN}                    { yylval.cval = yytext[0]; return SIGN; }
 [:;@,\|\[\]\(\)]          { return yytext[0]; }
 ["][^"]*["]               { yylval.sval = strdup(yytext); return TEXT; }
 

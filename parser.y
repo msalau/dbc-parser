@@ -20,6 +20,7 @@ void yyerror(const char *s);
   int    ival;
   double fval;
   char  *sval;
+  char   cval;
 }
 
 %locations
@@ -29,9 +30,10 @@ void yyerror(const char *s);
 
 // Define the "terminal symbol" token types I'm going to use (in CAPS
 // by convention), and associate each with a field of the %union:
-%token <ival> INT UINT SIGN
+%token <ival> INT UINT
 %token <fval> FLOAT
 %token <sval> TEXT NAME
+%token <cval> SIGN
 
 %type <fval> float
 
@@ -75,7 +77,7 @@ signal:         TAG_SG NAME ':' UINT '|' UINT '@' UINT SIGN '(' float ',' float 
                 {
                   printf("Signal: %s %i|%i@%i%c (%f,%f) [%f.%f] %s\n",
                          $2,
-                         $4, $6, $8, ($9 ? '+' : '-'),
+                         $4, $6, $8, $9,
                          $11, $13, $16, $18, $20);
                   free($2);
                   free($20);
