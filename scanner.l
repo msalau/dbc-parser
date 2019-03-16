@@ -51,7 +51,7 @@ m[0-9]+                   { yylval.mux.sval = strdup(yytext); yylval.mux.num = a
 {SIGN}{NUM}               { yylval.ival = atoi(yytext); return INT; }
 
 {SIGN}                    { yylval.cval = yytext[0]; return SIGN; }
-[:;@,\|\[\]\(\)]          { return yytext[0]; }
 ["][^"]*["]               { yylval.sval = strdup(yytext); return TEXT; }
+.                         { return yytext[0]; }
 
 %%
