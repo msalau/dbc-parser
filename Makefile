@@ -1,4 +1,4 @@
-CFLAGS:=-Wall -Wextra -Werror
+CFLAGS:=-g3 -O0 -Wall -Wextra -Werror
 
 .PHONY: all test clean
 
