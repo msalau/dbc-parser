@@ -4,8 +4,6 @@
 #include "parser.tab.h"
 #include "scanner.yy.h"
 
-extern FILE *yyin;
-
 void yyerror(const char *s);
 
 typedef enum signal_type
@@ -156,16 +154,18 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    yyin = fopen(argv[1], "r");
+    FILE *in = fopen(argv[1], "r");
 
-    if (!yyin)
+    if (!in)
     {
         perror(argv[1]);
         return 2;
     }
 
+    yyset_in(in);
     yyparse();
-    fclose(yyin);
+
+    fclose(in);
 
     return 0;
 }
