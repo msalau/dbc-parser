@@ -1,3 +1,10 @@
+VALGRIND:=$(shell command -v valgrind)
+ifdef VALGRIND
+VALGRIND_CMD:=$(VALGRIND) --leak-check=yes
+else
+VALGRIND_CMD:=
+endif
+
 CFLAGS:=-g3 -O0 -Wall -Wextra -Werror
 
 .PHONY: all test clean
@@ -7,7 +14,7 @@ all: test parse
 #all: parser.png parser.html
 
 test: parse test.dbc
-		./$< ./test.dbc
+		$(VALGRIND_CMD) ./$< ./test.dbc
 
 clean:
 		-rm -f parse *.tab.c *.tab.h *.yy.c *.yy.h *.o *.png *.dot *.html *.xml *.output
