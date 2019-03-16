@@ -4,6 +4,8 @@
 #include "parser.tab.h"
 #include "scanner.yy.h"
 
+extern FILE *yyin;
+
 void yyerror(const char *s);
 
 typedef enum signal_type
@@ -148,10 +150,22 @@ value:          UINT TEXT
 
 int main(int argc, char** argv)
 {
-    (void)argc;
-    (void)argv;
+    if (argc != 2)
+    {
+        fprintf(stderr, "Usage: %s <file>\n", argv[0]);
+        return 1;
+    }
+
+    yyin = fopen(argv[1], "r");
+
+    if (!yyin)
+    {
+        perror(argv[1]);
+        return 2;
+    }
 
     yyparse();
+    fclose(yyin);
 
     return 0;
 }

@@ -7,7 +7,7 @@ all: test parse
 #all: parser.png parser.html
 
 test: parse test.dbc
-		./$< <test.dbc
+		./$< ./test.dbc
 
 clean:
 		-rm -f parse *.tab.c *.tab.h *.yy.c *.yy.h *.o *.png *.dot *.html *.xml *.output
