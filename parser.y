@@ -41,6 +41,7 @@ typedef enum signal_type
 %token <cval> SIGN
 %token <mux>  MUX
 
+%type <sval> name
 %type <fval> float
 %type <mux>  mux
 
@@ -73,14 +74,18 @@ signals:        signal signals
         |       signal
         ;
 
-frame:          TAG_BO UINT NAME ':' UINT NAME
+name:           NAME { $$ = $1; }
+        |       MUX  { $$ = $1.sval; }
+        ;
+
+frame:          TAG_BO UINT name ':' UINT name
                 {
                   printf("Frame: %s with id %i, length %i, sender %s\n", $3, $2, $5, $6);
                   free($3);
                   free($6);
                 };
 
-signal:         TAG_SG NAME mux ':' UINT '|' UINT '@' UINT SIGN '(' float ',' float ')' '[' float '|' float ']' TEXT names
+signal:         TAG_SG name mux ':' UINT '|' UINT '@' UINT SIGN '(' float ',' float ')' '[' float '|' float ']' TEXT names
                 {
                   printf("%s: %s %i|%i@%i%c (%f,%f) [%f.%f] %s\n",
                          $3.type == SIGNAL ? "Signal" : $3.type == MULTIPLEXER_SIGNAL ? "Multiplexer signal" : "Multiplexed signal",
@@ -95,8 +100,8 @@ mux:            %empty { $$.type = SIGNAL; }
         |       MUX { $$ = $1; $$.type = ($1.num < 0) ? MULTIPLEXER_SIGNAL : MULTIPLEXED_SIGNAL; free($1.sval); }
         ;
 
-names:          NAME names { free($1); }
-        |       NAME       { free($1); }
+names:          name names { free($1); }
+        |       name       { free($1); }
         ;
 
 float:          FLOAT { $$ = $1; }
@@ -116,14 +121,14 @@ comment_frame:  TAG_CM_BO UINT TEXT ';'
                   free($3);
                 };
 
-comment_signal: TAG_CM_SG UINT NAME TEXT ';'
+comment_signal: TAG_CM_SG UINT name TEXT ';'
                 {
                   printf("Comment for signal %s in frame %i: %s\n", $3, $2, $4);
                   free($3);
                   free($4);
                 };
 
-signal_values:  TAG_VAL UINT NAME {
+signal_values:  TAG_VAL UINT name {
                   printf("Values for signal %s in frame %i:", $3, $2);
                   free($3);
                 } values ';' {
