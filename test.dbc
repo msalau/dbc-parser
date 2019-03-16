@@ -15,6 +15,8 @@ BO_ 68 TestMsg3: 8 ECU1
  SG_ TestMsg3Power : 32|16@1+ (1.0e-3,0) [0|65.535] "W" ECU2
  SG_ TestMsg3Energy : 48|16@1+ (0.001,100) [1.e2|165.535] "kWh" ECU2
 
+// Comments go below
+
 CM_ "This is a file
 comment
 that spans several lines";

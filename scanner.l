@@ -32,6 +32,7 @@ SIGN [+-]
 %%
 
 {SPC}                     ;
+\/\/.*$                   ;
 
 VERSION{SPC}              { return TAG_VERSION; }
 BO_{SPC}                  { return TAG_BO; }
