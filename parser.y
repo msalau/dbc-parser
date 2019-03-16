@@ -164,6 +164,7 @@ int main(int argc, char** argv)
 
     yyset_in(in);
     yyparse();
+    yylex_destroy();
 
     fclose(in);
 
