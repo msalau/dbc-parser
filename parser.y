@@ -6,9 +6,24 @@
 
 void yyerror(const char *s);
 
+typedef enum signal_type
+{
+  SIGNAL,
+  MULTIPLEXER_SIGNAL,
+  MULTIPLEXED_SIGNAL
+} signal_type_t;
+
 %}
 
 %union {
+
+  struct
+  {
+    int   type;
+    int   num;
+    char *sval;
+  } mux;
+
   int    ival;
   double fval;
   char  *sval;
@@ -24,8 +39,10 @@ void yyerror(const char *s);
 %token <fval> FLOAT
 %token <sval> TEXT NAME
 %token <cval> SIGN
+%token <mux>  MUX
 
 %type <fval> float
+%type <mux>  mux
 
 %%
 
@@ -63,15 +80,20 @@ frame:          TAG_BO UINT NAME ':' UINT NAME
                   free($6);
                 };
 
-signal:         TAG_SG NAME ':' UINT '|' UINT '@' UINT SIGN '(' float ',' float ')' '[' float '|' float ']' TEXT names
+signal:         TAG_SG NAME mux ':' UINT '|' UINT '@' UINT SIGN '(' float ',' float ')' '[' float '|' float ']' TEXT names
                 {
-                  printf("Signal: %s %i|%i@%i%c (%f,%f) [%f.%f] %s\n",
+                  printf("%s: %s %i|%i@%i%c (%f,%f) [%f.%f] %s\n",
+                         $3.type == SIGNAL ? "Signal" : $3.type == MULTIPLEXER_SIGNAL ? "Multiplexer signal" : "Multiplexed signal",
                          $2,
-                         $4, $6, $8, $9,
-                         $11, $13, $16, $18, $20);
+                         $5, $7, $9, $10,
+                         $12, $14, $17, $19, $21);
                   free($2);
-                  free($20);
+                  free($21);
                 };
+
+mux:            %empty { $$.type = SIGNAL; }
+        |       MUX { $$ = $1; $$.type = ($1.num < 0) ? MULTIPLEXER_SIGNAL : MULTIPLEXED_SIGNAL; free($1.sval); }
+        ;
 
 names:          NAME names { free($1); }
         |       NAME       { free($1); }
