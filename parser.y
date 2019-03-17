@@ -146,6 +146,9 @@ value:          UINT TEXT
 
 %%
 
+static int   ret_code = 0;
+static char *filename = NULL;
+
 int main(int argc, char** argv)
 {
     if (argc != 2)
@@ -154,11 +157,12 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    FILE *in = fopen(argv[1], "r");
+    filename = argv[1];
+    FILE *in = fopen(filename, "r");
 
     if (!in)
     {
-        perror(argv[1]);
+        perror(filename);
         return 2;
     }
 
@@ -168,12 +172,11 @@ int main(int argc, char** argv)
 
     fclose(in);
 
-    return 0;
+    return ret_code;
 }
 
 void yyerror(const char *s)
 {
-    printf("EEK, parse error in line %i column %i!  Message: '%s'\n", yylloc.first_line, yylloc.first_column, s);
-    // might as well halt now:
-    exit(-1);
+    fprintf(stderr, "%s:%i:%i: %s\n", filename, yylloc.first_line, yylloc.first_column, s);
+    ret_code = 1;
 }
