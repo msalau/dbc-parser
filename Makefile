@@ -1,11 +1,6 @@
-VALGRIND:=$(shell command -v valgrind)
-ifdef VALGRIND
-VALGRIND_CMD:=$(VALGRIND) --leak-check=yes
-else
-VALGRIND_CMD:=
-endif
-
-CFLAGS:=-g3 -O0 -Wall -Wextra -Wformat -Wformat-security -Warray-bounds -Werror
+CFLAGS:=-g3 -O0 -Wall -Wextra -Wformat -Wformat-security -Warray-bounds -Werror -fsanitize=leak
+LDFLAGS:=-fsanitize=leak
+LIBS=-llsan
 
 .PHONY: all test clean
 
@@ -14,7 +9,7 @@ all: test parse
 #all: parser.png parser.html
 
 test: parse test.dbc
-		$(VALGRIND_CMD) ./$< ./test.dbc
+		./$< ./test.dbc
 
 clean:
 		-rm -f parse *.tab.c *.tab.h *.yy.c *.yy.h *.o *.png *.dot *.html *.xml *.output
@@ -24,7 +19,7 @@ clean:
 scanner.yy.o: parser.tab.h
 
 parse: scanner.yy.o parser.tab.o
-		$(CC) -o $@ $^
+		$(CC) $(LDFLAGS) -o $@ $^ $(LIBS)
 
 %.yy.c %.yy.h: %.l
 		flex --outfile=$*.yy.c --header-file=$*.yy.h  $<
