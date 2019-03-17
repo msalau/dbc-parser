@@ -5,7 +5,7 @@ else
 VALGRIND_CMD:=
 endif
 
-CFLAGS:=-g3 -O0 -Wall -Wextra -Werror
+CFLAGS:=-g3 -O0 -Wall -Wextra -Wformat -Wformat-security -Warray-bounds -Werror
 
 .PHONY: all test clean
 
