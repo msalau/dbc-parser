@@ -45,6 +45,9 @@ typedef enum signal_type
 %type <fval> float
 %type <mux>  mux
 
+%destructor { free($$); } <sval>
+%destructor { if ($$.sval) free($$.sval); } <mux>
+
 %%
 
 file:           entries;
@@ -96,8 +99,8 @@ signal:         TAG_SG name mux ':' UINT '|' UINT '@' UINT SIGN '(' float ',' fl
                   free($21);
                 };
 
-mux:            %empty { $$.type = SIGNAL; }
-        |       MUX { $$ = $1; $$.type = ($1.num < 0) ? MULTIPLEXER_SIGNAL : MULTIPLEXED_SIGNAL; free($1.sval); }
+mux:            %empty { $$.sval = NULL; $$.type = SIGNAL; }
+        |       MUX { $$ = $1; $$.sval = NULL; $$.type = ($1.num < 0) ? MULTIPLEXER_SIGNAL : MULTIPLEXED_SIGNAL; free($1.sval); }
         ;
 
 names:          name names { free($1); }
