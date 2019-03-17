@@ -149,22 +149,42 @@ value:          UINT TEXT
 
 %%
 
+#include <unistd.h>
+
 static int   ret_code = 0;
 static char *filename = NULL;
 
 int main(int argc, char** argv)
 {
     FILE *in;
+    int   opt;
+    int   force = 0;
 
-    if (argc != 2)
+    while ((opt = getopt(argc, argv, "hf")) != -1)
     {
-        fprintf(stderr, "Usage: %s <file>\n", argv[0]);
+        switch (opt)
+        {
+        case 'f':
+            force = 1;
+            break;
+        default:
+            fprintf(stderr, "Unknown argument: %c\n", opt);
+            /* fall-through */
+        case 'h':
+            fprintf(stderr, "Usage: %s [-f] <file>\n", argv[0]);
+            return 1;
+        }
+    }
+
+    if ((optind + 1) != argc)
+    {
+        fprintf(stderr, "Too many files specified\n");
         return 1;
     }
 
-    if (strcmp(argv[1], "-"))
+    if (strcmp(argv[optind], "-"))
     {
-        filename = argv[1];
+        filename = argv[optind];
         in = fopen(filename, "r");
     }
     else
@@ -187,6 +207,9 @@ int main(int argc, char** argv)
     {
         fclose(in);
     }
+
+    if (force)
+        ret_code = 0;
 
     return ret_code;
 }
