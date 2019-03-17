@@ -154,14 +154,24 @@ static char *filename = NULL;
 
 int main(int argc, char** argv)
 {
+    FILE *in;
+
     if (argc != 2)
     {
         fprintf(stderr, "Usage: %s <file>\n", argv[0]);
         return 1;
     }
 
-    filename = argv[1];
-    FILE *in = fopen(filename, "r");
+    if (strcmp(argv[1], "-"))
+    {
+        filename = argv[1];
+        in = fopen(filename, "r");
+    }
+    else
+    {
+        filename = "<stdin>";
+        in = stdin;
+    }
 
     if (!in)
     {
@@ -173,7 +183,10 @@ int main(int argc, char** argv)
     yyparse();
     yylex_destroy();
 
-    fclose(in);
+    if (in != stdin)
+    {
+        fclose(in);
+    }
 
     return ret_code;
 }
