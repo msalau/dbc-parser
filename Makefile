@@ -2,14 +2,17 @@ CFLAGS:=-g3 -O0 -Wall -Wextra -Wformat -Wformat-security -Warray-bounds -Werror 
 LDFLAGS:=-fsanitize=leak
 LIBS=-llsan
 
-.PHONY: all test clean
+.PHONY: all test fuzz clean
 
-all: test parse
+all: parse
 
 #all: parser.png parser.html
 
 test: parse test.dbc
 		./$< ./test.dbc
+
+fuzz: parse
+		./fuzz.sh ./test.dbc
 
 clean:
 		-rm -f parse *.tab.c *.tab.h *.yy.c *.yy.h *.o *.png *.dot *.html *.xml *.output
