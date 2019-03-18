@@ -34,13 +34,11 @@ SIGN [+-]
 {SPC}                     ;
 \/\/.*$                   ;
 
-VERSION{SPC}              { return TAG_VERSION; }
-BO_{SPC}                  { return TAG_BO; }
-SG_{SPC}                  { return TAG_SG; }
-CM_{SPC}+BO_{SPC}         { return TAG_CM_BO; }
-CM_{SPC}+SG_{SPC}         { return TAG_CM_SG; }
-CM_{SPC}                  { return TAG_CM; }
-VAL_{SPC}                 { return TAG_VAL; }
+VERSION                   { return VERSION; }
+BO_                       { return BO; }
+SG_                       { return SG; }
+CM_                       { return CM; }
+VAL_                      { return VAL; }
 
 M                         { yylval.mux.sval = strdup(yytext); yylval.mux.num = -1; return MUX; }
 m[0-9]+                   { yylval.mux.sval = strdup(yytext); yylval.mux.num = atoi(yytext + 1); return MUX; }

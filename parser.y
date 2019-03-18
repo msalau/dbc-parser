@@ -33,7 +33,7 @@ typedef enum signal_type
 %locations
 %define parse.error verbose
 
-%token TAG_VERSION TAG_BO TAG_SG TAG_CM TAG_CM_BO TAG_CM_SG TAG_VAL
+%token VERSION BO SG CM VAL
 
 %token <ival> INT UINT
 %token <fval> FLOAT
@@ -63,7 +63,7 @@ entry:          version
         |       signal_values
                 ;
 
-version:        TAG_VERSION TEXT
+version:        VERSION TEXT
                 {
                   printf("Version: %s\n", $2);
                   free($2);
@@ -81,14 +81,14 @@ name:           NAME { $$ = $1; }
         |       MUX  { $$ = $1.sval; }
         ;
 
-frame:          TAG_BO UINT name ':' UINT name
+frame:          BO UINT name ':' UINT name
                 {
                   printf("Frame: %s with id %i, length %i, sender %s\n", $3, $2, $5, $6);
                   free($3);
                   free($6);
                 };
 
-signal:         TAG_SG name mux ':' UINT '|' UINT '@' UINT SIGN '(' float ',' float ')' '[' float '|' float ']' TEXT names
+signal:         SG name mux ':' UINT '|' UINT '@' UINT SIGN '(' float ',' float ')' '[' float '|' float ']' TEXT names
                 {
                   printf("%s: %s %i|%i@%i%c (%f,%f) [%f.%f] %s\n",
                          $3.type == SIGNAL ? "Signal" : $3.type == MULTIPLEXER_SIGNAL ? "Multiplexer signal" : "Multiplexed signal",
@@ -112,26 +112,26 @@ float:          FLOAT { $$ = $1; }
         |       UINT  { $$ = (double)$1; }
         ;
 
-comment:        TAG_CM TEXT ';'
+comment:        CM TEXT ';'
                 {
                   printf("Comment: %s\n", $2);
                   free($2);
                 };
 
-comment_frame:  TAG_CM_BO UINT TEXT ';'
+comment_frame:  CM BO UINT TEXT ';'
                 {
-                  printf("Comment for frame %i: %s\n", $2, $3);
-                  free($3);
-                };
-
-comment_signal: TAG_CM_SG UINT name TEXT ';'
-                {
-                  printf("Comment for signal %s in frame %i: %s\n", $3, $2, $4);
-                  free($3);
+                  printf("Comment for frame %i: %s\n", $3, $4);
                   free($4);
                 };
 
-signal_values:  TAG_VAL UINT name {
+comment_signal: CM SG UINT name TEXT ';'
+                {
+                  printf("Comment for signal %s in frame %i: %s\n", $4, $3, $5);
+                  free($4);
+                  free($5);
+                };
+
+signal_values:  VAL UINT name {
                   printf("Values for signal %s in frame %i:", $3, $2);
                   free($3);
                 } values ';' {
