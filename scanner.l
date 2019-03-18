@@ -41,7 +41,7 @@ CM_                       { return CM; }
 VAL_                      { return VAL; }
 
 M                         { yylval.mux.sval = strdup(yytext); yylval.mux.num = -1; return MUX; }
-m[0-9]+                   { yylval.mux.sval = strdup(yytext); yylval.mux.num = atoi(yytext + 1); return MUX; }
+m{NUM}                    { yylval.mux.sval = strdup(yytext); yylval.mux.num = atoi(yytext + 1); return MUX; }
 
 [a-zA-Z_][a-zA-Z0-9_]*    { yylval.sval = strdup(yytext); return NAME; }
 {FLOAT}                   { yylval.fval = atof(yytext); return FLOAT; }
