@@ -29,6 +29,8 @@ typedef enum signal_type
   double fval;
   char  *sval;
   char   cval;
+
+  GSList *list;
 }
 
 %locations
@@ -46,8 +48,11 @@ typedef enum signal_type
 %type <fval> float
 %type <mux>  mux
 
+%type <list> names
+
 %destructor { g_free($$); } <sval>
 %destructor { g_free($$.sval); } <mux>
+%destructor { g_slist_free_full($$, g_free); } names
 
 %%
 
@@ -73,9 +78,14 @@ version:        VERSION TEXT
 
 ecus:           BU ':' names
                 {
-                    printf("Nodes: <TBD>\n");
-                }
-        ;
+                    printf("Nodes: ");
+                    for (GSList *elem = $3; elem; elem = g_slist_next(elem))
+                    {
+                        printf("%s ", (char *)elem->data);
+                    }
+                    printf("\n");
+                    g_slist_free_full($3, g_free);
+                };
 
 frame_with_signals:
                 frame signals
@@ -98,21 +108,28 @@ frame:          BO UINT name ':' UINT name
 
 signal:         SG name mux ':' UINT '|' UINT '@' UINT SIGN '(' float ',' float ')' '[' float '|' float ']' TEXT names
                 {
-                  printf("%s: %s %i|%i@%i%c (%f,%f) [%f.%f] %s\n",
+                  printf("%s: %s %i|%i@%i%c (%f,%f) [%f.%f] %s",
                          $3.type == SIGNAL ? "Signal" : $3.type == MULTIPLEXER_SIGNAL ? "Multiplexer signal" : "Multiplexed signal",
                          $2,
                          $5, $7, $9, $10,
                          $12, $14, $17, $19, $21);
                   g_free($2);
                   g_free($21);
+                  printf(" Receivers: ");
+                  for (GSList *elem = $22; elem; elem = g_slist_next(elem))
+                  {
+                    printf("%s ", (char *)elem->data);
+                  }
+                  printf("\n");
+                  g_slist_free_full($22, g_free);
                 };
 
 mux:            %empty { $$.sval = NULL; $$.type = SIGNAL; }
         |       MUX { $$ = $1; $$.sval = NULL; $$.type = ($1.num < 0) ? MULTIPLEXER_SIGNAL : MULTIPLEXED_SIGNAL; g_free($1.sval); }
         ;
 
-names:          name names { g_free($1); }
-        |       name       { g_free($1); }
+names:          name names { $$ = g_slist_prepend($2, $1); }
+        |       name       { $$ = g_slist_prepend(NULL, $1); }
         ;
 
 float:          FLOAT { $$ = $1; }
