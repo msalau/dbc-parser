@@ -1,6 +1,6 @@
-CFLAGS:=-g3 -O0 -Wall -Wextra -Wformat -Wformat-security -Warray-bounds -Werror -fsanitize=leak
+CFLAGS:=-g3 -O0 -Wall -Wextra -Wformat -Wformat-security -Warray-bounds -Werror -fsanitize=leak $(shell pkg-config --cflags glib-2.0)
 LDFLAGS:=-fsanitize=leak
-LIBS=-llsan
+LIBS=-llsan $(shell pkg-config --libs glib-2.0)
 
 .PHONY: all test fuzz clean
 

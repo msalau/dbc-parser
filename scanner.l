@@ -3,6 +3,7 @@
 %option nounput
 
 %{
+#include <gmodule.h>
 #include <stdio.h>
 #include "parser.tab.h"
 
@@ -41,16 +42,16 @@ SG_                       { return SG; }
 CM_                       { return CM; }
 VAL_                      { return VAL; }
 
-M                         { yylval.mux.sval = strdup(yytext); yylval.mux.num = -1; return MUX; }
-m{NUM}                    { yylval.mux.sval = strdup(yytext); yylval.mux.num = atoi(yytext + 1); return MUX; }
+M                         { yylval.mux.sval = g_strdup(yytext); yylval.mux.num = -1; return MUX; }
+m{NUM}                    { yylval.mux.sval = g_strdup(yytext); yylval.mux.num = atoi(yytext + 1); return MUX; }
 
-[a-zA-Z_][a-zA-Z0-9_]*    { yylval.sval = strdup(yytext); return NAME; }
+[a-zA-Z_][a-zA-Z0-9_]*    { yylval.sval = g_strdup(yytext); return NAME; }
 {FLOAT}                   { yylval.fval = atof(yytext); return FLOAT; }
 {NUM}                     { yylval.ival = atoi(yytext); return UINT; }
 {SIGN}{NUM}               { yylval.ival = atoi(yytext); return INT; }
 
 {SIGN}                    { yylval.cval = yytext[0]; return SIGN; }
-["][^"]*["]               { yylval.sval = strdup(yytext); return TEXT; }
+["][^"]*["]               { yylval.sval = g_strdup(yytext); return TEXT; }
 .                         { return yytext[0]; }
 
 %%

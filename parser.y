@@ -1,5 +1,6 @@
 %{
 
+#include <gmodule.h>
 #include <stdio.h>
 #include "parser.tab.h"
 #include "scanner.yy.h"
@@ -45,8 +46,8 @@ typedef enum signal_type
 %type <fval> float
 %type <mux>  mux
 
-%destructor { free($$); } <sval>
-%destructor { if ($$.sval) free($$.sval); } <mux>
+%destructor { g_free($$); } <sval>
+%destructor { g_free($$.sval); } <mux>
 
 %%
 
@@ -67,7 +68,7 @@ entry:          version
 version:        VERSION TEXT
                 {
                   printf("Version: %s\n", $2);
-                  free($2);
+                  g_free($2);
                 };
 
 ecus:           BU ':' names
@@ -91,8 +92,8 @@ name:           NAME { $$ = $1; }
 frame:          BO UINT name ':' UINT name
                 {
                   printf("Frame: %s with id %i, length %i, sender %s\n", $3, $2, $5, $6);
-                  free($3);
-                  free($6);
+                  g_free($3);
+                  g_free($6);
                 };
 
 signal:         SG name mux ':' UINT '|' UINT '@' UINT SIGN '(' float ',' float ')' '[' float '|' float ']' TEXT names
@@ -102,16 +103,16 @@ signal:         SG name mux ':' UINT '|' UINT '@' UINT SIGN '(' float ',' float 
                          $2,
                          $5, $7, $9, $10,
                          $12, $14, $17, $19, $21);
-                  free($2);
-                  free($21);
+                  g_free($2);
+                  g_free($21);
                 };
 
 mux:            %empty { $$.sval = NULL; $$.type = SIGNAL; }
-        |       MUX { $$ = $1; $$.sval = NULL; $$.type = ($1.num < 0) ? MULTIPLEXER_SIGNAL : MULTIPLEXED_SIGNAL; free($1.sval); }
+        |       MUX { $$ = $1; $$.sval = NULL; $$.type = ($1.num < 0) ? MULTIPLEXER_SIGNAL : MULTIPLEXED_SIGNAL; g_free($1.sval); }
         ;
 
-names:          name names { free($1); }
-        |       name       { free($1); }
+names:          name names { g_free($1); }
+        |       name       { g_free($1); }
         ;
 
 float:          FLOAT { $$ = $1; }
@@ -122,25 +123,25 @@ float:          FLOAT { $$ = $1; }
 comment:        CM TEXT ';'
                 {
                   printf("Comment: %s\n", $2);
-                  free($2);
+                  g_free($2);
                 };
 
 comment_frame:  CM BO UINT TEXT ';'
                 {
                   printf("Comment for frame %i: %s\n", $3, $4);
-                  free($4);
+                  g_free($4);
                 };
 
 comment_signal: CM SG UINT name TEXT ';'
                 {
                   printf("Comment for signal %s in frame %i: %s\n", $4, $3, $5);
-                  free($4);
-                  free($5);
+                  g_free($4);
+                  g_free($5);
                 };
 
 signal_values:  VAL UINT name {
                   printf("Values for signal %s in frame %i:", $3, $2);
-                  free($3);
+                  g_free($3);
                 } values ';' {
                   printf(";\n");
                 };
@@ -151,7 +152,7 @@ values:         value values
 value:          UINT TEXT
                 {
                   printf(" %i=%s", $1, $2);
-                  free($2);
+                  g_free($2);
                 };
 
 %%
