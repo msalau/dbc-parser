@@ -51,7 +51,7 @@ m{NUM}                    { yylval.mux.sval = g_strdup(yytext); yylval.mux.num =
 {SIGN}{NUM}               { yylval.ival = atoi(yytext); return INT; }
 
 {SIGN}                    { yylval.cval = yytext[0]; return SIGN; }
-["][^"]*["]               { yylval.sval = g_strdup(yytext); return TEXT; }
+["][^"]*["]               { yylval.sval = g_strndup(yytext + 1, strlen(yytext) - 2); return TEXT; }
 .                         { return yytext[0]; }
 
 %%

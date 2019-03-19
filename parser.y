@@ -72,7 +72,7 @@ entry:          version
 
 version:        VERSION TEXT
                 {
-                  printf("Version: %s\n", $2);
+                  printf("Version: \"%s\"\n", $2);
                   g_free($2);
                 };
 
@@ -108,7 +108,7 @@ frame:          BO UINT name ':' UINT name
 
 signal:         SG name mux ':' UINT '|' UINT '@' UINT SIGN '(' float ',' float ')' '[' float '|' float ']' TEXT names
                 {
-                  printf("%s: %s %i|%i@%i%c (%f,%f) [%f.%f] %s",
+                  printf("%s: %s %i|%i@%i%c (%f,%f) [%f.%f] \"%s\"",
                          $3.type == SIGNAL ? "Signal" : $3.type == MULTIPLEXER_SIGNAL ? "Multiplexer signal" : "Multiplexed signal",
                          $2,
                          $5, $7, $9, $10,
@@ -139,19 +139,19 @@ float:          FLOAT { $$ = $1; }
 
 comment:        CM TEXT ';'
                 {
-                  printf("Comment: %s\n", $2);
+                  printf("Comment: \"%s\"\n", $2);
                   g_free($2);
                 };
 
 comment_frame:  CM BO UINT TEXT ';'
                 {
-                  printf("Comment for frame %i: %s\n", $3, $4);
+                  printf("Comment for frame %i: \"%s\"\n", $3, $4);
                   g_free($4);
                 };
 
 comment_signal: CM SG UINT name TEXT ';'
                 {
-                  printf("Comment for signal %s in frame %i: %s\n", $4, $3, $5);
+                  printf("Comment for signal %s in frame %i: \"%s\"\n", $4, $3, $5);
                   g_free($4);
                   g_free($5);
                 };
@@ -168,7 +168,7 @@ values:         value values
 
 value:          UINT TEXT
                 {
-                  printf(" %i=%s", $1, $2);
+                  printf(" %i=\"%s\"", $1, $2);
                   g_free($2);
                 };
 
