@@ -33,7 +33,7 @@ typedef enum signal_type
 %locations
 %define parse.error verbose
 
-%token VERSION BO SG CM VAL
+%token VERSION BU BO SG CM VAL
 
 %token <ival> INT UINT
 %token <fval> FLOAT
@@ -56,6 +56,7 @@ entries:        entry entries
         |       entry;
 
 entry:          version
+        |       ecus
         |       frame_with_signals
         |       comment
         |       comment_frame
@@ -68,6 +69,12 @@ version:        VERSION TEXT
                   printf("Version: %s\n", $2);
                   free($2);
                 };
+
+ecus:           BU ':' names
+                {
+                    printf("Nodes: <TBD>\n");
+                }
+        ;
 
 frame_with_signals:
                 frame signals
