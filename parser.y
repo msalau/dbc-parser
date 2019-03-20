@@ -84,16 +84,16 @@ entry:          version
 
 version:        VERSION TEXT
                 {
-                  printf("Version: \"%s\"\n", $2);
+                  printf("VERSION \"%s\"\n", $2);
                   g_free($2);
                 };
 
 ecus:           BU ':' names
                 {
-                    printf("Nodes: ");
+                    printf("BU_:");
                     for (GSList *elem = $3; elem; elem = g_slist_next(elem))
                     {
-                        printf("%s ", (char *)elem->data);
+                        printf(" %s", (char *)elem->data);
                     }
                     printf("\n");
                     g_slist_free_full($3, g_free);
@@ -113,24 +113,27 @@ name:           NAME { $$ = $1; }
 
 frame:          BO UINT name ':' UINT name
                 {
-                  printf("Frame: %s with id %i, length %i, sender %s\n", $3, $2, $5, $6);
+                  printf("BO_ %i %s: %i %s\n", $2, $3, $5, $6);
                   g_free($3);
                   g_free($6);
                 };
 
 signal:         SG name mux ':' UINT '|' UINT '@' UINT SIGN '(' float ',' float ')' '[' float '|' float ']' TEXT names
                 {
-                  printf("%s: %s %i|%i@%i%c (%f,%f) [%f.%f] \"%s\"",
-                         $3.type == SIGNAL ? "Signal" : $3.type == MULTIPLEXER_SIGNAL ? "Multiplexer signal" : "Multiplexed signal",
-                         $2,
+                  char muxstr[16] = "";
+                  if ($3.type == MULTIPLEXED_SIGNAL)
+                    sprintf(muxstr, "m%u ", $3.num);
+                  if ($3.type == MULTIPLEXER_SIGNAL)
+                    sprintf(muxstr, "M ");
+                  printf("\tSG_ %s %s: %i|%i@%i%c (%f,%f) [%f|%f] \"%s\"",
+                         $2, muxstr,
                          $5, $7, $9, $10,
                          $12, $14, $17, $19, $21);
                   g_free($2);
                   g_free($21);
-                  printf(" Receivers: ");
                   for (GSList *elem = $22; elem; elem = g_slist_next(elem))
                   {
-                    printf("%s ", (char *)elem->data);
+                    printf(" %s", (char *)elem->data);
                   }
                   printf("\n");
                   g_slist_free_full($22, g_free);
@@ -151,31 +154,31 @@ float:          FLOAT { $$ = $1; }
 
 comment:        CM TEXT ';'
                 {
-                  printf("Comment: \"%s\"\n", $2);
+                  printf("CM_ \"%s\" ;\n", $2);
                   g_free($2);
                 };
 
 comment_frame:  CM BO UINT TEXT ';'
                 {
-                  printf("Comment for frame %i: \"%s\"\n", $3, $4);
+                  printf("CM_ BO_ %i \"%s\" ;\n", $3, $4);
                   g_free($4);
                 };
 
 comment_signal: CM SG UINT name TEXT ';'
                 {
-                  printf("Comment for signal %s in frame %i: \"%s\"\n", $4, $3, $5);
+                  printf("CM_ SG_ %i %s \"%s\" ;\n", $3, $4, $5);
                   g_free($4);
                   g_free($5);
                 };
 
 signal_values:  VAL UINT name values ';'
                 {
-                  printf("Values for signal %s in frame %i:", $3, $2);
+                  printf("VAL_ %i %s", $2, $3);
                   for (value_string *v = (value_string *)$4->data; v->strptr; v++)
                   {
-                    printf(" %i=\"%s\"", v->value, v->strptr);
+                    printf(" %i \"%s\"", v->value, v->strptr);
                   }
-                  printf(";\n");
+                  printf(" ;\n");
                   g_free($3);
                   g_array_free($4, TRUE);
                 };
