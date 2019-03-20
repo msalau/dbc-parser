@@ -2,6 +2,7 @@
 
 #include <gmodule.h>
 #include <stdio.h>
+#include "value_string.h"
 #include "parser.tab.h"
 #include "scanner.yy.h"
 
@@ -13,6 +14,11 @@ typedef enum signal_type
   MULTIPLEXER_SIGNAL,
   MULTIPLEXED_SIGNAL
 } signal_type_t;
+
+void free_value_string(gpointer data)
+{
+  g_free(((value_string *)data)->strptr);
+}
 
 %}
 
@@ -31,6 +37,8 @@ typedef enum signal_type
   char   cval;
 
   GSList *list;
+  GArray *array;
+  value_string value;
 }
 
 %locations
@@ -49,6 +57,8 @@ typedef enum signal_type
 %type <mux>  mux
 
 %type <list> names
+%type <array> values
+%type <value> value
 
 %destructor { g_free($$); } <sval>
 %destructor { g_free($$.sval); } <mux>
@@ -156,20 +166,33 @@ comment_signal: CM SG UINT name TEXT ';'
                   g_free($5);
                 };
 
-signal_values:  VAL UINT name {
+signal_values:  VAL UINT name values ';'
+                {
                   printf("Values for signal %s in frame %i:", $3, $2);
-                  g_free($3);
-                } values ';' {
+                  for (value_string *v = (value_string *)$4->data; v->strptr; v++)
+                  {
+                    printf(" %i=\"%s\"", v->value, v->strptr);
+                  }
                   printf(";\n");
+                  g_free($3);
+                  g_array_set_clear_func($4, free_value_string);
+                  g_array_free($4, TRUE);
                 };
 
-values:         value values
-        |       value;
+values:         values value
+                {
+                  $$ = g_array_append_val($1, $2);
+                }
+        |       value
+                {
+                  $$ = g_array_new(TRUE, TRUE, sizeof(value_string));
+                  g_array_append_val($$, $1);
+                };
 
 value:          UINT TEXT
                 {
-                  printf(" %i=\"%s\"", $1, $2);
-                  g_free($2);
+                  $$.value  = $1;
+                  $$.strptr = $2;
                 };
 
 %%

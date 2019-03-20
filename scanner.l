@@ -5,6 +5,7 @@
 %{
 #include <gmodule.h>
 #include <stdio.h>
+#include "value_string.h"
 #include "parser.tab.h"
 
 #define YY_USER_ACTION \
