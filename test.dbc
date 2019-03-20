@@ -35,4 +35,9 @@ that spans several lines";
 
 CM_ BO_ 66 "This is a frame comment";
 CM_ SG_ 66 TestMsg1Current "This is a signal comment";
-VAL_ 67 TestMsg2Signal  0 "NOP"  1 "ACT0"  2 "ACT2";
+
+VAL_ 67 TestMsg2Signal
+     0 "NOP"
+     1 "ACT0"
+     2 "ACT2"
+     ;
