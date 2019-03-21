@@ -44,6 +44,7 @@ BO_                       { return BO; }
 SG_                       { return SG; }
 CM_                       { return CM; }
 VAL_                      { return VAL; }
+VAL_TABLE_                { return VAL_TABLE; }
 
 M                         { yylval.mux.sval = g_strdup(yytext); yylval.mux.num = -1; return MUX; }
 m{NUM}                    { yylval.mux.sval = g_strdup(yytext); yylval.mux.num = atoi(yytext + 1); return MUX; }

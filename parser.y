@@ -44,7 +44,7 @@ void free_value_string(gpointer data)
 %locations
 %define parse.error verbose
 
-%token VERSION NS BS BU BO SG CM VAL
+%token VERSION NS BS BU BO SG CM VAL VAL_TABLE
 
 %token <ival> INT UINT
 %token <fval> FLOAT
@@ -76,6 +76,7 @@ entries:        entry entries
 entry:          version
         |       symbols
         |       ecus
+        |       value_table
         |       frame_with_signals
         |       comment
         |       comment_frame
@@ -107,6 +108,7 @@ tags_or_names:  %empty
 tag_or_name:    name { printf("\t%s\n", $1); g_free($1); }
         |       CM { printf("\tCM_\n"); }
         |       VAL { printf("\tVAL_\n"); }
+        |       VAL_TABLE { printf("\tVAL_TABLE_\n"); }
         ;
 
 ecus:           BU ':' maybe_names
@@ -118,6 +120,18 @@ ecus:           BU ':' maybe_names
                     }
                     printf("\n\n");
                     g_slist_free_full($3, g_free);
+                };
+
+value_table:    VAL_TABLE name values ';'
+                {
+                  printf("VAL_TABLE_ %s", $2);
+                  for (value_string *v = (value_string *)$3->data; v->strptr; v++)
+                  {
+                    printf(" %i \"%s\"", v->value, v->strptr);
+                  }
+                  printf(" ;\n");
+                  g_free($2);
+                  g_array_free($3, TRUE);
                 };
 
 frame_with_signals:
