@@ -125,7 +125,7 @@ signal:         SG name mux ':' UINT '|' UINT '@' UINT SIGN '(' float ',' float 
                     sprintf(muxstr, "m%u ", $3.num);
                   if ($3.type == MULTIPLEXER_SIGNAL)
                     sprintf(muxstr, "M ");
-                  printf(" SG_ %s %s: %i|%i@%i%c (%f,%f) [%f|%f] \"%s\"",
+                  printf(" SG_ %s %s: %i|%i@%i%c (%g,%g) [%g|%g] \"%s\"",
                          $2, muxstr,
                          $5, $7, $9, $10,
                          $12, $14, $17, $19, $21);
