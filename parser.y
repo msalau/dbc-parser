@@ -56,7 +56,7 @@ void free_value_string(gpointer data)
 %type <fval> float
 %type <mux>  mux
 
-%type <list> names
+%type <list> names maybe_names
 %type <array> values
 %type <value> value
 
@@ -88,7 +88,7 @@ version:        VERSION TEXT
                   g_free($2);
                 };
 
-ecus:           BU ':' names
+ecus:           BU ':' maybe_names
                 {
                     printf("BU_:");
                     for (GSList *elem = $3; elem; elem = g_slist_next(elem))
@@ -141,6 +141,10 @@ signal:         SG name mux ':' UINT '|' UINT '@' UINT SIGN '(' float ',' float 
 
 mux:            %empty { $$.sval = NULL; $$.type = SIGNAL; }
         |       MUX { $$ = $1; $$.sval = NULL; $$.type = ($1.num < 0) ? MULTIPLEXER_SIGNAL : MULTIPLEXED_SIGNAL; g_free($1.sval); }
+        ;
+
+maybe_names:    %empty { $$ = NULL; }
+        |       names { $$ = $1; }
         ;
 
 names:          name names { $$ = g_slist_prepend($2, $1); }
