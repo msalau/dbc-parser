@@ -62,7 +62,7 @@ void free_value_string(gpointer data)
 
 %destructor { g_free($$); } <sval>
 %destructor { g_free($$.sval); } <mux>
-%destructor { g_slist_free_full($$, g_free); } names
+%destructor { g_slist_free_full($$, g_free); } names maybe_names
 %destructor { g_free($$.strptr); } value
 %destructor { g_array_free($$, TRUE); } values
 
