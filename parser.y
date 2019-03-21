@@ -84,7 +84,7 @@ entry:          version
 
 version:        VERSION TEXT
                 {
-                  printf("VERSION \"%s\"\n", $2);
+                  printf("VERSION \"%s\"\n\n\n", $2);
                   g_free($2);
                 };
 
@@ -95,13 +95,15 @@ ecus:           BU ':' maybe_names
                     {
                         printf(" %s", (char *)elem->data);
                     }
-                    printf("\n");
+                    printf("\n\n");
                     g_slist_free_full($3, g_free);
                 };
 
 frame_with_signals:
                 frame signals
-        ;
+                {
+                  printf("\n");
+                };
 
 signals:        signal signals
         |       signal
@@ -125,7 +127,7 @@ signal:         SG name mux ':' UINT '|' UINT '@' UINT SIGN '(' float ',' float 
                     sprintf(muxstr, "m%u ", $3.num);
                   if ($3.type == MULTIPLEXER_SIGNAL)
                     sprintf(muxstr, "M ");
-                  printf(" SG_ %s %s: %i|%i@%i%c (%g,%g) [%g|%g] \"%s\"",
+                  printf(" SG_ %s %s: %i|%i@%i%c (%g,%g) [%g|%g] \"%s\" ",
                          $2, muxstr,
                          $5, $7, $9, $10,
                          $12, $14, $17, $19, $21);
@@ -158,19 +160,19 @@ float:          FLOAT { $$ = $1; }
 
 comment:        CM TEXT ';'
                 {
-                  printf("CM_ \"%s\" ;\n", $2);
+                  printf("CM_ \"%s\";\n", $2);
                   g_free($2);
                 };
 
 comment_frame:  CM BO UINT TEXT ';'
                 {
-                  printf("CM_ BO_ %i \"%s\" ;\n", $3, $4);
+                  printf("CM_ BO_ %i \"%s\";\n", $3, $4);
                   g_free($4);
                 };
 
 comment_signal: CM SG UINT name TEXT ';'
                 {
-                  printf("CM_ SG_ %i %s \"%s\" ;\n", $3, $4, $5);
+                  printf("CM_ SG_ %i %s \"%s\";\n", $3, $4, $5);
                   g_free($4);
                   g_free($5);
                 };
