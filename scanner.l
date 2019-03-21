@@ -37,6 +37,8 @@ SIGN [+-]
 \/\/.*$                   ;
 
 VERSION                   { return VERSION; }
+NS_                       { return NS; }
+BS_                       { return BS; }
 BU_                       { return BU; }
 BO_                       { return BO; }
 SG_                       { return SG; }

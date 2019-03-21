@@ -44,7 +44,7 @@ void free_value_string(gpointer data)
 %locations
 %define parse.error verbose
 
-%token VERSION BU BO SG CM VAL
+%token VERSION NS BS BU BO SG CM VAL
 
 %token <ival> INT UINT
 %token <fval> FLOAT
@@ -74,6 +74,7 @@ entries:        entry entries
         |       entry;
 
 entry:          version
+        |       symbols
         |       ecus
         |       frame_with_signals
         |       comment
@@ -87,6 +88,26 @@ version:        VERSION TEXT
                   printf("VERSION \"%s\"\n\n\n", $2);
                   g_free($2);
                 };
+
+symbols:        NS ':'
+                {
+                  printf("NS_ :\n");
+                }
+                tags_or_names
+                BS ':'
+                {
+                  printf("\nBS_:\n\n");
+                }
+                ;
+
+tags_or_names:  %empty
+        |       tag_or_name tags_or_names
+        ;
+
+tag_or_name:    name { printf("\t%s\n", $1); g_free($1); }
+        |       CM { printf("\tCM_\n"); }
+        |       VAL { printf("\tVAL_\n"); }
+        ;
 
 ecus:           BU ':' maybe_names
                 {
