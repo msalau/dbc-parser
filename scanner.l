@@ -51,7 +51,7 @@ m{NUM}                    { yylval.mux.sval = g_strdup(yytext); yylval.mux.num =
 
 [a-zA-Z_][a-zA-Z0-9_]*    { yylval.sval = g_strdup(yytext); return NAME; }
 {FLOAT}                   { yylval.fval = atof(yytext); return FLOAT; }
-{NUM}                     { yylval.ival = atoi(yytext); return UINT; }
+{NUM}                     { yylval.uval = strtoul(yytext, NULL, 0); return UINT; }
 {SIGN}{NUM}               { yylval.ival = atoi(yytext); return INT; }
 
 {SIGN}                    { yylval.cval = yytext[0]; return SIGN; }

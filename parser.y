@@ -32,6 +32,7 @@ void free_value_string(gpointer data)
   } mux;
 
   int    ival;
+  unsigned uval;
   double fval;
   char  *sval;
   char   cval;
@@ -46,7 +47,8 @@ void free_value_string(gpointer data)
 
 %token VERSION NS BS BU BO SG CM VAL VAL_TABLE
 
-%token <ival> INT UINT
+%token <ival> INT
+%token <uval> UINT
 %token <fval> FLOAT
 %token <sval> TEXT NAME
 %token <cval> SIGN
@@ -155,7 +157,7 @@ name:           NAME { $$ = $1; }
 
 frame:          BO UINT name ':' UINT name
                 {
-                  printf("BO_ %i %s: %i %s\n", $2, $3, $5, $6);
+                  printf("BO_ %u %s: %u %s\n", $2, $3, $5, $6);
                   g_free($3);
                   g_free($6);
                 };
@@ -167,7 +169,7 @@ signal:         SG name mux ':' UINT '|' UINT '@' UINT SIGN '(' float ',' float 
                     sprintf(muxstr, "m%u ", $3.num);
                   if ($3.type == MULTIPLEXER_SIGNAL)
                     sprintf(muxstr, "M ");
-                  printf(" SG_ %s %s: %i|%i@%i%c (%g,%g) [%g|%g] \"%s\" ",
+                  printf(" SG_ %s %s: %u|%u@%u%c (%g,%g) [%g|%g] \"%s\" ",
                          $2, muxstr,
                          $5, $7, $9, $10,
                          $12, $14, $17, $19, $21);
@@ -215,13 +217,13 @@ comment_net:    CM TEXT ';'
 
 comment_frame:  CM BO UINT TEXT ';'
                 {
-                  printf("CM_ BO_ %i \"%s\";\n", $3, $4);
+                  printf("CM_ BO_ %u \"%s\";\n", $3, $4);
                   g_free($4);
                 };
 
 comment_signal: CM SG UINT name TEXT ';'
                 {
-                  printf("CM_ SG_ %i %s \"%s\";\n", $3, $4, $5);
+                  printf("CM_ SG_ %u %s \"%s\";\n", $3, $4, $5);
                   g_free($4);
                   g_free($5);
                 };
@@ -232,7 +234,7 @@ signal_values:  %empty
 
 signal_value:   VAL UINT name values ';'
                 {
-                  printf("VAL_ %i %s", $2, $3);
+                  printf("VAL_ %u %s", $2, $3);
                   for (value_string *v = (value_string *)$4->data; v->strptr; v++)
                   {
                     printf(" %i \"%s\"", v->value, v->strptr);
