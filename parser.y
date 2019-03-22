@@ -457,41 +457,46 @@ int main(int argc, char** argv)
             fprintf(stderr, "Unknown argument: %c\n", opt);
             /* fall-through */
         case 'h':
-            fprintf(stderr, "Usage: %s [-f] <file>\n", argv[0]);
+            fprintf(stderr, "Usage: %s [-f] <file> [<file> [<file> ...]]\n", argv[0]);
             return 1;
         }
     }
 
-    if ((optind + 1) != argc)
+    if (optind == argc)
     {
-        fprintf(stderr, "Too many files specified\n");
+        fprintf(stderr, "Usage: %s [-f] <file> [<file> [<file> ...]]\n", argv[0]);
         return 1;
     }
 
-    if (strcmp(argv[optind], "-"))
+    while (optind < argc && !ret_code)
     {
-        filename = argv[optind];
-        in = fopen(filename, "r");
-    }
-    else
-    {
-        filename = "<stdin>";
-        in = stdin;
-    }
+        if (strcmp(argv[optind], "-"))
+        {
+            filename = argv[optind];
+            in = fopen(filename, "r");
+        }
+        else
+        {
+            filename = "<stdin>";
+            in = stdin;
+        }
 
-    if (!in)
-    {
-        perror(filename);
-        return 2;
-    }
+        if (!in)
+        {
+            perror(filename);
+            return 2;
+        }
 
-    yyset_in(in);
-    yyparse();
-    yylex_destroy();
+        yyset_in(in);
+        yyparse();
+        yylex_destroy();
 
-    if (in != stdin)
-    {
-        fclose(in);
+        if (in != stdin)
+        {
+            fclose(in);
+        }
+
+        optind++;
     }
 
     if (force)
