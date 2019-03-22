@@ -62,6 +62,10 @@ BO_ 69 TestMsg4: 8 ECU2
  SG_ m1 m1 : 24|8@1+ (1,0) [0|255] "" ECU1
  SG_ m2 m2 : 24|8@1+ (1,0) [0|255] "" ECU1
 
+BO_ 70 TestMsg5: 8 ECU0
+BO_ 71 TestMsg6: 8 ECU0
+
+
 // Comments go below
 
 CM_ "This is a file
