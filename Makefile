@@ -8,8 +8,8 @@ all: parse
 
 #all: parser.png parser.html
 
-test: parse test.dbc
-		./$< ./test.dbc
+test: parse test.dbc j1939_utf8.dbc
+		./$< $(filter %.dbc,$^)
 
 fuzz: parse
 		./fuzz.sh ./test.dbc
@@ -17,7 +17,10 @@ fuzz: parse
 clean:
 		-rm -f parse *.tab.c *.tab.h *.yy.c *.yy.h *.o *.png *.dot *.html *.xml *.output
 
-.PRECIOUS: %.yy.c %.yy.h %.tab.c %.tab.h %.xml %.dot
+.PRECIOUS: %.yy.c %.yy.h %.tab.c %.tab.h %.xml %.dot %.dbc
+
+j1939_utf8.dbc:
+		wget -O $@ https://hackage.haskell.org/package/ecu-0.0.8/src/src/j1939_utf8.dbc
 
 scanner.yy.o: parser.tab.h
 
