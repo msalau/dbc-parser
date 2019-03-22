@@ -72,7 +72,7 @@ CM_ "This is a file
 comment
 that spans several lines";
 
-CM_ BO_ 66 "This is a frame comment";
+CM_ BO_ 66 "This is a \"frame comment\"";
 CM_ SG_ 66 TestMsg1Current "This is a signal comment";
 
 VAL_ 67 TestMsg2Signal
