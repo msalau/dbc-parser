@@ -68,20 +68,13 @@ void free_value_string(gpointer data)
 
 %%
 
-file:           entries;
-
-entries:        entry entries
-        |       entry;
-
-entry:          version
-        |       symbols
-        |       ecus
-        |       value_table
-        |       frame_with_signals
-        |       comment
-        |       comment_frame
-        |       comment_signal
-        |       signal_values
+file:           version
+                symbols
+                ecus
+                value_tables
+                frames
+                comments
+                signal_values
                 ;
 
 version:        VERSION TEXT
@@ -111,7 +104,8 @@ tag_or_name:    name { printf("\t%s\n", $1); g_free($1); }
         |       VAL_TABLE { printf("\tVAL_TABLE_\n"); }
         ;
 
-ecus:           BU ':' maybe_names
+ecus:           %empty
+        |       BU ':' maybe_names
                 {
                     printf("BU_:");
                     for (GSList *elem = $3; elem; elem = g_slist_next(elem))
@@ -121,6 +115,10 @@ ecus:           BU ':' maybe_names
                     printf("\n\n");
                     g_slist_free_full($3, g_free);
                 };
+
+value_tables:   %empty
+        |       value_table value_tables
+                ;
 
 value_table:    VAL_TABLE name values ';'
                 {
@@ -134,14 +132,18 @@ value_table:    VAL_TABLE name values ';'
                   g_array_free($3, TRUE);
                 };
 
+frames:         %empty
+        |       frame_with_signals frames
+        ;
+
 frame_with_signals:
                 frame signals
                 {
                   printf("\n");
                 };
 
-signals:        signal signals
-        |       signal
+signals:        %empty
+        |       signal signals
         ;
 
 name:           NAME { $$ = $1; }
@@ -193,7 +195,16 @@ float:          FLOAT { $$ = $1; }
         |       UINT  { $$ = (double)$1; }
         ;
 
-comment:        CM TEXT ';'
+comments:       %empty
+        |       comment comments
+        ;
+
+comment:        comment_net
+        |       comment_frame
+        |       comment_signal
+        ;
+
+comment_net:    CM TEXT ';'
                 {
                   printf("CM_ \"%s\";\n", $2);
                   g_free($2);
@@ -212,7 +223,11 @@ comment_signal: CM SG UINT name TEXT ';'
                   g_free($5);
                 };
 
-signal_values:  VAL UINT name values ';'
+signal_values:  %empty
+        |       signal_value signal_values
+        ;
+
+signal_value:   VAL UINT name values ';'
                 {
                   printf("VAL_ %i %s", $2, $3);
                   for (value_string *v = (value_string *)$4->data; v->strptr; v++)
