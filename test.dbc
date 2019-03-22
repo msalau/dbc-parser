@@ -79,4 +79,5 @@ VAL_ 67 TestMsg2Signal
      0 "NOP"
      1 "ACT0"
      2 "ACT2"
+     -1 "NEG"
      ;

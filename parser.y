@@ -33,6 +33,7 @@ void free_value_string(gpointer data)
 
   int    ival;
   unsigned uval;
+  long long llval;
   double fval;
   char  *sval;
   char   cval;
@@ -56,6 +57,7 @@ void free_value_string(gpointer data)
 
 %type <sval> name
 %type <fval> float
+%type <llval> int
 %type <mux>  mux
 
 %type <list> names maybe_names
@@ -255,7 +257,11 @@ values:         values value
                   g_array_append_val($$, $1);
                 };
 
-value:          UINT TEXT
+int:            UINT { $$ = $1; }
+        |       INT  { $$ = $1; }
+        ;
+
+value:          int TEXT
                 {
                   $$.value  = $1;
                   $$.strptr = $2;
