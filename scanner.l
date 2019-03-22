@@ -58,9 +58,9 @@ M                         { yylval.mux.sval = g_strdup(yytext); yylval.mux.num =
 m{NUM}                    { yylval.mux.sval = g_strdup(yytext); yylval.mux.num = atoi(yytext + 1); return MUX; }
 
 [a-zA-Z_][a-zA-Z0-9_]*    { yylval.sval = g_strdup(yytext); return NAME; }
-{FLOAT}                   { yylval.fval = atof(yytext); return FLOAT; }
+{FLOAT}                   { yylval.fval = strtod(yytext, NULL); return FLOAT; }
 {NUM}                     { yylval.uval = strtoul(yytext, NULL, 0); return UINT; }
-{SIGN}{NUM}               { yylval.ival = atoi(yytext); return INT; }
+{SIGN}{NUM}               { yylval.ival = strtol(yytext, NULL, 0); return INT; }
 
 {SIGN}                    { yylval.cval = yytext[0]; return SIGN; }
 ["]([^"]|\\["])*["]       { yylval.sval = g_strndup(yytext + 1, strlen(yytext) - 2); return TEXT; }
