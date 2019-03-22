@@ -46,7 +46,8 @@ void free_value_string(gpointer data)
 %locations
 %define parse.error verbose
 
-%token VERSION NS BS BU BO SG CM VAL VAL_TABLE
+%token VERSION NS BS BU BO SG CM BA_DEF BA_DEF_DEF BA VAL VAL_TABLE
+%token ATTR_INT ATTR_HEX ATTR_ENUM ATTR_FLOAT ATTR_STRING
 
 %token <ival> INT
 %token <uval> UINT
@@ -60,13 +61,13 @@ void free_value_string(gpointer data)
 %type <llval> int
 %type <mux>  mux
 
-%type <list> names maybe_names
+%type <list> names maybe_names enum_values
 %type <array> values
 %type <value> value
 
 %destructor { g_free($$); } <sval>
 %destructor { g_free($$.sval); } <mux>
-%destructor { g_slist_free_full($$, g_free); } names maybe_names
+%destructor { g_slist_free_full($$, g_free); } names maybe_names enum_values
 %destructor { g_free($$.strptr); } value
 %destructor { g_array_free($$, TRUE); } values
 
@@ -79,6 +80,9 @@ file:           version
                 value_tables
                 frames
                 comments
+                attribute_definitions
+                attribute_defaults
+                attribute_values
                 signal_values
                 ;
 
@@ -109,6 +113,9 @@ tag_or_name:    name { printf("\t%s\n", $1); g_free($1); }
         |       CM { printf("\tCM_\n"); }
         |       VAL { printf("\tVAL_\n"); }
         |       VAL_TABLE { printf("\tVAL_TABLE_\n"); }
+        |       BA { printf("\tBA_\n"); }
+        |       BA_DEF { printf("\tBA_DEF_\n"); }
+        |       BA_DEF_DEF { printf("\tBA_DEF_DEF_\n"); }
         ;
 
 ecus:           %empty
@@ -229,6 +236,165 @@ comment_signal: CM SG UINT name TEXT ';'
                   g_free($4);
                   g_free($5);
                 };
+
+attribute_definitions:
+                %empty
+        |       attribute_definition attribute_definitions
+        ;
+
+attribute_definition:
+                attribute_definition_net
+        |       attribute_definition_ecu
+        |       attribute_definition_frame
+        |       attribute_definition_signal
+        ;
+
+attribute_definition_net:
+                BA_DEF TEXT
+                {
+                  printf("BA_DEF_ \"%s\" ", $2);
+                  g_free($2);
+                }
+                attr_type ';';
+
+attribute_definition_ecu:
+                BA_DEF BU TEXT
+                {
+                  printf("BA_DEF_ BU_ \"%s\" ", $3);
+                  g_free($3);
+                }
+                attr_type ';';
+
+attribute_definition_frame:
+                BA_DEF BO TEXT
+                {
+                  printf("BA_DEF_ BO_ \"%s\" ", $3);
+                  g_free($3);
+                }
+                attr_type ';';
+
+attribute_definition_signal:
+                BA_DEF SG TEXT
+                {
+                  printf("BA_DEF_ SG_ \"%s\" ", $3);
+                  g_free($3);
+                }
+                attr_type ';';
+
+attr_type:      ATTR_INT int int { printf("INT %lli %lli;\n", $2, $3); }
+        |       ATTR_HEX int int { printf("HEX %lli %lli;\n", $2, $3); }
+        |       ATTR_FLOAT float float { printf("FLOAT %g %g;\n", $2, $3); }
+        |       ATTR_STRING      { printf("STRING ;\n"); }
+        |       ATTR_ENUM enum_values
+                {
+                  printf("ENUM ");
+                  for (GSList *elem = $2; elem; elem = g_slist_next(elem))
+                  {
+                    printf("\"%s\"%s", (char *)elem->data, (g_slist_next(elem) ? "," : ""));
+                  }
+                  printf(";\n");
+                  g_slist_free_full($2, g_free);
+                };
+
+enum_values:    TEXT ',' enum_values { $$ = g_slist_prepend($3, $1); }
+        |       TEXT                 { $$ = g_slist_prepend(NULL, $1); }
+        ;
+
+attribute_defaults:
+                %empty
+        |       attribute_default attribute_defaults
+        ;
+
+attribute_default:
+                BA_DEF_DEF TEXT int ';'
+                {
+                  printf("BA_DEF_DEF_ \"%s\" %lli;\n", $2, $3);
+                  g_free($2);
+                }
+        |       BA_DEF_DEF TEXT TEXT ';'
+                {
+                  printf("BA_DEF_DEF_ \"%s\" \"%s\";\n", $2, $3);
+                  g_free($2);
+                  g_free($3);
+                };
+
+attribute_values:
+                %empty
+        |       attribute_value attribute_values
+        ;
+
+attribute_value:
+                BA TEXT int ';'
+                {
+                  printf("BA_ \"%s\" %lli;\n", $2, $3);
+                  g_free($2);
+                }
+        |       BA TEXT FLOAT ';'
+                {
+                  printf("BA_ \"%s\" %g;\n", $2, $3);
+                  g_free($2);
+                }
+        |       BA TEXT TEXT ';'
+                {
+                  printf("BA_ \"%s\" \"%s\";\n", $2, $3);
+                  g_free($2);
+                  g_free($3);
+                }
+        |       BA TEXT BU name int ';'
+                {
+                  printf("BA_ \"%s\" BU_ %s %lli;\n", $2, $4, $5);
+                  g_free($2);
+                  g_free($4);
+                }
+        |       BA TEXT BU name FLOAT ';'
+                {
+                  printf("BA_ \"%s\" BU_ %s %g;\n", $2, $4, $5);
+                  g_free($2);
+                  g_free($4);
+                }
+        |       BA TEXT BU name TEXT ';'
+                {
+                  printf("BA_ \"%s\" BU_ %s \"%s\";\n", $2, $4, $5);
+                  g_free($2);
+                  g_free($4);
+                  g_free($5);
+                }
+        |       BA TEXT BO UINT int ';'
+                {
+                  printf("BA_ \"%s\" BO_ %u %lli;\n", $2, $4, $5);
+                  g_free($2);
+                }
+        |       BA TEXT BO UINT FLOAT ';'
+                {
+                  printf("BA_ \"%s\" BO_ %u %g;\n", $2, $4, $5);
+                  g_free($2);
+                }
+        |       BA TEXT BO UINT TEXT ';'
+                {
+                  printf("BA_ \"%s\" BO_ %u \"%s\";\n", $2, $4, $5);
+                  g_free($2);
+                  g_free($5);
+                }
+        |       BA TEXT SG UINT name int ';'
+                {
+                  printf("BA_ \"%s\" SG_ %u %s %lli;\n", $2, $4, $5, $6);
+                  g_free($2);
+                  g_free($5);
+                }
+        |       BA TEXT SG UINT name FLOAT ';'
+                {
+                  printf("BA_ \"%s\" SG_ %u %s %g;\n", $2, $4, $5, $6);
+                  g_free($2);
+                  g_free($5);
+                }
+        |       BA TEXT SG UINT name TEXT ';'
+                {
+                  printf("BA_ \"%s\" SG_ %u %s \"%s\";\n", $2, $4, $5, $6);
+                  g_free($2);
+                  g_free($5);
+                  g_free($6);
+                }
+        ;
 
 signal_values:  %empty
         |       signal_value signal_values

@@ -43,8 +43,16 @@ BU_                       { return BU; }
 BO_                       { return BO; }
 SG_                       { return SG; }
 CM_                       { return CM; }
+BA_DEF_                   { return BA_DEF; }
+BA_DEF_DEF_               { return BA_DEF_DEF; }
+BA_                       { return BA; }
 VAL_                      { return VAL; }
 VAL_TABLE_                { return VAL_TABLE; }
+INT                       { return ATTR_INT; }
+HEX                       { return ATTR_HEX; }
+ENUM                      { return ATTR_ENUM; }
+FLOAT                     { return ATTR_FLOAT; }
+STRING                    { return ATTR_STRING; }
 
 M                         { yylval.mux.sval = g_strdup(yytext); yylval.mux.num = -1; return MUX; }
 m{NUM}                    { yylval.mux.sval = g_strdup(yytext); yylval.mux.num = atoi(yytext + 1); return MUX; }
