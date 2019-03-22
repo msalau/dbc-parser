@@ -55,7 +55,6 @@ void free_value_string(gpointer data)
 %type <sval> name
 %type <fval> float
 %type <mux>  mux
-%type <ival> maybe_uint
 
 %type <list> names maybe_names
 %type <array> values
@@ -94,13 +93,9 @@ symbols:        NS ':'
                   printf("\n");
                 };
 
-bus_speed:      BS ':' maybe_uint
-                {
-                  if ($3 >= 0)
-                    printf("BS_: %u\n\n", $3);
-                  else
-                    printf("BS_:\n\n");
-                };
+bus_speed:      BS ':' { printf("BS_:\n\n"); };
+        |       BS ':' UINT { printf("BS_: %u\n\n", $3); };
+        ;
 
 tags_or_names:  %empty
         |       tag_or_name tags_or_names
@@ -188,10 +183,6 @@ signal:         SG name mux ':' UINT '|' UINT '@' UINT SIGN '(' float ',' float 
 
 mux:            %empty { $$.sval = NULL; $$.type = SIGNAL; }
         |       MUX { $$ = $1; $$.sval = NULL; $$.type = ($1.num < 0) ? MULTIPLEXER_SIGNAL : MULTIPLEXED_SIGNAL; g_free($1.sval); }
-        ;
-
-maybe_uint:     %empty { $$ = -1; }
-        |       UINT { $$ = $1; }
         ;
 
 maybe_names:    %empty { $$ = NULL; }
