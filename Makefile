@@ -8,7 +8,7 @@ all: parse
 
 #all: parser.png parser.html
 
-test: parse test.dbc j1939_utf8.dbc
+test: parse test.dbc j1939_utf8.dbc VBOX3i_LDWS_VCI.DBC VBOX_lite.dbc SFP200%20v02.dbc
 		./$< $(filter %.dbc,$^)
 
 fuzz: parse
@@ -21,6 +21,15 @@ clean:
 
 j1939_utf8.dbc:
 		wget -O $@ https://hackage.haskell.org/package/ecu-0.0.8/src/src/j1939_utf8.dbc
+
+VBOX3i_LDWS_VCI.DBC:
+		wget -O $@ http://www.vboxjapan.co.jp/ADAS/ADAS_LDWS/VBOX3i_LDWS_VCI.DBC
+
+VBOX_lite.dbc:
+		wget -O $@ http://www.racelogic.co.uk/_downloads/vbox/CAN_Database/VBOX_lite.dbc
+
+SFP200%20v02.dbc:
+		wget -O $@ http://www.sendyne.com/Datasheets/SFP200%20v02.dbc
 
 scanner.yy.o: parser.tab.h
 
