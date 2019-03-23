@@ -92,7 +92,7 @@ void free_value_string(gpointer data)
 %locations
 %define parse.error verbose
 
-%token VERSION NS BS BU BO SG CM BA_DEF BA_DEF_DEF BA VAL VAL_TABLE
+%token VERSION NS BS BU VAL_TABLE BO SG CM BA_DEF BA_DEF_DEF BA VAL SIG_VALTYPE
 %token ATTR_INT ATTR_HEX ATTR_ENUM ATTR_FLOAT ATTR_STRING
 
 %token <ival> INT
@@ -136,6 +136,7 @@ file:           version
                 attr_defaults
                 attr_values
                 signal_values
+                signal_value_types
                 ;
 
 version:        VERSION TEXT
@@ -168,6 +169,7 @@ tag_or_name:    name { printf("\t%s\n", $1); g_free($1); }
         |       BA { printf("\tBA_\n"); }
         |       BA_DEF { printf("\tBA_DEF_\n"); }
         |       BA_DEF_DEF { printf("\tBA_DEF_DEF_\n"); }
+        |       SIG_VALTYPE { printf("\tSIG_VALTYPE_\n"); }
         ;
 
 ecus:           %empty
@@ -507,6 +509,19 @@ value:          int TEXT
                   $$.value  = $1;
                   $$.strptr = $2;
                 };
+
+signal_value_types:
+                %empty
+        |       signal_value_type signal_value_types
+        ;
+
+signal_value_type:
+                SIG_VALTYPE UINT name ':' UINT ';'
+                {
+                  printf("SIG_VALTYPE_ %u %s : %u;\n", $2, $3, $5);
+                  g_free($3);
+                }
+        ;
 
 %%
 

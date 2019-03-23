@@ -48,6 +48,7 @@ BA_DEF_DEF_               { return BA_DEF_DEF; }
 BA_                       { return BA; }
 VAL_                      { return VAL; }
 VAL_TABLE_                { return VAL_TABLE; }
+SIG_VALTYPE_              { return SIG_VALTYPE; }
 INT                       { return ATTR_INT; }
 HEX                       { return ATTR_HEX; }
 ENUM                      { return ATTR_ENUM; }
