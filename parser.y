@@ -15,6 +15,23 @@ typedef enum signal_type
   MULTIPLEXED_SIGNAL
 } signal_type_t;
 
+typedef enum attr_obj_type
+{
+  ATTR_OBJ_TYPE_NET = 0,
+  ATTR_OBJ_TYPE_ECU,
+  ATTR_OBJ_TYPE_FRAME,
+  ATTR_OBJ_TYPE_SIGNAL,
+} attr_obj_type_t;
+
+typedef enum attr_value_type
+{
+  ATTR_VALUE_TYPE_INT = 0,
+  ATTR_VALUE_TYPE_HEX,
+  ATTR_VALUE_TYPE_ENUM,
+  ATTR_VALUE_TYPE_FLOAT,
+  ATTR_VALUE_TYPE_STRING,
+} attr_value_type_t;
+
 void free_value_string(gpointer data)
 {
   g_free(((value_string *)data)->strptr);
@@ -30,6 +47,17 @@ void free_value_string(gpointer data)
     int   num;
     char *sval;
   } mux;
+
+  struct
+  {
+    int type;
+    union
+    {
+      GSList   *list;
+      long long ival[2];
+      double    fval[2];
+    };
+  } attr_value_type;
 
   int    ival;
   unsigned uval;
@@ -64,12 +92,15 @@ void free_value_string(gpointer data)
 %type <list> names maybe_names enum_values
 %type <array> values
 %type <value> value
+%type <ival> attr_obj_type
+%type <attr_value_type> attr_value_type
 
 %destructor { g_free($$); } <sval>
 %destructor { g_free($$.sval); } <mux>
 %destructor { g_slist_free_full($$, g_free); } names maybe_names enum_values
 %destructor { g_free($$.strptr); } value
 %destructor { g_array_free($$, TRUE); } values
+%destructor { if ($$.type == ATTR_VALUE_TYPE_ENUM) g_slist_free_full($$.list, g_free); } attr_value_type
 
 %%
 
@@ -80,9 +111,9 @@ file:           version
                 value_tables
                 frames
                 comments
-                attribute_definitions
-                attribute_defaults
-                attribute_values
+                attr_definitions
+                attr_defaults
+                attr_values
                 signal_values
                 ;
 
@@ -237,93 +268,113 @@ comment_signal: CM SG UINT name TEXT ';'
                   g_free($5);
                 };
 
-attribute_definitions:
+attr_definitions:
                 %empty
-        |       attribute_definition attribute_definitions
+        |       attr_definition attr_definitions
         ;
 
-attribute_definition:
-                attribute_definition_net
-        |       attribute_definition_ecu
-        |       attribute_definition_frame
-        |       attribute_definition_signal
+attr_definition:
+                BA_DEF attr_obj_type TEXT attr_value_type ';'
+                {
+                  static const char * attr_obj_type_str[] = {
+                    [ATTR_OBJ_TYPE_NET] = "",
+                    [ATTR_OBJ_TYPE_ECU] = " BU_",
+                    [ATTR_OBJ_TYPE_FRAME] = " BO_",
+                    [ATTR_OBJ_TYPE_SIGNAL] = " SG_",
+                  };
+                  printf("BA_DEF_%s  \"%s\" ", attr_obj_type_str[$2], $3);
+                  g_free($3);
+                  switch ($4.type)
+                  {
+                  case ATTR_VALUE_TYPE_INT:
+                    printf("INT %lli %lli;\n", $4.ival[0], $4.ival[0]);
+                    break;
+                  case ATTR_VALUE_TYPE_HEX:
+                    printf("HEX %lli %lli;\n", $4.ival[0], $4.ival[0]);
+                    break;
+                  case ATTR_VALUE_TYPE_ENUM:
+                    printf("ENUM  ");
+                    for (GSList *elem = $4.list; elem; elem = g_slist_next(elem))
+                    {
+                      printf("\"%s\"%s", (char *)elem->data, (g_slist_next(elem) ? "," : ""));
+                    }
+                    printf(";\n");
+                    g_slist_free_full($4.list, g_free);
+                    break;
+                  case ATTR_VALUE_TYPE_FLOAT:
+                    printf("FLOAT %g %g;\n", $4.fval[0], $4.fval[0]);
+                    break;
+                  case ATTR_VALUE_TYPE_STRING:
+                    printf("STRING ;\n");
+                    break;
+                  }
+                }
         ;
 
-attribute_definition_net:
-                BA_DEF TEXT
-                {
-                  printf("BA_DEF_ \"%s\" ", $2);
-                  g_free($2);
-                }
-                attr_type ';';
+attr_obj_type:  %empty { $$ = ATTR_OBJ_TYPE_NET; }
+        |       BU { $$ = ATTR_OBJ_TYPE_ECU; }
+        |       BO { $$ = ATTR_OBJ_TYPE_FRAME; }
+        |       SG { $$ = ATTR_OBJ_TYPE_SIGNAL; }
+        ;
 
-attribute_definition_ecu:
-                BA_DEF BU TEXT
+attr_value_type:
+                ATTR_INT int int
                 {
-                  printf("BA_DEF_ BU_ \"%s\" ", $3);
-                  g_free($3);
+                  $$.type = ATTR_VALUE_TYPE_INT;
+                  $$.ival[0] = $2;
+                  $$.ival[1] = $3;
                 }
-                attr_type ';';
-
-attribute_definition_frame:
-                BA_DEF BO TEXT
+        |       ATTR_HEX int int
                 {
-                  printf("BA_DEF_ BO_ \"%s\" ", $3);
-                  g_free($3);
+                  $$.type = ATTR_VALUE_TYPE_HEX;
+                  $$.ival[0] = $2;
+                  $$.ival[1] = $3;
                 }
-                attr_type ';';
-
-attribute_definition_signal:
-                BA_DEF SG TEXT
+        |       ATTR_FLOAT float float
                 {
-                  printf("BA_DEF_ SG_ \"%s\" ", $3);
-                  g_free($3);
+                  $$.type = ATTR_VALUE_TYPE_FLOAT;
+                  $$.fval[0] = $2;
+                  $$.fval[1] = $3;
                 }
-                attr_type ';';
-
-attr_type:      ATTR_INT int int { printf("INT %lli %lli;\n", $2, $3); }
-        |       ATTR_HEX int int { printf("HEX %lli %lli;\n", $2, $3); }
-        |       ATTR_FLOAT float float { printf("FLOAT %g %g;\n", $2, $3); }
-        |       ATTR_STRING      { printf("STRING ;\n"); }
+        |       ATTR_STRING
+                {
+                  $$.type = ATTR_VALUE_TYPE_STRING;
+                }
         |       ATTR_ENUM enum_values
                 {
-                  printf("ENUM ");
-                  for (GSList *elem = $2; elem; elem = g_slist_next(elem))
-                  {
-                    printf("\"%s\"%s", (char *)elem->data, (g_slist_next(elem) ? "," : ""));
-                  }
-                  printf(";\n");
-                  g_slist_free_full($2, g_free);
-                };
+                  $$.type = ATTR_VALUE_TYPE_ENUM;
+                  $$.list = $2;
+                }
+        ;
 
 enum_values:    TEXT ',' enum_values { $$ = g_slist_prepend($3, $1); }
         |       TEXT                 { $$ = g_slist_prepend(NULL, $1); }
         ;
 
-attribute_defaults:
+attr_defaults:
                 %empty
-        |       attribute_default attribute_defaults
+        |       attr_default attr_defaults
         ;
 
-attribute_default:
+attr_default:
                 BA_DEF_DEF TEXT int ';'
                 {
-                  printf("BA_DEF_DEF_ \"%s\" %lli;\n", $2, $3);
+                  printf("BA_DEF_DEF_  \"%s\" %lli;\n", $2, $3);
                   g_free($2);
                 }
         |       BA_DEF_DEF TEXT TEXT ';'
                 {
-                  printf("BA_DEF_DEF_ \"%s\" \"%s\";\n", $2, $3);
+                  printf("BA_DEF_DEF_  \"%s\" \"%s\";\n", $2, $3);
                   g_free($2);
                   g_free($3);
                 };
 
-attribute_values:
+attr_values:
                 %empty
-        |       attribute_value attribute_values
+        |       attr_value attr_values
         ;
 
-attribute_value:
+attr_value:
                 BA TEXT int ';'
                 {
                   printf("BA_ \"%s\" %lli;\n", $2, $3);
