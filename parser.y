@@ -59,6 +59,24 @@ void free_value_string(gpointer data)
     };
   } attr_value_type;
 
+  struct
+  {
+    int       type;
+    long long id;
+    char     *name;
+  } attr_obj;
+
+  struct
+  {
+    int   type;
+    union
+    {
+      long long ival;
+      double    fval;
+      char     *sval;
+    };
+  } attr_obj_value;
+
   int    ival;
   unsigned uval;
   long long llval;
@@ -94,6 +112,8 @@ void free_value_string(gpointer data)
 %type <value> value
 %type <ival> attr_obj_type
 %type <attr_value_type> attr_value_type
+%type <attr_obj> attr_obj
+%type <attr_obj_value> attr_obj_value
 
 %destructor { g_free($$); } <sval>
 %destructor { g_free($$.sval); } <mux>
@@ -101,6 +121,7 @@ void free_value_string(gpointer data)
 %destructor { g_free($$.strptr); } value
 %destructor { g_array_free($$, TRUE); } values
 %destructor { if ($$.type == ATTR_VALUE_TYPE_ENUM) g_slist_free_full($$.list, g_free); } attr_value_type
+%destructor { if ($$.type == ATTR_VALUE_TYPE_STRING) g_free($$.sval); } attr_obj_value
 
 %%
 
@@ -375,75 +396,78 @@ attr_values:
         ;
 
 attr_value:
-                BA TEXT int ';'
+                BA TEXT attr_obj attr_obj_value ';'
                 {
-                  printf("BA_ \"%s\" %lli;\n", $2, $3);
+                  printf("BA_ \"%s\" ", $2);
                   g_free($2);
+                  switch ($3.type)
+                  {
+                  case ATTR_OBJ_TYPE_ECU:
+                    printf("BU_ %s ", $3.name);
+                    break;
+                  case ATTR_OBJ_TYPE_FRAME:
+                    printf("BO_ %lli ", $3.id);
+                    break;
+                  case ATTR_OBJ_TYPE_SIGNAL:
+                    printf("SG_ %lli %s ", $3.id, $3.name);
+                    break;
+                  }
+                  g_free($3.name);
+                  switch ($4.type)
+                  {
+                  case ATTR_VALUE_TYPE_INT:
+                    printf("%lli", $4.ival);
+                    break;
+                  case ATTR_VALUE_TYPE_FLOAT:
+                    printf("%g", $4.fval);
+                    break;
+                  case ATTR_VALUE_TYPE_STRING:
+                    printf("\"%s\"", $4.sval);
+                    g_free($4.sval);
+                    break;
+                  }
+                  printf(";\n");
                 }
-        |       BA TEXT FLOAT ';'
+        ;
+
+attr_obj:       %empty
                 {
-                  printf("BA_ \"%s\" %g;\n", $2, $3);
-                  g_free($2);
+                  $$.type = ATTR_OBJ_TYPE_NET;
+                  $$.name = NULL;
                 }
-        |       BA TEXT TEXT ';'
+        |       BU name
                 {
-                  printf("BA_ \"%s\" \"%s\";\n", $2, $3);
-                  g_free($2);
-                  g_free($3);
+                  $$.type = ATTR_OBJ_TYPE_ECU;
+                  $$.name = $2;
                 }
-        |       BA TEXT BU name int ';'
+        |       BO UINT
                 {
-                  printf("BA_ \"%s\" BU_ %s %lli;\n", $2, $4, $5);
-                  g_free($2);
-                  g_free($4);
+                  $$.type = ATTR_OBJ_TYPE_FRAME;
+                  $$.id = $2;
+                  $$.name = NULL;
                 }
-        |       BA TEXT BU name FLOAT ';'
+        |       SG UINT name
                 {
-                  printf("BA_ \"%s\" BU_ %s %g;\n", $2, $4, $5);
-                  g_free($2);
-                  g_free($4);
+                  $$.type = ATTR_OBJ_TYPE_SIGNAL;
+                  $$.id = $2;
+                  $$.name = $3;
                 }
-        |       BA TEXT BU name TEXT ';'
+        ;
+
+attr_obj_value: int
                 {
-                  printf("BA_ \"%s\" BU_ %s \"%s\";\n", $2, $4, $5);
-                  g_free($2);
-                  g_free($4);
-                  g_free($5);
+                  $$.type = ATTR_VALUE_TYPE_INT;
+                  $$.ival = $1;
                 }
-        |       BA TEXT BO UINT int ';'
+        |       FLOAT
                 {
-                  printf("BA_ \"%s\" BO_ %u %lli;\n", $2, $4, $5);
-                  g_free($2);
+                  $$.type = ATTR_VALUE_TYPE_FLOAT;
+                  $$.fval = $1;
                 }
-        |       BA TEXT BO UINT FLOAT ';'
+        |       TEXT
                 {
-                  printf("BA_ \"%s\" BO_ %u %g;\n", $2, $4, $5);
-                  g_free($2);
-                }
-        |       BA TEXT BO UINT TEXT ';'
-                {
-                  printf("BA_ \"%s\" BO_ %u \"%s\";\n", $2, $4, $5);
-                  g_free($2);
-                  g_free($5);
-                }
-        |       BA TEXT SG UINT name int ';'
-                {
-                  printf("BA_ \"%s\" SG_ %u %s %lli;\n", $2, $4, $5, $6);
-                  g_free($2);
-                  g_free($5);
-                }
-        |       BA TEXT SG UINT name FLOAT ';'
-                {
-                  printf("BA_ \"%s\" SG_ %u %s %g;\n", $2, $4, $5, $6);
-                  g_free($2);
-                  g_free($5);
-                }
-        |       BA TEXT SG UINT name TEXT ';'
-                {
-                  printf("BA_ \"%s\" SG_ %u %s \"%s\";\n", $2, $4, $5, $6);
-                  g_free($2);
-                  g_free($5);
-                  g_free($6);
+                  $$.type = ATTR_VALUE_TYPE_STRING;
+                  $$.sval = $1;
                 }
         ;
 
