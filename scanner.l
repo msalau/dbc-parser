@@ -49,6 +49,7 @@ BA_                       { return BA; }
 VAL_                      { return VAL; }
 VAL_TABLE_                { return VAL_TABLE; }
 SIG_VALTYPE_              { return SIG_VALTYPE; }
+SIG_GROUP_                { return SIG_GROUP; }
 INT                       { return ATTR_INT; }
 HEX                       { return ATTR_HEX; }
 ENUM                      { return ATTR_ENUM; }

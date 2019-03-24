@@ -92,7 +92,7 @@ void free_value_string(gpointer data)
 %locations
 %define parse.error verbose
 
-%token VERSION NS BS BU VAL_TABLE BO SG CM BA_DEF BA_DEF_DEF BA VAL SIG_VALTYPE
+%token VERSION NS BS BU VAL_TABLE BO SG CM BA_DEF BA_DEF_DEF BA VAL SIG_GROUP SIG_VALTYPE
 %token ATTR_INT ATTR_HEX ATTR_ENUM ATTR_FLOAT ATTR_STRING
 
 %token <ival> INT
@@ -136,6 +136,7 @@ file:           version
                 attr_defaults
                 attr_values
                 signal_values
+                signal_groups
                 signal_value_types
                 ;
 
@@ -170,6 +171,7 @@ tag_or_name:    name { printf("\t%s\n", $1); g_free($1); }
         |       BA_DEF { printf("\tBA_DEF_\n"); }
         |       BA_DEF_DEF { printf("\tBA_DEF_DEF_\n"); }
         |       SIG_VALTYPE { printf("\tSIG_VALTYPE_\n"); }
+        |       SIG_GROUP { printf("\tSIG_GROUP_\n"); }
         ;
 
 ecus:           %empty
@@ -509,6 +511,21 @@ value:          int TEXT
                   $$.value  = $1;
                   $$.strptr = $2;
                 };
+
+signal_groups:  %empty
+        |       signal_group signal_groups
+        ;
+
+signal_group:   SIG_GROUP UINT name UINT ':' names ';'
+                {
+                  printf("SIG_GROUP_ %u %s %u :", $2, $3, $4);
+                  for (GSList *elem = $6; elem; elem = g_slist_next(elem))
+                    printf(" %s", (char *)elem->data);
+                  printf(";\n");
+                  g_free($3);
+                  g_slist_free_full($6, g_free);
+                }
+        ;
 
 signal_value_types:
                 %empty
