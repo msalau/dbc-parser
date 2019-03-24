@@ -276,6 +276,7 @@ comments:       %empty
         ;
 
 comment:        comment_net
+        |       comment_ecu
         |       comment_frame
         |       comment_signal
         ;
@@ -284,6 +285,13 @@ comment_net:    CM TEXT ';'
                 {
                   printf("CM_ \"%s\";\n", $2);
                   g_free($2);
+                };
+
+comment_ecu:    CM BU name TEXT ';'
+                {
+                  printf("CM_ BU_ %s \"%s\";\n", $3, $4);
+                  g_free($3);
+                  g_free($4);
                 };
 
 comment_frame:  CM BO UINT TEXT ';'
