@@ -81,3 +81,7 @@ VAL_ 67 TestMsg2Signal
      2 "ACT2"
      -1 "NEG"
      ;
+
+SG_MUL_VAL_ 69 m0 M 0-0, 1-1, 2-2;
+SG_MUL_VAL_ 69 m1 M 0-0, 1-1, 2-2;
+SG_MUL_VAL_ 69 m2 M 0-0, 1-1, 2-2;

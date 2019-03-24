@@ -37,6 +37,8 @@ void free_value_string(gpointer data)
   g_free(((value_string *)data)->strptr);
 }
 
+typedef struct { unsigned val[2]; } mul_val_t;
+
 %}
 
 %union {
@@ -80,6 +82,7 @@ void free_value_string(gpointer data)
   int    ival;
   unsigned uval;
   long long llval;
+  unsigned mval[2];
   double fval;
   char  *sval;
   char   cval;
@@ -92,7 +95,7 @@ void free_value_string(gpointer data)
 %locations
 %define parse.error verbose
 
-%token VERSION NS BS BU VAL_TABLE BO SG CM BA_DEF BA_DEF_DEF BA VAL SIG_GROUP SIG_VALTYPE
+%token VERSION NS BS BU VAL_TABLE BO SG CM BA_DEF BA_DEF_DEF BA VAL SIG_GROUP SIG_VALTYPE SG_MUL_VAL
 %token ATTR_INT ATTR_HEX ATTR_ENUM ATTR_FLOAT ATTR_STRING
 
 %token <ival> INT
@@ -101,6 +104,7 @@ void free_value_string(gpointer data)
 %token <sval> TEXT NAME
 %token <cval> SIGN
 %token <mux>  MUX
+%token <mval> MUL_VAL
 
 %type <sval> name
 %type <fval> float
@@ -108,7 +112,7 @@ void free_value_string(gpointer data)
 %type <mux>  mux
 
 %type <list> names maybe_names enum_values
-%type <array> values
+%type <array> values mul_values
 %type <value> value
 %type <ival> attr_obj_type
 %type <attr_value_type> attr_value_type
@@ -119,7 +123,7 @@ void free_value_string(gpointer data)
 %destructor { g_free($$.sval); } <mux>
 %destructor { g_slist_free_full($$, g_free); } names maybe_names enum_values
 %destructor { g_free($$.strptr); } value
-%destructor { g_array_free($$, TRUE); } values
+%destructor { g_array_free($$, TRUE); } values mul_values
 %destructor { if ($$.type == ATTR_VALUE_TYPE_ENUM) g_slist_free_full($$.list, g_free); } attr_value_type
 %destructor { if ($$.type == ATTR_VALUE_TYPE_STRING) g_free($$.sval); } attr_obj_value
 
@@ -138,6 +142,7 @@ file:           version
                 signal_values
                 signal_groups
                 signal_value_types
+                signal_mul_values
                 ;
 
 version:        VERSION TEXT
@@ -172,6 +177,7 @@ tag_or_name:    name { printf("\t%s\n", $1); g_free($1); }
         |       BA_DEF_DEF { printf("\tBA_DEF_DEF_\n"); }
         |       SIG_VALTYPE { printf("\tSIG_VALTYPE_\n"); }
         |       SIG_GROUP { printf("\tSIG_GROUP_\n"); }
+        |       SG_MUL_VAL { printf("\tSG_MUL_VAL_\n"); }
         ;
 
 ecus:           %empty
@@ -537,6 +543,42 @@ signal_value_type:
                 {
                   printf("SIG_VALTYPE_ %u %s : %u;\n", $2, $3, $5);
                   g_free($3);
+                }
+        ;
+
+signal_mul_values:
+                %empty
+        |       signal_mul_value signal_mul_values
+        ;
+
+signal_mul_value:
+                SG_MUL_VAL UINT name name mul_values ';'
+                {
+                  printf("SG_MUL_VAL_ %u %s %s", $2, $3, $4);
+                  unsigned i;
+                  mul_val_t v;
+                  for (i = 0; i < ($5->len - 1); i++)
+                  {
+                    v = g_array_index($5, mul_val_t, i);
+                    printf(" %u-%u,", v.val[0], v.val[1]);
+                  }
+                  v = g_array_index($5, mul_val_t, i);
+                  printf(" %u-%u;\n", v.val[0], v.val[1]);
+
+                  g_free($3);
+                  g_free($4);
+                  g_array_free($5, TRUE);
+                }
+        ;
+
+mul_values:     mul_values ',' MUL_VAL
+                {
+                  $$ = g_array_append_val($1, $3);
+                }
+        |       MUL_VAL
+                {
+                  $$ = g_array_new(FALSE, FALSE, sizeof(mul_val_t));
+                  g_array_append_val($$, $1);
                 }
         ;
 
