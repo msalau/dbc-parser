@@ -637,6 +637,8 @@ int main(int argc, char** argv)
         }
 
         yyset_in(in);
+        yylloc.last_line = 1;
+        yylloc.last_column = 0;
         yyparse();
         yylex_destroy();
 
