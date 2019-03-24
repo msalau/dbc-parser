@@ -95,7 +95,7 @@ typedef struct { unsigned val[2]; } mul_val_t;
 %locations
 %define parse.error verbose
 
-%token VERSION NS BS BU VAL_TABLE BO SG CM BA_DEF BA_DEF_DEF BA VAL SIG_GROUP SIG_VALTYPE SG_MUL_VAL
+%token VERSION NS BS BU VAL_TABLE BO SG EV CM BA_DEF BA_DEF_DEF BA VAL SIG_GROUP SIG_VALTYPE SG_MUL_VAL
 %token ATTR_INT ATTR_HEX ATTR_ENUM ATTR_FLOAT ATTR_STRING
 
 %token <ival> INT
@@ -135,6 +135,7 @@ file:           version
                 ecus
                 value_tables
                 frames
+                env_variables
                 comments
                 attr_definitions
                 attr_defaults
@@ -272,6 +273,20 @@ float:          FLOAT { $$ = $1; }
         |       UINT  { $$ = (double)$1; }
         ;
 
+env_variables:  %empty
+        |       env_variable env_variables
+        ;
+
+env_variable:   EV name ':' int '[' float '|' float ']' TEXT float int name name ';'
+                {
+                  printf("EV_ %s: %lli [%g|%g] \"%s\" %g %lli %s %s;\n", $2, $4, $6, $8, $10, $11, $12, $13, $14);
+                  g_free($2);
+                  g_free($10);
+                  g_free($13);
+                  g_free($14);
+                }
+        ;
+
 comments:       %empty
         |       comment comments
         ;
@@ -280,6 +295,7 @@ comment:        comment_net
         |       comment_ecu
         |       comment_frame
         |       comment_signal
+        |       comment_env
         ;
 
 comment_net:    CM TEXT ';'
@@ -306,6 +322,13 @@ comment_signal: CM SG UINT name TEXT ';'
                   printf("CM_ SG_ %u %s \"%s\";\n", $3, $4, $5);
                   g_free($4);
                   g_free($5);
+                };
+
+comment_env: CM EV name TEXT ';'
+                {
+                  printf("CM_ EV_ %s \"%s\";\n", $3, $4);
+                  g_free($3);
+                  g_free($4);
                 };
 
 attr_definitions:
