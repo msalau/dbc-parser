@@ -21,6 +21,7 @@ typedef enum attr_obj_type
   ATTR_OBJ_TYPE_ECU,
   ATTR_OBJ_TYPE_FRAME,
   ATTR_OBJ_TYPE_SIGNAL,
+  ATTR_OBJ_TYPE_ENV,
 } attr_obj_type_t;
 
 typedef enum attr_value_type
@@ -369,6 +370,7 @@ attr_definition:
                     [ATTR_OBJ_TYPE_ECU] = " BU_",
                     [ATTR_OBJ_TYPE_FRAME] = " BO_",
                     [ATTR_OBJ_TYPE_SIGNAL] = " SG_",
+                    [ATTR_OBJ_TYPE_ENV] = " EV_",
                   };
                   printf("BA_DEF_%s  \"%s\" ", attr_obj_type_str[$2], $3);
                   g_free($3);
@@ -403,6 +405,7 @@ attr_obj_type:  %empty { $$ = ATTR_OBJ_TYPE_NET; }
         |       BU { $$ = ATTR_OBJ_TYPE_ECU; }
         |       BO { $$ = ATTR_OBJ_TYPE_FRAME; }
         |       SG { $$ = ATTR_OBJ_TYPE_SIGNAL; }
+        |       EV { $$ = ATTR_OBJ_TYPE_ENV; }
         ;
 
 attr_value_type:
@@ -478,6 +481,9 @@ attr_value:
                   case ATTR_OBJ_TYPE_SIGNAL:
                     printf("SG_ %lli %s ", $3.id, $3.name);
                     break;
+                  case ATTR_OBJ_TYPE_ENV:
+                    printf("EV_ %s ", $3.name);
+                    break;
                   }
                   g_free($3.name);
                   switch ($4.type)
@@ -518,6 +524,11 @@ attr_obj:       %empty
                   $$.type = ATTR_OBJ_TYPE_SIGNAL;
                   $$.id = $2;
                   $$.name = $3;
+                }
+        |       EV name
+                {
+                  $$.type = ATTR_OBJ_TYPE_ENV;
+                  $$.name = $2;
                 }
         ;
 
