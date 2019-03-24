@@ -42,6 +42,7 @@ BS_                       { return BS; }
 BU_                       { return BU; }
 BO_                       { return BO; }
 SG_                       { return SG; }
+BO_TX_BU_                 { return BO_TX_BU; }
 EV_                       { return EV; }
 CM_                       { return CM; }
 BA_DEF_                   { return BA_DEF; }

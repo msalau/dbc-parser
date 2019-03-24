@@ -95,7 +95,7 @@ typedef struct { unsigned val[2]; } mul_val_t;
 %locations
 %define parse.error verbose
 
-%token VERSION NS BS BU VAL_TABLE BO SG EV CM BA_DEF BA_DEF_DEF BA VAL SIG_GROUP SIG_VALTYPE SG_MUL_VAL
+%token VERSION NS BS BU VAL_TABLE BO SG BO_TX_BU EV CM BA_DEF BA_DEF_DEF BA VAL SIG_GROUP SIG_VALTYPE SG_MUL_VAL
 %token ATTR_INT ATTR_HEX ATTR_ENUM ATTR_FLOAT ATTR_STRING
 
 %token <ival> INT
@@ -111,7 +111,7 @@ typedef struct { unsigned val[2]; } mul_val_t;
 %type <llval> int
 %type <mux>  mux
 
-%type <list> names maybe_names enum_values
+%type <list> names maybe_names enum_values frame_transmitters
 %type <array> values mul_values
 %type <value> value
 %type <ival> attr_obj_type
@@ -121,7 +121,7 @@ typedef struct { unsigned val[2]; } mul_val_t;
 
 %destructor { g_free($$); } <sval>
 %destructor { g_free($$.sval); } <mux>
-%destructor { g_slist_free_full($$, g_free); } names maybe_names enum_values
+%destructor { g_slist_free_full($$, g_free); } names maybe_names enum_values frame_transmitters
 %destructor { g_free($$.strptr); } value
 %destructor { g_array_free($$, TRUE); } values mul_values
 %destructor { if ($$.type == ATTR_VALUE_TYPE_ENUM) g_slist_free_full($$.list, g_free); } attr_value_type
@@ -135,6 +135,7 @@ file:           version
                 ecus
                 value_tables
                 frames
+                frame_transmitter_lists
                 env_variables
                 comments
                 attr_definitions
@@ -180,6 +181,7 @@ tag_or_name:    name { printf("\t%s\n", $1); g_free($1); }
         |       SIG_VALTYPE { printf("\tSIG_VALTYPE_\n"); }
         |       SIG_GROUP { printf("\tSIG_GROUP_\n"); }
         |       SG_MUL_VAL { printf("\tSG_MUL_VAL_\n"); }
+        |       BO_TX_BU { printf("\tBO_TX_BU_\n"); }
         ;
 
 ecus:           %empty
@@ -271,6 +273,29 @@ names:          name names { $$ = g_slist_prepend($2, $1); }
 float:          FLOAT { $$ = $1; }
         |       INT   { $$ = (double)$1; }
         |       UINT  { $$ = (double)$1; }
+        ;
+
+frame_transmitter_lists:
+                %empty
+        |       frame_transmitter_list frame_transmitter_lists
+        ;
+
+frame_transmitter_list:
+                BO_TX_BU UINT ':' frame_transmitters ';'
+                {
+                  printf("BO_TX_BU_ %u : ", $2);
+                  for (GSList *elem = $4; elem; elem = g_slist_next(elem))
+                  {
+                    printf("%s%s", (char *)elem->data, (g_slist_next(elem) ? "," : ""));
+                  }
+                  printf(";\n");
+                  g_slist_free_full($4, g_free);
+                }
+        ;
+
+frame_transmitters:
+                name ',' frame_transmitters { $$ = g_slist_prepend($3, $1); }
+        |       name                        { $$ = g_slist_prepend(NULL, $1); }
         ;
 
 env_variables:  %empty
