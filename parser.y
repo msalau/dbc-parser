@@ -151,7 +151,8 @@ version:        VERSION TEXT
                   g_free($2);
                 };
 
-symbols:        NS ':'
+symbols:        %empty
+        |       NS ':'
                 {
                   printf("NS_ :\n");
                 }
