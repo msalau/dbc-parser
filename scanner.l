@@ -46,8 +46,14 @@ BO_TX_BU_                 { return BO_TX_BU; }
 EV_                       { return EV; }
 CM_                       { return CM; }
 BA_DEF_                   { return BA_DEF; }
+BA_DEF_REL_               { return BA_DEF_REL; }
 BA_DEF_DEF_               { return BA_DEF_DEF; }
+BA_DEF_DEF_REL_           { return BA_DEF_DEF_REL; }
 BA_                       { return BA; }
+BA_REL_                   { return BA_REL; }
+BU_BO_REL_                { return BU_BO_REL; }
+BU_SG_REL_                { return BU_SG_REL; }
+BU_EV_REL_                { return BU_EV_REL; }
 VAL_                      { return VAL; }
 VAL_TABLE_                { return VAL_TABLE; }
 SIG_VALTYPE_              { return SIG_VALTYPE; }
