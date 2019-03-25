@@ -44,6 +44,7 @@ BO_                       { return BO; }
 SG_                       { return SG; }
 BO_TX_BU_                 { return BO_TX_BU; }
 EV_                       { return EV; }
+ENVVAR_DATA_              { return ENVVAR_DATA; }
 CM_                       { return CM; }
 BA_DEF_                   { return BA_DEF; }
 BA_DEF_REL_               { return BA_DEF_REL; }

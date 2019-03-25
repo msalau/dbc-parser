@@ -107,7 +107,7 @@ typedef struct { unsigned val[2]; } mul_val_t;
 %locations
 %define parse.error verbose
 
-%token VERSION NS BS BU VAL_TABLE BO SG BO_TX_BU EV CM VAL SIG_GROUP SIG_VALTYPE SG_MUL_VAL
+%token VERSION NS BS BU VAL_TABLE BO SG BO_TX_BU EV ENVVAR_DATA CM VAL SIG_GROUP SIG_VALTYPE SG_MUL_VAL
 %token BA_DEF BA_DEF_REL BA_DEF_DEF BA_DEF_DEF_REL BA BA_REL BU_BO_REL BU_SG_REL BU_EV_REL
 %token ATTR_INT ATTR_HEX ATTR_ENUM ATTR_FLOAT ATTR_STRING
 
@@ -153,6 +153,7 @@ file:           version
                 frames
                 frame_transmitter_lists
                 env_variables
+                env_variables_data
                 comments
                 attr_definitions
                 attr_defaults
@@ -204,6 +205,7 @@ tag_or_name:    name { printf("\t%s\n", $1); g_free($1); }
         |       SIG_GROUP { printf("\tSIG_GROUP_\n"); }
         |       SG_MUL_VAL { printf("\tSG_MUL_VAL_\n"); }
         |       BO_TX_BU { printf("\tBO_TX_BU_\n"); }
+        |       ENVVAR_DATA { printf("\tENVVAR_DATA_\n"); }
         ;
 
 ecus:           %empty
@@ -331,6 +333,18 @@ env_variable:   EV name ':' int '[' float '|' float ']' TEXT float int name name
                   g_free($10);
                   g_free($13);
                   g_free($14);
+                }
+        ;
+
+env_variables_data:
+                %empty
+        |       env_data env_variables_data
+        ;
+
+env_data:       ENVVAR_DATA name ':' UINT ';'
+                {
+                  printf("ENVVAR_DATA_ %s : %u;\n", $2, $4);
+                  g_free($2);
                 }
         ;
 
