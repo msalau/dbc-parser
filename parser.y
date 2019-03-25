@@ -158,7 +158,7 @@ file:           version
                 attr_definitions
                 attr_defaults
                 attr_values
-                signal_values
+                value_definitions
                 signal_groups
                 signal_value_types
                 signal_mul_values
@@ -663,11 +663,13 @@ attr_obj_value: int
                 }
         ;
 
-signal_values:  %empty
-        |       signal_value signal_values
+value_definitions:
+                %empty
+        |       value_definition value_definitions
         ;
 
-signal_value:   VAL UINT name values ';'
+value_definition:
+                VAL UINT name values ';'
                 {
                   printf("VAL_ %u %s", $2, $3);
                   for (value_string *v = (value_string *)$4->data; v->strptr; v++)
@@ -677,7 +679,19 @@ signal_value:   VAL UINT name values ';'
                   printf(" ;\n");
                   g_free($3);
                   g_array_free($4, TRUE);
-                };
+                }
+        |       VAL name values ';'
+                {
+                  printf("VAL_ %s", $2);
+                  for (value_string *v = (value_string *)$3->data; v->strptr; v++)
+                  {
+                    printf(" %i \"%s\"", v->value, v->strptr);
+                  }
+                  printf(" ;\n");
+                  g_free($2);
+                  g_array_free($3, TRUE);
+                }
+        ;
 
 values:         %empty
                 {

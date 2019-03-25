@@ -65,6 +65,7 @@ BO_ 69 TestMsg4: 8 ECU2
 BO_ 70 TestMsg5: 8 ECU0
 BO_ 71 TestMsg6: 8 ECU0
 
+EV_ EnvVar1 : 0 [-1|5] "" -1 0 DUMMY_NODE_VECTOR8001 ECU0;
 
 // Comments go below
 
@@ -81,6 +82,8 @@ VAL_ 67 TestMsg2Signal
      2 "ACT2"
      -1 "NEG"
      ;
+
+VAL_ EnvVar1 0 "Zero" 1 "One" 2 "Two" -1 "MinusOne";
 
 SG_MUL_VAL_ 69 m0 M 0-0, 1-1, 2-2;
 SG_MUL_VAL_ 69 m1 M 0-0, 1-1, 2-2;
