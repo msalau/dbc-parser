@@ -665,15 +665,14 @@ signal_value:   VAL UINT name values ';'
                   g_array_free($4, TRUE);
                 };
 
-values:         values value
-                {
-                  $$ = g_array_append_val($1, $2);
-                }
-        |       value
+values:         %empty
                 {
                   $$ = g_array_new(TRUE, TRUE, sizeof(value_string));
                   g_array_set_clear_func($$, free_value_string);
-                  g_array_append_val($$, $1);
+                }
+        |       values value
+                {
+                  $$ = g_array_append_val($1, $2);
                 };
 
 int:            UINT { $$ = $1; }
