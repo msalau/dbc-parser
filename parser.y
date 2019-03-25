@@ -124,7 +124,7 @@ typedef struct { unsigned val[2]; } mul_val_t;
 %type <llval> int
 %type <mux>  mux
 
-%type <list> names maybe_names enum_values frame_transmitters
+%type <list> names maybe_names enum_values comma_separated_names
 %type <array> values mul_values
 %type <value> value
 %type <ival> attr_obj_type attr_rel_obj_type attr_def_with_obj_type
@@ -137,7 +137,7 @@ typedef struct { unsigned val[2]; } mul_val_t;
 %destructor { g_free($$.sval); } <mux>
 %destructor { g_free($$.name); } attr_obj
 %destructor { g_free($$.ecu_name); g_free($$.obj_name); } attr_rel_obj
-%destructor { g_slist_free_full($$, g_free); } names maybe_names enum_values frame_transmitters
+%destructor { g_slist_free_full($$, g_free); } names maybe_names enum_values comma_separated_names
 %destructor { g_free($$.strptr); } value
 %destructor { g_array_free($$, TRUE); } values mul_values
 %destructor { if ($$.type == ATTR_VALUE_TYPE_ENUM) g_slist_free_full($$.list, g_free); } attr_value_type
@@ -259,14 +259,14 @@ frame:          BO UINT name ':' UINT name
                   g_free($6);
                 };
 
-signal:         SG name mux ':' UINT '|' UINT '@' UINT SIGN '(' float ',' float ')' '[' float '|' float ']' TEXT names
+signal:         SG name mux ':' UINT '|' UINT '@' UINT SIGN '(' float ',' float ')' '[' float '|' float ']' TEXT comma_separated_names
                 {
                   char muxstr[16] = "";
                   if ($3.type == MULTIPLEXED_SIGNAL)
                     sprintf(muxstr, "m%u ", $3.num);
                   if ($3.type == MULTIPLEXER_SIGNAL)
                     sprintf(muxstr, "M ");
-                  printf(" SG_ %s %s: %u|%u@%u%c (%g,%g) [%g|%g] \"%s\" ",
+                  printf(" SG_ %s %s: %u|%u@%u%c (%g,%g) [%g|%g] \"%s\"  ",
                          $2, muxstr,
                          $5, $7, $9, $10,
                          $12, $14, $17, $19, $21);
@@ -274,7 +274,7 @@ signal:         SG name mux ':' UINT '|' UINT '@' UINT SIGN '(' float ',' float 
                   g_free($21);
                   for (GSList *elem = $22; elem; elem = g_slist_next(elem))
                   {
-                    printf(" %s", (char *)elem->data);
+                    printf("%s%s", (char *)elem->data, (g_slist_next(elem) ? "," : ""));
                   }
                   printf("\n");
                   g_slist_free_full($22, g_free);
@@ -282,6 +282,11 @@ signal:         SG name mux ':' UINT '|' UINT '@' UINT SIGN '(' float ',' float 
 
 mux:            %empty { $$.sval = NULL; $$.type = SIGNAL; }
         |       MUX { $$ = $1; $$.sval = NULL; $$.type = ($1.num < 0) ? MULTIPLEXER_SIGNAL : MULTIPLEXED_SIGNAL; g_free($1.sval); }
+        ;
+
+comma_separated_names:
+                name ',' comma_separated_names { $$ = g_slist_prepend($3, $1); }
+        |       name                           { $$ = g_slist_prepend(NULL, $1); }
         ;
 
 maybe_names:    %empty { $$ = NULL; }
@@ -303,7 +308,7 @@ frame_transmitter_lists:
         ;
 
 frame_transmitter_list:
-                BO_TX_BU UINT ':' frame_transmitters ';'
+                BO_TX_BU UINT ':' comma_separated_names ';'
                 {
                   printf("BO_TX_BU_ %u : ", $2);
                   for (GSList *elem = $4; elem; elem = g_slist_next(elem))
@@ -313,11 +318,6 @@ frame_transmitter_list:
                   printf(";\n");
                   g_slist_free_full($4, g_free);
                 }
-        ;
-
-frame_transmitters:
-                name ',' frame_transmitters { $$ = g_slist_prepend($3, $1); }
-        |       name                        { $$ = g_slist_prepend(NULL, $1); }
         ;
 
 env_variables:  %empty
