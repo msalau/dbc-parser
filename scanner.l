@@ -5,6 +5,7 @@
 %{
 #include <gmodule.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include "value_string.h"
 #include "parser.tab.h"
 
@@ -66,8 +67,9 @@ ENUM                      { return ATTR_ENUM; }
 FLOAT                     { return ATTR_FLOAT; }
 STRING                    { return ATTR_STRING; }
 
-M                         { yylval.mux.sval = g_strdup(yytext); yylval.mux.num = -1; return MUX; }
-m{NUM}                    { yylval.mux.sval = g_strdup(yytext); yylval.mux.num = atoi(yytext + 1); return MUX; }
+M                         { yylval.mux.sval = g_strdup(yytext); yylval.mux.is_muxer = true;  yylval.mux.is_muxed = false; return MUX; }
+m{NUM}                    { yylval.mux.sval = g_strdup(yytext); yylval.mux.is_muxer = false; yylval.mux.is_muxed = true;  yylval.mux.value = atoi(yytext + 1); return MUX; }
+m{NUM}M                   { yylval.mux.sval = g_strdup(yytext); yylval.mux.is_muxer = true;  yylval.mux.is_muxed = true;  yylval.mux.value = atoi(yytext + 1); return MUX; }
 
 [a-zA-Z_][a-zA-Z0-9_]*    { yylval.sval = g_strdup(yytext); return NAME; }
 {FLOAT}                   { yylval.fval = strtod(yytext, NULL); return FLOAT; }

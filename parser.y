@@ -2,18 +2,12 @@
 
 #include <gmodule.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include "value_string.h"
 #include "parser.tab.h"
 #include "scanner.yy.h"
 
 void yyerror(const char *s);
-
-typedef enum signal_type
-{
-  SIGNAL,
-  MULTIPLEXER_SIGNAL,
-  MULTIPLEXED_SIGNAL
-} signal_type_t;
 
 typedef enum attr_obj_type
 {
@@ -49,9 +43,10 @@ typedef struct { unsigned val[2]; } mul_val_t;
 
   struct
   {
-    int   type;
-    int   num;
-    char *sval;
+    unsigned value;
+    bool     is_muxed;
+    bool     is_muxer;
+    char    *sval;
   } mux;
 
   struct
@@ -264,9 +259,11 @@ frame:          BO UINT name ':' UINT name
 signal:         SG name mux ':' UINT '|' UINT '@' UINT SIGN '(' float ',' float ')' '[' float '|' float ']' TEXT comma_separated_names
                 {
                   char muxstr[16] = "";
-                  if ($3.type == MULTIPLEXED_SIGNAL)
-                    sprintf(muxstr, "m%u ", $3.num);
-                  if ($3.type == MULTIPLEXER_SIGNAL)
+                  if ($3.is_muxed && $3.is_muxer)
+                    sprintf(muxstr, "m%uM ", $3.value);
+                  else if ($3.is_muxed && !$3.is_muxer)
+                    sprintf(muxstr, "m%u ", $3.value);
+                  else if (!$3.is_muxed && $3.is_muxer)
                     sprintf(muxstr, "M ");
                   printf(" SG_ %s %s: %u|%u@%u%c (%g,%g) [%g|%g] \"%s\"  ",
                          $2, muxstr,
@@ -282,8 +279,18 @@ signal:         SG name mux ':' UINT '|' UINT '@' UINT SIGN '(' float ',' float 
                   g_slist_free_full($22, g_free);
                 };
 
-mux:            %empty { $$.sval = NULL; $$.type = SIGNAL; }
-        |       MUX { $$ = $1; $$.sval = NULL; $$.type = ($1.num < 0) ? MULTIPLEXER_SIGNAL : MULTIPLEXED_SIGNAL; g_free($1.sval); }
+mux:            %empty
+                {
+                  $$.sval = NULL;
+                  $$.is_muxed = false;
+                  $$.is_muxer = false;
+                }
+        |       MUX
+                {
+                  $$ = $1;
+                  $$.sval = NULL;
+                  g_free($1.sval);
+                }
         ;
 
 comma_separated_names:
