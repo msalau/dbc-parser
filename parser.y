@@ -180,6 +180,7 @@ symbols:        %empty
 
 bus_speed:      BS ':' { printf("BS_:\n\n"); };
         |       BS ':' UINT { printf("BS_: %u\n\n", $3); };
+        |       BS ':' UINT ':' UINT ',' UINT { printf("BS_: %u : %u , %u\n\n", $3, $5, $7); };
         ;
 
 tags_or_names:  %empty
