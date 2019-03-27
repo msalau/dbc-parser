@@ -2,7 +2,7 @@ CFLAGS:=-g3 -O0 -Wall -Wextra -Wformat -Wformat-security -Warray-bounds -Werror 
 LDFLAGS:=-fsanitize=leak
 LIBS=-llsan $(shell pkg-config --libs glib-2.0)
 
-.PHONY: all test test-cantools fuzz clean
+.PHONY: all test test-cantools test-opendbc fuzz clean
 
 all: parse
 
@@ -14,6 +14,9 @@ test: parse test.dbc j1939_utf8.dbc VBOX3i_LDWS_VCI.DBC VBOX_lite.dbc SFP200%20v
 test-cantools: parse cantools
 		./$< ./cantools/tests/files/dbc/*.dbc
 
+test-opendbc: parse opendbc
+		./$< ./opendbc/*.dbc
+
 fuzz: parse
 		./fuzz.sh ./test.dbc
 
@@ -24,6 +27,9 @@ clean:
 
 cantools:
 		git clone https://github.com/eerimoq/cantools.git
+
+opendbc:
+		git clone https://github.com/commaai/opendbc.git
 
 j1939_utf8.dbc:
 		wget -O $@ https://hackage.haskell.org/package/ecu-0.0.8/src/src/j1939_utf8.dbc
