@@ -36,6 +36,7 @@ BU_: ECU0 ECU1 ECU2 ECU3
 VAL_TABLE_ TFS 0 "FALSE" 1 "TRUE";
 VAL_TABLE_ LRS 0 "LEFT" 1 "RIGHT";
 VAL_TABLE_ UDS 0 "UP" 1 "DOWN";
+VAL_TABLE_ FooSignalValues ;
 
 BO_ 66 TestMsg1: 8 ECU1
  SG_ TestMsg1Voltage : 0|16@1- (0.001,0) [-32.768|32.767] "V" ECU2,ECU1,ECU0
@@ -63,9 +64,13 @@ BO_ 69 TestMsg4: 8 ECU2
  SG_ m2 m2 : 24|8@1+ (1,0) [0|255] "" ECU1
 
 BO_ 70 TestMsg5: 8 ECU0
+ SG_ Foo : 0|8@1+ (1,0) [0|255] "" ECU1
+
 BO_ 71 TestMsg6: 8 ECU0
 
 EV_ EnvVar1 : 0 [-1|5] "" -1 0 DUMMY_NODE_VECTOR8001 ECU0;
+
+SGTYPE_ FooSignalType : 8@1+ (1,0) [0|255] "" 1 , FooSignalValues ;
 
 // Comments go below
 
@@ -84,6 +89,9 @@ VAL_ 67 TestMsg2Signal
      ;
 
 VAL_ EnvVar1 0 "Zero" 1 "One" 2 "Two" -1 "MinusOne";
+
+// SGTYPE_ 70 Foo : FooSignalType ;
+
 
 SG_MUL_VAL_ 69 m0 M 0-0, 1-1, 2-2;
 SG_MUL_VAL_ 69 m1 M 0-0, 1-1, 2-2;

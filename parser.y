@@ -102,7 +102,7 @@ typedef struct { unsigned val[2]; } mul_val_t;
 %locations
 %define parse.error verbose
 
-%token VERSION NS BS BU VAL_TABLE BO SG BO_TX_BU EV ENVVAR_DATA CM VAL SIG_GROUP SIG_VALTYPE SG_MUL_VAL
+%token VERSION NS BS BU VAL_TABLE BO SG BO_TX_BU EV ENVVAR_DATA CM VAL SIG_GROUP SIG_VALTYPE SG_MUL_VAL SGTYPE
 %token BA_DEF BA_DEF_REL BA_DEF_DEF BA_DEF_DEF_REL BA BA_REL BU_BO_REL BU_SG_REL BU_EV_REL
 %token ATTR_INT ATTR_HEX ATTR_ENUM ATTR_FLOAT ATTR_STRING
 
@@ -149,11 +149,13 @@ file:           version
                 frame_transmitter_lists
                 env_variables
                 env_variables_data
+                signal_types
                 comments
                 attr_definitions
                 attr_defaults
                 attr_values
                 value_definitions
+                //signal_type_refs
                 signal_groups
                 signal_value_types
                 signal_mul_values
@@ -201,6 +203,7 @@ tag_or_name:    name { printf("\t%s\n", $1); g_free($1); }
         |       SG_MUL_VAL { printf("\tSG_MUL_VAL_\n"); }
         |       BO_TX_BU { printf("\tBO_TX_BU_\n"); }
         |       ENVVAR_DATA { printf("\tENVVAR_DATA_\n"); }
+        |       SGTYPE { printf("\tSGTYPE\n"); }
         ;
 
 ecus:           %empty
@@ -352,6 +355,20 @@ env_data:       ENVVAR_DATA name ':' UINT ';'
                 {
                   printf("ENVVAR_DATA_ %s : %u;\n", $2, $4);
                   g_free($2);
+                }
+        ;
+
+signal_types:   %empty
+        |       signal_type signal_types
+        ;
+
+signal_type:    SGTYPE name ':' UINT '@' UINT SIGN '(' float ',' float ')' '[' float '|' float ']' TEXT float ',' name ';'
+                {
+                  printf("SGTYPE_ %s : %u@%u%c (%g,%g) [%g|%g] %s %g , %s ;\n",
+                         $2, $4, $6, $7, $9, $11, $14, $16, $18, $19, $21);
+                  g_free($2);
+                  g_free($18);
+                  g_free($21);
                 }
         ;
 
@@ -719,6 +736,22 @@ value:          int TEXT
                   $$.value  = $1;
                   $$.strptr = $2;
                 };
+
+/*
+signal_type_refs:
+                %empty
+        |       signal_type_ref signal_type_refs
+        ;
+
+signal_type_ref:
+                SGTYPE UINT name ':' name ';'
+                {
+                  printf("SGTYPE_ %u %s : %s ;\n", $2, $3, $5);
+                  g_free($3);
+                  g_free($5);
+                }
+        ;
+*/
 
 signal_groups:  %empty
         |       signal_group signal_groups
