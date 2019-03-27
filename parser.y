@@ -207,8 +207,7 @@ tag_or_name:    name { printf("\t%s\n", $1); g_free($1); }
         |       SGTYPE { printf("\tSGTYPE\n"); }
         ;
 
-ecus:           %empty
-        |       BU ':' maybe_names
+ecus:           BU ':' maybe_names
                 {
                     printf("BU_:");
                     for (GSList *elem = $3; elem; elem = g_slist_next(elem))
