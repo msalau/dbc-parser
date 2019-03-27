@@ -161,7 +161,8 @@ file:           version
                 signal_mul_values
                 ;
 
-version:        VERSION TEXT
+version:        %empty
+        |       VERSION TEXT
                 {
                   printf("VERSION \"%s\"\n\n\n", $2);
                   g_free($2);
