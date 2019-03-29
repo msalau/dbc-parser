@@ -103,7 +103,7 @@ typedef struct { unsigned val[2]; } mul_val_t;
 %locations
 %define parse.error verbose
 
-%token VERSION NS BS BU VAL_TABLE BO SG BO_TX_BU EV ENVVAR_DATA CM VAL SIG_GROUP SIG_VALTYPE SG_MUL_VAL SGTYPE
+%token VERSION NS BS BU VAL_TABLE BO SG BO_TX_BU EV ENVVAR_DATA CM VAL SIG_GROUP SIG_VALTYPE SG_MUL_VAL SGTYPE SIG_TYPE_REF
 %token BA_DEF BA_DEF_REL BA_DEF_DEF BA_DEF_DEF_REL BA BA_REL BU_BO_REL BU_SG_REL BU_EV_REL
 %token ATTR_INT ATTR_HEX ATTR_ENUM ATTR_FLOAT ATTR_STRING
 
@@ -156,7 +156,7 @@ file:           version
                 attr_defaults
                 attr_values
                 value_definitions
-                //signal_type_refs
+                signal_type_refs
                 signal_groups
                 signal_value_types
                 signal_mul_values
@@ -207,6 +207,7 @@ tag_or_name:    name { printf("\t%s\n", $1); g_free($1); }
         |       BO_TX_BU { printf("\tBO_TX_BU_\n"); }
         |       ENVVAR_DATA { printf("\tENVVAR_DATA_\n"); }
         |       SGTYPE { printf("\tSGTYPE\n"); }
+        |       SIG_TYPE_REF { printf("\tSIG_TYPE_REF_\n"); }
         ;
 
 ecus:           BU ':' maybe_names
@@ -739,21 +740,19 @@ value:          int TEXT
                   $$.strptr = $2;
                 };
 
-/*
 signal_type_refs:
                 %empty
         |       signal_type_ref signal_type_refs
         ;
 
 signal_type_ref:
-                SGTYPE UINT name ':' name ';'
+                SIG_TYPE_REF UINT name ':' name ';'
                 {
-                  printf("SGTYPE_ %u %s : %s ;\n", $2, $3, $5);
+                  printf("SIG_TYPE_REF_ %u %s : %s ;\n", $2, $3, $5);
                   g_free($3);
                   g_free($5);
                 }
         ;
-*/
 
 signal_groups:  %empty
         |       signal_group signal_groups

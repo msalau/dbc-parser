@@ -62,6 +62,7 @@ SIG_VALTYPE_              { return SIG_VALTYPE; }
 SIG_GROUP_                { return SIG_GROUP; }
 SG_MUL_VAL_               { return SG_MUL_VAL; }
 SGTYPE_                   { return SGTYPE; }
+SIG_TYPE_REF_             { return SIG_TYPE_REF; }
 INT                       { return ATTR_INT; }
 HEX                       { return ATTR_HEX; }
 ENUM                      { return ATTR_ENUM; }

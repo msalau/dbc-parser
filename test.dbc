@@ -90,7 +90,7 @@ VAL_ 67 TestMsg2Signal
 
 VAL_ EnvVar1 0 "Zero" 1 "One" 2 "Two" -1 "MinusOne";
 
-// SGTYPE_ 70 Foo : FooSignalType ;
+SIG_TYPE_REF_ 70 Foo : FooSignalType ;
 
 
 SG_MUL_VAL_ 69 m0 M 0-0, 1-1, 2-2;
