@@ -1,6 +1,8 @@
 %option noyywrap
 %option noinput
 %option nounput
+%option batch
+%option nodefault
 
 %{
 #include <gmodule.h>
