@@ -99,6 +99,7 @@ typedef struct { unsigned val[2]; } mul_val_t;
   value_string value;
 }
 
+%expect 0
 %locations
 %define parse.error verbose
 
