@@ -70,7 +70,7 @@ BO_ 71 TestMsg6: 8 ECU0
 
 EV_ EnvVar1 : 0 [-1|5] "" -1 0 DUMMY_NODE_VECTOR8001 ECU0;
 
-SGTYPE_ FooSignalType : 8@1+ (1,0) [0|255] "" 1 , FooSignalValues ;
+SGTYPE_ FooSignalType : 8@1+ (1,0) [0|255] "" 1 FooSignalValues ;
 
 // Comments go below
 
