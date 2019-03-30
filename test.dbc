@@ -67,6 +67,8 @@ BO_ 70 TestMsg5: 8 ECU0
  SG_ Foo : 0|8@1+ (1,0) [0|255] "" ECU1
 
 BO_ 71 TestMsg6: 8 ECU0
+ SG_ Float1 : 0|32@1+ (1,0) [0|0] "" ECU1
+ SG_ Float2 : 32|32@1+ (1,0) [0|0] "" ECU1
 
 EV_ EnvVar1 : 0 [-1|5] "" -1 0 DUMMY_NODE_VECTOR8001 ECU0;
 
@@ -92,6 +94,8 @@ VAL_ EnvVar1 0 "Zero" 1 "One" 2 "Two" -1 "MinusOne";
 
 SIG_TYPE_REF_ 70 Foo : FooSignalType ;
 
+SIG_VALTYPE_ 71 Float1 : 1;
+SIG_VALTYPE_ 71 Float2 : 1;
 
 SG_MUL_VAL_ 69 m0 M 0-0, 1-1, 2-2;
 SG_MUL_VAL_ 69 m1 M 0-0, 1-1, 2-2;
