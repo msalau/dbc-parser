@@ -70,7 +70,14 @@ BO_ 71 TestMsg6: 8 ECU0
  SG_ Float1 : 0|32@1+ (1,0) [0|0] "" ECU1
  SG_ Float2 : 32|32@1+ (1,0) [0|0] "" ECU1
 
+BO_TX_BU_ 71 : ECU0, ECU2, ECU3;
+
 EV_ EnvVar1 : 0 [-1|5] "" -1 0 DUMMY_NODE_VECTOR8001 ECU0;
+EV_ EnvVar2 : 0 [0|0] "" 0 0 DUMMY_NODE_VECTOR8001 ECU0;
+EV_ EnvVar3 : 0 [0|0] "" 0 0 DUMMY_NODE_VECTOR8001 ECU0;
+
+ENVVAR_DATA_ EnvVar2 : 10;
+ENVVAR_DATA_ EnvVar3 : 24;
 
 SGTYPE_ FooSignalType : 8@1+ (1,0) [0|255] "" 1 FooSignalValues ;
 
@@ -82,7 +89,14 @@ that spans several lines";
 
 CM_ BO_ 66 "This is a \"frame comment\"";
 CM_ SG_ 66 TestMsg1Current "This is a signal comment";
+CM_ EV_ EnvVar1 "This is a comment for an environment variable #1";
+CM_ EV_ EnvVar2 "This is a comment for an environment variable #2";
+CM_ EV_ EnvVar3 "This is a comment for an environment variable #3";
+CM_ BU_ ECU0 "This is a comment for \"ECU0\"";
+CM_ BU_ ECU1 "This is a comment for \"ECU1\"";
+CM_ BU_ ECU2 "This is a comment for \"ECU2\"";
 
+// Multiline statements should be ok
 VAL_ 67 TestMsg2Signal
      0 "NOP"
      1 "ACT0"
@@ -90,9 +104,12 @@ VAL_ 67 TestMsg2Signal
      -1 "NEG"
      ;
 
+VAL_ 70 Foo 0 "Zero" 1 "One" 2 "Two" 3 "Three";
 VAL_ EnvVar1 0 "Zero" 1 "One" 2 "Two" -1 "MinusOne";
 
 SIG_TYPE_REF_ 70 Foo : FooSignalType ;
+
+SIG_GROUP_ 71 FloatValues 1 : Float1 Float2;
 
 SIG_VALTYPE_ 71 Float1 : 1;
 SIG_VALTYPE_ 71 Float2 : 1;
