@@ -433,6 +433,9 @@ attr_definition:
                     [ATTR_OBJ_TYPE_FRAME] = " BO_",
                     [ATTR_OBJ_TYPE_SIGNAL] = " SG_",
                     [ATTR_OBJ_TYPE_ENV] = " EV_",
+                    [ATTR_OBJ_TYPE_ECU_FRAME_REL] = "REL_ BU_BO_REL_",
+                    [ATTR_OBJ_TYPE_ECU_SIGNAL_REL] = "REL_ BU_SG_REL_",
+                    [ATTR_OBJ_TYPE_ECU_ENV_REL] = "REL_ BU_EV_REL_",
                   };
                   printf("BA_DEF_%s  \"%s\" ", attr_obj_type_str[$1], $2);
                   g_free($2);
