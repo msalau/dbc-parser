@@ -601,7 +601,7 @@ attr_value:
                   case ATTR_OBJ_TYPE_ECU_SIGNAL_REL:
                     printf("BU_SG_REL_ %s SG_ %u %s ", $3.ecu_name, $3.frame_id, $3.obj_name);
                     break;
-                  case ATTR_OBJ_TYPE_ENV:
+                  case ATTR_OBJ_TYPE_ECU_ENV_REL:
                     printf("BU_EV_REL_ %s %s ", $3.ecu_name, $3.obj_name);
                     break;
                   }
