@@ -96,6 +96,69 @@ CM_ BU_ ECU0 "This is a comment for \"ECU0\"";
 CM_ BU_ ECU1 "This is a comment for \"ECU1\"";
 CM_ BU_ ECU2 "This is a comment for \"ECU2\"";
 
+BA_DEF_ "BusType" STRING;
+BA_DEF_ "BusSpeed" INT 0 1000000;
+BA_DEF_ EV_  "EvAttr" HEX 0 3;
+BA_DEF_ BU_  "SubsystemName" STRING;
+BA_DEF_ BO_  "GenMsgSendType" ENUM  "Cyclic","NotUsed","NotUsed","NotUsed","NotUsed","NotUsed","NotUsed","IfActive","NoMsgSendType","NotUsed","vector_leerstring";
+BA_DEF_ BO_  "GenMsgCycleTime" INT 0 50000;
+BA_DEF_ SG_  "GenSigStartValue" INT 0 65536;
+
+BA_DEF_REL_ BU_BO_REL_ "GenMsgCycleTimeOnError" INT 0 1000;
+BA_DEF_REL_ BU_SG_REL_ "GenSigStartValueOnError" INT 0 65536;
+BA_DEF_REL_ BU_EV_REL_ "EvValueForBu" INT 0 100;
+
+
+BA_DEF_DEF_ "BusType" "";
+BA_DEF_DEF_ "BusSpeed" 125000;
+BA_DEF_DEF_ "EvAttr" 2;
+BA_DEF_DEF_ "SubsystemName" "";
+BA_DEF_DEF_ "GenMsgSendType" 0;
+BA_DEF_DEF_ "GenMsgCycleTime" 100;
+BA_DEF_DEF_ "GenSigStartValue" 0;
+
+BA_DEF_DEF_REL_ "GenMsgCycleTimeOnError" 10;
+BA_DEF_DEF_REL_ "GenSigStartValueOnError" 2;
+BA_DEF_DEF_REL_ "EvValueForBu" 2;
+
+
+BA_ "BusType" "CAN";
+BA_ "BusSpeed" 500000;
+BA_ "EvAttr" EV_ EnvVar1 1;
+BA_ "EvAttr" EV_ EnvVar2 2;
+BA_ "EvAttr" EV_ EnvVar3 3;
+BA_ "SubsystemName" BU_ ECU0 "System0";
+BA_ "SubsystemName" BU_ ECU1 "System1";
+BA_ "SubsystemName" BU_ ECU2 "System2";
+BA_ "GenMsgSendType" BO_ 66 0;
+BA_ "GenMsgSendType" BO_ 67 7;
+BA_ "GenMsgSendType" BO_ 68 7;
+BA_ "GenMsgSendType" BO_ 69 8;
+BA_ "GenMsgSendType" BO_ 70 0;
+BA_ "GenMsgSendType" BO_ 71 0;
+BA_ "GenMsgCycleTime" BO_ 66 100;
+BA_ "GenMsgCycleTime" BO_ 67 50;
+BA_ "GenMsgCycleTime" BO_ 68 10000;
+BA_ "GenMsgCycleTime" BO_ 69 200;
+BA_ "GenMsgCycleTime" BO_ 70 300;
+BA_ "GenMsgCycleTime" BO_ 71 400;
+BA_ "GenSigStartValue" SG_ 70 Foo 42;
+
+BA_REL_ "GenMsgCycleTimeOnError" BU_BO_REL_ ECU0 66 100;
+BA_REL_ "GenMsgCycleTimeOnError" BU_BO_REL_ ECU1 67 100;
+BA_REL_ "GenMsgCycleTimeOnError" BU_BO_REL_ ECU2 68 100;
+BA_REL_ "GenMsgCycleTimeOnError" BU_BO_REL_ ECU3 69 100;
+
+BA_REL_ "GenSigStartValueOnError" BU_SG_REL_ ECU0 SG_ 70 Foo 2 ;
+BA_REL_ "GenSigStartValueOnError" BU_SG_REL_ ECU1 SG_ 70 Foo 3 ;
+BA_REL_ "GenSigStartValueOnError" BU_SG_REL_ ECU2 SG_ 70 Foo 4 ;
+BA_REL_ "GenSigStartValueOnError" BU_SG_REL_ ECU3 SG_ 70 Foo 5 ;
+
+BA_REL_ "EvValueForBu" BU_EV_REL_ ECU0 EnvVar1 10;
+BA_REL_ "EvValueForBu" BU_EV_REL_ ECU1 EnvVar1 11;
+BA_REL_ "EvValueForBu" BU_EV_REL_ ECU2 EnvVar1 12;
+BA_REL_ "EvValueForBu" BU_EV_REL_ ECU3 EnvVar1 13;
+
 // Multiline statements should be ok
 VAL_ 67 TestMsg2Signal
      0 "NOP"
