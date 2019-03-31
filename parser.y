@@ -367,7 +367,7 @@ signal_types:   %empty
 
 signal_type:    SGTYPE name ':' UINT '@' UINT SIGN '(' float ',' float ')' '[' float '|' float ']' TEXT float name ';'
                 {
-                  printf("SGTYPE_ %s : %u@%u%c (%g,%g) [%g|%g] %s %g %s ;\n",
+                  printf("SGTYPE_ %s : %u@%u%c (%g,%g) [%g|%g] \"%s\" %g %s ;\n",
                          $2, $4, $6, $7, $9, $11, $14, $16, $18, $19, $20);
                   g_free($2);
                   g_free($18);
