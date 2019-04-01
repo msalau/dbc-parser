@@ -339,13 +339,19 @@ env_variables:  %empty
         |       env_variable env_variables
         ;
 
-env_variable:   EV name ':' int '[' float '|' float ']' TEXT float int name name ';'
+env_variable:   EV name ':' int '[' float '|' float ']' TEXT float int name comma_separated_names ';'
                 {
-                  printf("EV_ %s: %lli [%g|%g] \"%s\" %g %lli %s %s;\n", $2, $4, $6, $8, $10, $11, $12, $13, $14);
+                  printf("EV_ %s: %lli [%g|%g] \"%s\" %g %lli %s  ", $2, $4, $6, $8, $10, $11, $12, $13);
                   g_free($2);
                   g_free($10);
                   g_free($13);
-                  g_free($14);
+
+                  for (GSList *elem = $14; elem; elem = g_slist_next(elem))
+                  {
+                    printf("%s%s", (char *)elem->data, (g_slist_next(elem) ? "," : ""));
+                  }
+                  printf(";\n");
+                  g_slist_free_full($14, g_free);
                 }
         ;
 
