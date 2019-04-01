@@ -76,7 +76,7 @@ EV_ EnvVar1: 0 [-1|5] "" -1 1 DUMMY_NODE_VECTOR8001  ECU0,ECU1,ECU2,ECU3;
 EV_ EnvVar2: 0 [0|0] "" 0 2 DUMMY_NODE_VECTOR1  ECU0;
 EV_ EnvVar3: 0 [0|0] "" 0 3 DUMMY_NODE_VECTOR1  ECU0;
 
-ENVVAR_DATA_ EnvVar2: 10;
+EV_DATA_ EnvVar2: 10;
 ENVVAR_DATA_ EnvVar3: 24;
 
 SGTYPE_ FooSignalType : 8@1+ (1,0) [0|255] "" 1 FooSignalValues ;

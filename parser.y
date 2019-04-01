@@ -103,7 +103,7 @@ typedef struct { unsigned val[2]; } mul_val_t;
 %locations
 %define parse.error verbose
 
-%token VERSION NS BS BU VAL_TABLE BO SG BO_TX_BU EV ENVVAR_DATA CM VAL SIG_GROUP SIG_VALTYPE SG_MUL_VAL SGTYPE SIG_TYPE_REF
+%token VERSION NS BS BU VAL_TABLE BO SG BO_TX_BU EV EV_DATA ENVVAR_DATA CM VAL SIG_GROUP SIG_VALTYPE SG_MUL_VAL SGTYPE SIG_TYPE_REF
 %token BA_DEF BA_DEF_REL BA_DEF_DEF BA_DEF_DEF_REL BA BA_REL BU_BO_REL BU_SG_REL BU_EV_REL BA_DEF_SGTYPE BA_SGTYPE
 %token ATTR_INT ATTR_HEX ATTR_ENUM ATTR_FLOAT ATTR_STRING
 
@@ -206,6 +206,8 @@ tag_or_name:    name { printf("\t%s\n", $1); g_free($1); }
         |       SIG_GROUP { printf("\tSIG_GROUP_\n"); }
         |       SG_MUL_VAL { printf("\tSG_MUL_VAL_\n"); }
         |       BO_TX_BU { printf("\tBO_TX_BU_\n"); }
+        |       EV { printf("\tEV_\n"); }
+        |       EV_DATA { printf("\tEV_DATA_\n"); }
         |       ENVVAR_DATA { printf("\tENVVAR_DATA_\n"); }
         |       SGTYPE { printf("\tSGTYPE\n"); }
         |       SIG_TYPE_REF { printf("\tSIG_TYPE_REF_\n"); }
@@ -366,6 +368,11 @@ env_variables_data:
 env_data:       ENVVAR_DATA name ':' UINT ';'
                 {
                   printf("ENVVAR_DATA_ %s : %u;\n", $2, $4);
+                  g_free($2);
+                }
+        |       EV_DATA name ':' UINT ';'
+                {
+                  printf("EV_DATA_ %s : %u;\n", $2, $4);
                   g_free($2);
                 }
         ;
