@@ -104,7 +104,7 @@ typedef struct { unsigned val[2]; } mul_val_t;
 %define parse.error verbose
 
 %token VERSION NS BS BU VAL_TABLE BO SG BO_TX_BU EV ENVVAR_DATA CM VAL SIG_GROUP SIG_VALTYPE SG_MUL_VAL SGTYPE SIG_TYPE_REF
-%token BA_DEF BA_DEF_REL BA_DEF_DEF BA_DEF_DEF_REL BA BA_REL BU_BO_REL BU_SG_REL BU_EV_REL
+%token BA_DEF BA_DEF_REL BA_DEF_DEF BA_DEF_DEF_REL BA BA_REL BU_BO_REL BU_SG_REL BU_EV_REL BA_DEF_SGTYPE BA_SGTYPE
 %token ATTR_INT ATTR_HEX ATTR_ENUM ATTR_FLOAT ATTR_STRING
 
 %token <ival> INT
@@ -153,6 +153,7 @@ file:           version
                 signal_types
                 comments
                 attr_definitions
+                attr_sgtype_definitions
                 attr_defaults
                 attr_values
                 value_definitions
@@ -208,6 +209,8 @@ tag_or_name:    name { printf("\t%s\n", $1); g_free($1); }
         |       ENVVAR_DATA { printf("\tENVVAR_DATA_\n"); }
         |       SGTYPE { printf("\tSGTYPE\n"); }
         |       SIG_TYPE_REF { printf("\tSIG_TYPE_REF_\n"); }
+        |       BA_DEF_SGTYPE { printf("\tBA_DEF_SGTYPE_\n"); }
+        |       BA_SGTYPE { printf("\tBA_SGTYPE_\n"); }
         ;
 
 ecus:           BU ':' maybe_names
@@ -524,6 +527,20 @@ enum_values:    TEXT ',' enum_values { $$ = g_slist_prepend($3, $1); }
         |       TEXT                 { $$ = g_slist_prepend(NULL, $1); }
         ;
 
+
+attr_sgtype_definitions:
+                %empty
+        |       attr_sgtype_definition attr_sgtype_definitions
+        ;
+
+attr_sgtype_definition:
+                BA_DEF_SGTYPE TEXT ';'
+                {
+                  printf("BA_DEF_SGTYPE_ \"%s\";\n", $2);
+                  g_free($2);
+                }
+        ;
+
 attr_defaults:
                 %empty
         |       attr_default attr_defaults
@@ -624,6 +641,26 @@ attr_value:
                   case ATTR_VALUE_TYPE_STRING:
                     printf("\"%s\"", $4.sval);
                     g_free($4.sval);
+                    break;
+                  }
+                  printf(";\n");
+                }
+        |       BA_SGTYPE TEXT SGTYPE name attr_obj_value ';'
+                {
+                  printf("BA_SGTYPE_ \"%s\" SGTYPE_ %s ", $2, $4);
+                  g_free($2);
+                  g_free($4);
+                  switch ($5.type)
+                  {
+                  case ATTR_VALUE_TYPE_INT:
+                    printf("%lli", $5.ival);
+                    break;
+                  case ATTR_VALUE_TYPE_FLOAT:
+                    printf("%g", $5.fval);
+                    break;
+                  case ATTR_VALUE_TYPE_STRING:
+                    printf("\"%s\"", $5.sval);
+                    g_free($5.sval);
                     break;
                   }
                   printf(";\n");

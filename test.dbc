@@ -103,11 +103,16 @@ BA_DEF_ BU_  "SubsystemName" STRING;
 BA_DEF_ BO_  "GenMsgSendType" ENUM  "Cyclic","NotUsed","NotUsed","NotUsed","NotUsed","NotUsed","NotUsed","IfActive","NoMsgSendType","NotUsed","vector_leerstring";
 BA_DEF_ BO_  "GenMsgCycleTime" INT 0 50000;
 BA_DEF_ SG_  "GenSigStartValue" INT 0 65536;
+BA_DEF_ SG_  "GenSigStartValueForType" INT 0 65536;
+BA_DEF_ SG_  "GenSigStringAttrForType" STRING;
 
 BA_DEF_REL_ BU_BO_REL_ "GenMsgCycleTimeOnError" INT 0 1000;
 BA_DEF_REL_ BU_SG_REL_ "GenSigStartValueOnError" INT 0 65536;
 BA_DEF_REL_ BU_EV_REL_ "EvValueForBu" INT 0 100;
 
+// BA_DEF_SGTYPE_ mus appear after all BA_DEF_(REL_)? and before BA_DEF_DEF_(REL_)?
+BA_DEF_SGTYPE_ "GenSigStartValueForType";
+BA_DEF_SGTYPE_ "GenSigStringAttrForType";
 
 BA_DEF_DEF_ "BusType" "";
 BA_DEF_DEF_ "BusSpeed" 125000;
@@ -161,6 +166,10 @@ BA_REL_ "EvValueForBu" BU_EV_REL_ ECU0 EnvVar1 10;
 BA_REL_ "EvValueForBu" BU_EV_REL_ ECU1 EnvVar1 11;
 BA_REL_ "EvValueForBu" BU_EV_REL_ ECU2 EnvVar1 12;
 BA_REL_ "EvValueForBu" BU_EV_REL_ ECU3 EnvVar1 13;
+
+// BA_SGTYPE_ may appear anywhere in BA_(REL_)? section
+BA_SGTYPE_ "GenSigStartValueForType" SGTYPE_ FooSignalType 100;
+BA_SGTYPE_ "GenSigStringAttrForType" SGTYPE_ FooSignalType "Foo";
 
 // Multiline statements should be ok
 VAL_ 67 TestMsg2Signal

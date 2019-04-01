@@ -51,10 +51,12 @@ ENVVAR_DATA_              { return ENVVAR_DATA; }
 CM_                       { return CM; }
 BA_DEF_                   { return BA_DEF; }
 BA_DEF_REL_               { return BA_DEF_REL; }
+BA_DEF_SGTYPE_            { return BA_DEF_SGTYPE; }
 BA_DEF_DEF_               { return BA_DEF_DEF; }
 BA_DEF_DEF_REL_           { return BA_DEF_DEF_REL; }
 BA_                       { return BA; }
 BA_REL_                   { return BA_REL; }
+BA_SGTYPE_                { return BA_SGTYPE; }
 BU_BO_REL_                { return BU_BO_REL; }
 BU_SG_REL_                { return BU_SG_REL; }
 BU_EV_REL_                { return BU_EV_REL; }
