@@ -64,20 +64,20 @@ BO_ 69 TestMsg4: 8 ECU2
  SG_ m2 m2 : 24|8@1+ (1,0) [0|255] "" ECU1
 
 BO_ 70 TestMsg5: 8 ECU0
- SG_ Foo : 0|8@1+ (1,0) [0|255] "" ECU1
+ SG_ Foo : 0|8@1+ (1,0) [0|255] ""  ECU1,ECU2,ECU3
 
 BO_ 71 TestMsg6: 8 ECU0
  SG_ Float1 : 0|32@1+ (1,0) [0|0] "" ECU1
  SG_ Float2 : 32|32@1+ (1,0) [0|0] "" ECU1
 
-BO_TX_BU_ 71 : ECU0, ECU2, ECU3;
+BO_TX_BU_ 71 : ECU0,ECU2,ECU3;
 
-EV_ EnvVar1 : 0 [-1|5] "" -1 0 DUMMY_NODE_VECTOR8001 ECU0;
-EV_ EnvVar2 : 0 [0|0] "" 0 0 DUMMY_NODE_VECTOR8001 ECU0;
-EV_ EnvVar3 : 0 [0|0] "" 0 0 DUMMY_NODE_VECTOR8001 ECU0;
+EV_ EnvVar1: 0 [-1|5] "" -1 1 DUMMY_NODE_VECTOR8001  ECU0,ECU1,ECU2,ECU3;
+EV_ EnvVar2: 0 [0|0] "" 0 2 DUMMY_NODE_VECTOR1  ECU0;
+EV_ EnvVar3: 0 [0|0] "" 0 3 DUMMY_NODE_VECTOR1  ECU0;
 
-ENVVAR_DATA_ EnvVar2 : 10;
-ENVVAR_DATA_ EnvVar3 : 24;
+ENVVAR_DATA_ EnvVar2: 10;
+ENVVAR_DATA_ EnvVar3: 24;
 
 SGTYPE_ FooSignalType : 8@1+ (1,0) [0|255] "" 1 FooSignalValues ;
 
@@ -113,7 +113,7 @@ BA_DEF_DEF_ "BusType" "";
 BA_DEF_DEF_ "BusSpeed" 125000;
 BA_DEF_DEF_ "EvAttr" 2;
 BA_DEF_DEF_ "SubsystemName" "";
-BA_DEF_DEF_ "GenMsgSendType" 0;
+BA_DEF_DEF_ "GenMsgSendType" "Cyclic";
 BA_DEF_DEF_ "GenMsgCycleTime" 100;
 BA_DEF_DEF_ "GenSigStartValue" 0;
 
@@ -130,6 +130,7 @@ BA_ "EvAttr" EV_ EnvVar3 3;
 BA_ "SubsystemName" BU_ ECU0 "System0";
 BA_ "SubsystemName" BU_ ECU1 "System1";
 BA_ "SubsystemName" BU_ ECU2 "System2";
+BA_ "SubsystemName" BU_ ECU3 "System3";
 BA_ "GenMsgSendType" BO_ 66 0;
 BA_ "GenMsgSendType" BO_ 67 7;
 BA_ "GenMsgSendType" BO_ 68 7;
@@ -144,16 +145,18 @@ BA_ "GenMsgCycleTime" BO_ 70 300;
 BA_ "GenMsgCycleTime" BO_ 71 400;
 BA_ "GenSigStartValue" SG_ 70 Foo 42;
 
-BA_REL_ "GenMsgCycleTimeOnError" BU_BO_REL_ ECU0 66 100;
-BA_REL_ "GenMsgCycleTimeOnError" BU_BO_REL_ ECU1 67 100;
-BA_REL_ "GenMsgCycleTimeOnError" BU_BO_REL_ ECU2 68 100;
-BA_REL_ "GenMsgCycleTimeOnError" BU_BO_REL_ ECU3 69 100;
 
-BA_REL_ "GenSigStartValueOnError" BU_SG_REL_ ECU0 SG_ 70 Foo 2 ;
+// Applies only to senders
+BA_REL_ "GenMsgCycleTimeOnError" BU_BO_REL_ ECU0 71 100;
+BA_REL_ "GenMsgCycleTimeOnError" BU_BO_REL_ ECU2 71 100;
+BA_REL_ "GenMsgCycleTimeOnError" BU_BO_REL_ ECU3 71 100;
+
+// Applies only to receivers
 BA_REL_ "GenSigStartValueOnError" BU_SG_REL_ ECU1 SG_ 70 Foo 3 ;
 BA_REL_ "GenSigStartValueOnError" BU_SG_REL_ ECU2 SG_ 70 Foo 4 ;
 BA_REL_ "GenSigStartValueOnError" BU_SG_REL_ ECU3 SG_ 70 Foo 5 ;
 
+// Applies only to ECUs listed in EV_ statement
 BA_REL_ "EvValueForBu" BU_EV_REL_ ECU0 EnvVar1 10;
 BA_REL_ "EvValueForBu" BU_EV_REL_ ECU1 EnvVar1 11;
 BA_REL_ "EvValueForBu" BU_EV_REL_ ECU2 EnvVar1 12;
