@@ -115,7 +115,7 @@ typedef struct { unsigned val[2]; } mul_val_t;
 %token <mux>  MUX
 %token <mval> MUL_VAL
 
-%type <sval> name
+%type <sval> name maybe_name
 %type <fval> float
 %type <llval> int
 %type <mux>  mux
@@ -256,6 +256,10 @@ signals:        %empty
         |       signal signals
         ;
 
+maybe_name:     %empty { $$ = NULL; }
+        |       name { $$ = $1; }
+        ;
+
 name:           NAME { $$ = $1; }
         |       MUX  { $$ = $1.sval; }
         ;
@@ -381,10 +385,10 @@ signal_types:   %empty
         |       signal_type signal_types
         ;
 
-signal_type:    SGTYPE name ':' UINT '@' UINT SIGN '(' float ',' float ')' '[' float '|' float ']' TEXT float name ';'
+signal_type:    SGTYPE name ':' UINT '@' UINT SIGN '(' float ',' float ')' '[' float '|' float ']' TEXT float maybe_name ';'
                 {
                   printf("SGTYPE_ %s : %u@%u%c (%g,%g) [%g|%g] \"%s\" %g %s ;\n",
-                         $2, $4, $6, $7, $9, $11, $14, $16, $18, $19, $20);
+                         $2, $4, $6, $7, $9, $11, $14, $16, $18, $19, $20 ? $20 : "");
                   g_free($2);
                   g_free($18);
                   g_free($20);
