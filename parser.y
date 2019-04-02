@@ -121,6 +121,7 @@ typedef struct { unsigned val[2]; } mul_val_t;
 %token BA_DEF BA_DEF_REL BA_DEF_DEF BA_DEF_DEF_REL BA BA_REL BU_BO_REL BU_SG_REL BU_EV_REL BA_DEF_SGTYPE BA_SGTYPE
 %token ATTR_INT ATTR_HEX ATTR_ENUM ATTR_FLOAT ATTR_STRING
 %token CAT_DEF CAT FILTER
+%token NS_DESC SGTYPE_VAL SIGTYPE_VALTYPE
 
 %token <ival> INT
 %token <uval> UINT
@@ -212,6 +213,7 @@ tags_or_names:  %empty
         ;
 
 tag_or_name:    name { printf("\t%s\n", $1); g_free($1); }
+        |       NS_DESC { printf("\tNS_DESC_\n"); }
         |       CM { printf("\tCM_\n"); }
         |       VAL { printf("\tVAL_\n"); }
         |       VAL_TABLE { printf("\tVAL_TABLE_\n"); }
@@ -233,6 +235,8 @@ tag_or_name:    name { printf("\t%s\n", $1); g_free($1); }
         |       ENVVAR_DATA { printf("\tENVVAR_DATA_\n"); }
         |       SGTYPE { printf("\tSGTYPE_\n"); }
         |       SIG_TYPE_REF { printf("\tSIG_TYPE_REF_\n"); }
+        |       SGTYPE_VAL { printf("\tSGTYPE_VAL_\n"); }
+        |       SIGTYPE_VALTYPE { printf("\tSIGTYPE_VALTYPE_\n"); }
         |       BA_DEF_SGTYPE { printf("\tBA_DEF_SGTYPE_\n"); }
         |       BA_SGTYPE { printf("\tBA_SGTYPE_\n"); }
         |       CAT_DEF { printf("\tCAT_DEF_\n"); }

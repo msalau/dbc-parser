@@ -41,6 +41,7 @@ SIGN [+-]
 
 VERSION                   { return VERSION; }
 NS_                       { return NS; }
+NS_DESC_                  { return NS_DESC; }
 BS_                       { return BS; }
 BU_                       { return BU; }
 BO_                       { return BO; }
@@ -71,6 +72,8 @@ SIG_GROUP_                { return SIG_GROUP; }
 SG_MUL_VAL_               { return SG_MUL_VAL; }
 SGTYPE_                   { return SGTYPE; }
 SIG_TYPE_REF_             { return SIG_TYPE_REF; }
+SGTYPE_VAL_               { return SGTYPE_VAL; }
+SIGTYPE_VALTYPE_          { return SIGTYPE_VALTYPE; }
 INT                       { return ATTR_INT; }
 HEX                       { return ATTR_HEX; }
 ENUM                      { return ATTR_ENUM; }
