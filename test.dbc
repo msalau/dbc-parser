@@ -203,6 +203,8 @@ CAT_ BO_ 69 1;
 CAT_ BO_ 70 2;
 CAT_ BO_ 71 3;
 
+FILTER 0 CAT_ 1 2 3 BU_ ECU0 ECU1 ECU2 ECU3;
+
 SIG_TYPE_REF_ 70 Foo : FooSignalType ;
 
 SIG_GROUP_ 71 FloatValues 1 : Float1 Float2;

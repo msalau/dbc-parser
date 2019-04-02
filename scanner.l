@@ -65,6 +65,7 @@ VAL_                      { return VAL; }
 VAL_TABLE_                { return VAL_TABLE; }
 CAT_DEF_                  { return CAT_DEF; }
 CAT_                      { return CAT; }
+FILTER                    { return FILTER; }
 SIG_VALTYPE_              { return SIG_VALTYPE; }
 SIG_GROUP_                { return SIG_GROUP; }
 SG_MUL_VAL_               { return SG_MUL_VAL; }

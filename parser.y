@@ -120,7 +120,7 @@ typedef struct { unsigned val[2]; } mul_val_t;
 %token VERSION NS BS BU VAL_TABLE BO SG BO_TX_BU EV EV_DATA ENVVAR_DATA CM VAL SIG_GROUP SIG_VALTYPE SG_MUL_VAL SGTYPE SIG_TYPE_REF
 %token BA_DEF BA_DEF_REL BA_DEF_DEF BA_DEF_DEF_REL BA BA_REL BU_BO_REL BU_SG_REL BU_EV_REL BA_DEF_SGTYPE BA_SGTYPE
 %token ATTR_INT ATTR_HEX ATTR_ENUM ATTR_FLOAT ATTR_STRING
-%token CAT_DEF CAT
+%token CAT_DEF CAT FILTER
 
 %token <ival> INT
 %token <uval> UINT
@@ -136,6 +136,7 @@ typedef struct { unsigned val[2]; } mul_val_t;
 %type <mux>  mux
 
 %type <list> names maybe_names enum_values comma_separated_names
+%type <list> maybe_uints uints
 %type <array> values mul_values
 %type <value> value
 %type <ival> attr_obj_type attr_rel_obj_type attr_def_with_obj_type
@@ -150,6 +151,7 @@ typedef struct { unsigned val[2]; } mul_val_t;
 %destructor { g_free($$.name); } attr_obj
 %destructor { g_free($$.ecu_name); g_free($$.obj_name); } attr_rel_obj
 %destructor { g_slist_free_full($$, g_free); } names maybe_names enum_values comma_separated_names
+%destructor { g_slist_free($$); } maybe_uints uints
 %destructor { g_free($$.strptr); } value
 %destructor { g_array_free($$, TRUE); } values mul_values
 %destructor { if ($$.type == ATTR_VALUE_TYPE_ENUM) g_slist_free_full($$.list, g_free); } attr_value_type
@@ -176,6 +178,7 @@ file:           version
                 value_definitions
                 category_definitions
                 categories
+                filter
                 signal_type_refs
                 signal_groups
                 signal_value_types
@@ -234,6 +237,7 @@ tag_or_name:    name { printf("\t%s\n", $1); g_free($1); }
         |       BA_SGTYPE { printf("\tBA_SGTYPE_\n"); }
         |       CAT_DEF { printf("\tCAT_DEF_\n"); }
         |       CAT { printf("\tCAT_\n"); }
+        |       FILTER { printf("\tFILTER_\n"); }
         ;
 
 ecus:           BU ':' maybe_names
@@ -808,6 +812,14 @@ values:         %empty
                   $$ = g_array_append_val($1, $2);
                 };
 
+uints:          UINT uints { $$ = g_slist_prepend($2, GUINT_TO_POINTER($1)); }
+        |       UINT       { $$ = g_slist_prepend(NULL, GUINT_TO_POINTER($1)); }
+
+
+maybe_uints:    %empty { $$ = NULL; }
+        |       uints  { $$ = $1; }
+        ;
+
 int:            UINT { $$ = $1; }
         |       INT  { $$ = $1; }
         ;
@@ -860,6 +872,21 @@ category_object:
                 EV name { $$.type = CAT_OBJ_TYPE_ENV; $$.name = $2; }
         |       BU name { $$.type = CAT_OBJ_TYPE_ECU; $$.name = $2; }
         |       BO UINT { $$.type = CAT_OBJ_TYPE_FRAME; $$.name = NULL; $$.id = $2; }
+        ;
+
+filter:         %empty
+        |       FILTER UINT CAT maybe_uints BU maybe_names ';'
+                {
+                  printf("FILTER %u CAT_ ", $2);
+                  for (GSList *elem = $4; elem; elem = g_slist_next(elem))
+                    printf("%u ", GPOINTER_TO_UINT(elem->data));
+                  printf("BU_ ");
+                  for (GSList *elem = $6; elem; elem = g_slist_next(elem))
+                    printf("%s ", (char *)elem->data);
+                  printf(";\n");
+                  g_slist_free($4);
+                  g_slist_free_full($6, g_free);
+                }
         ;
 
 signal_type_refs:
