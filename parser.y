@@ -231,7 +231,7 @@ tag_or_name:    name { printf("\t%s\n", $1); g_free($1); }
         |       EV { printf("\tEV_\n"); }
         |       EV_DATA { printf("\tEV_DATA_\n"); }
         |       ENVVAR_DATA { printf("\tENVVAR_DATA_\n"); }
-        |       SGTYPE { printf("\tSGTYPE\n"); }
+        |       SGTYPE { printf("\tSGTYPE_\n"); }
         |       SIG_TYPE_REF { printf("\tSIG_TYPE_REF_\n"); }
         |       BA_DEF_SGTYPE { printf("\tBA_DEF_SGTYPE_\n"); }
         |       BA_SGTYPE { printf("\tBA_SGTYPE_\n"); }
