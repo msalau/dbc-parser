@@ -187,6 +187,22 @@ CAT_DEF_ 1 Category1 1;
 CAT_DEF_ 2 Category1 2;
 CAT_DEF_ 3 Category1 3;
 
+CAT_ EV_ EnvVar1 1;
+CAT_ EV_ EnvVar2 2;
+CAT_ EV_ EnvVar3 3;
+
+CAT_ BU_ ECU0 1;
+CAT_ BU_ ECU1 1;
+CAT_ BU_ ECU2 2;
+CAT_ BU_ ECU3 3;
+
+CAT_ BO_ 66 1;
+CAT_ BO_ 67 2;
+CAT_ BO_ 68 3;
+CAT_ BO_ 69 1;
+CAT_ BO_ 70 2;
+CAT_ BO_ 71 3;
+
 SIG_TYPE_REF_ 70 Foo : FooSignalType ;
 
 SIG_GROUP_ 71 FloatValues 1 : Float1 Float2;

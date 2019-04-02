@@ -21,6 +21,13 @@ typedef enum attr_obj_type
   ATTR_OBJ_TYPE_ECU_ENV_REL,
 } attr_obj_type_t;
 
+typedef enum cat_obj_type
+{
+  CAT_OBJ_TYPE_ECU,
+  CAT_OBJ_TYPE_FRAME,
+  CAT_OBJ_TYPE_ENV,
+} cat_obj_type_t;
+
 typedef enum attr_value_type
 {
   ATTR_VALUE_TYPE_INT = 0,
@@ -70,6 +77,13 @@ typedef struct { unsigned val[2]; } mul_val_t;
   struct
   {
     int       type;
+    unsigned  id;
+    char     *name;
+  } cat_obj;
+
+  struct
+  {
+    int       type;
     unsigned  frame_id;
     char     *ecu_name;
     char     *obj_name;
@@ -106,7 +120,7 @@ typedef struct { unsigned val[2]; } mul_val_t;
 %token VERSION NS BS BU VAL_TABLE BO SG BO_TX_BU EV EV_DATA ENVVAR_DATA CM VAL SIG_GROUP SIG_VALTYPE SG_MUL_VAL SGTYPE SIG_TYPE_REF
 %token BA_DEF BA_DEF_REL BA_DEF_DEF BA_DEF_DEF_REL BA BA_REL BU_BO_REL BU_SG_REL BU_EV_REL BA_DEF_SGTYPE BA_SGTYPE
 %token ATTR_INT ATTR_HEX ATTR_ENUM ATTR_FLOAT ATTR_STRING
-%token CAT_DEF
+%token CAT_DEF CAT
 
 %token <ival> INT
 %token <uval> UINT
@@ -129,6 +143,7 @@ typedef struct { unsigned val[2]; } mul_val_t;
 %type <attr_obj> attr_obj
 %type <attr_rel_obj> attr_rel_obj
 %type <attr_obj_value> attr_obj_value
+%type <cat_obj> category_object
 
 %destructor { g_free($$); } <sval>
 %destructor { g_free($$.sval); } <mux>
@@ -139,6 +154,7 @@ typedef struct { unsigned val[2]; } mul_val_t;
 %destructor { g_array_free($$, TRUE); } values mul_values
 %destructor { if ($$.type == ATTR_VALUE_TYPE_ENUM) g_slist_free_full($$.list, g_free); } attr_value_type
 %destructor { if ($$.type == ATTR_VALUE_TYPE_STRING) g_free($$.sval); } attr_obj_value
+%destructor { g_free($$.name); } category_object
 
 %%
 
@@ -159,6 +175,7 @@ file:           version
                 attr_values
                 value_definitions
                 category_definitions
+                categories
                 signal_type_refs
                 signal_groups
                 signal_value_types
@@ -216,6 +233,7 @@ tag_or_name:    name { printf("\t%s\n", $1); g_free($1); }
         |       BA_DEF_SGTYPE { printf("\tBA_DEF_SGTYPE_\n"); }
         |       BA_SGTYPE { printf("\tBA_SGTYPE_\n"); }
         |       CAT_DEF { printf("\tCAT_DEF_\n"); }
+        |       CAT { printf("\tCAT_\n"); }
         ;
 
 ecus:           BU ':' maybe_names
@@ -811,6 +829,37 @@ category_definition:
                   printf("CAT_DEF_ %u %s %u ;\n", $2, $3, $4);
                   g_free($3);
                 }
+        ;
+
+categories:
+                %empty
+        |       category categories
+        ;
+
+category:       CAT category_object UINT ';'
+                {
+                  printf("CAT_ ");
+                  switch ($2.type)
+                  {
+                  case CAT_OBJ_TYPE_ENV:
+                    printf("EV_ %s", $2.name);
+                    break;
+                  case CAT_OBJ_TYPE_ECU:
+                    printf("BU_ %s", $2.name);
+                    break;
+                  case CAT_OBJ_TYPE_FRAME:
+                    printf("BO_ %u", $2.id);
+                    break;
+                  }
+                  printf(" %u ;\n", $3);
+                  g_free($2.name);
+                }
+        ;
+
+category_object:
+                EV name { $$.type = CAT_OBJ_TYPE_ENV; $$.name = $2; }
+        |       BU name { $$.type = CAT_OBJ_TYPE_ECU; $$.name = $2; }
+        |       BO UINT { $$.type = CAT_OBJ_TYPE_FRAME; $$.name = NULL; $$.id = $2; }
         ;
 
 signal_type_refs:
