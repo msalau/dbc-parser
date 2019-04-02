@@ -183,6 +183,10 @@ VAL_ 67 TestMsg2Signal
 VAL_ 70 Foo 0 "Zero" 1 "One" 2 "Two" 3 "Three";
 VAL_ EnvVar1 0 "Zero" 1 "One" 2 "Two" -1 "MinusOne";
 
+CAT_DEF_ 1 Category1 1;
+CAT_DEF_ 2 Category1 2;
+CAT_DEF_ 3 Category1 3;
+
 SIG_TYPE_REF_ 70 Foo : FooSignalType ;
 
 SIG_GROUP_ 71 FloatValues 1 : Float1 Float2;

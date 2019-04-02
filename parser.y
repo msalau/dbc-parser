@@ -106,6 +106,7 @@ typedef struct { unsigned val[2]; } mul_val_t;
 %token VERSION NS BS BU VAL_TABLE BO SG BO_TX_BU EV EV_DATA ENVVAR_DATA CM VAL SIG_GROUP SIG_VALTYPE SG_MUL_VAL SGTYPE SIG_TYPE_REF
 %token BA_DEF BA_DEF_REL BA_DEF_DEF BA_DEF_DEF_REL BA BA_REL BU_BO_REL BU_SG_REL BU_EV_REL BA_DEF_SGTYPE BA_SGTYPE
 %token ATTR_INT ATTR_HEX ATTR_ENUM ATTR_FLOAT ATTR_STRING
+%token CAT_DEF
 
 %token <ival> INT
 %token <uval> UINT
@@ -157,6 +158,7 @@ file:           version
                 attr_defaults
                 attr_values
                 value_definitions
+                category_definitions
                 signal_type_refs
                 signal_groups
                 signal_value_types
@@ -213,6 +215,7 @@ tag_or_name:    name { printf("\t%s\n", $1); g_free($1); }
         |       SIG_TYPE_REF { printf("\tSIG_TYPE_REF_\n"); }
         |       BA_DEF_SGTYPE { printf("\tBA_DEF_SGTYPE_\n"); }
         |       BA_SGTYPE { printf("\tBA_SGTYPE_\n"); }
+        |       CAT_DEF { printf("\tCAT_DEF_\n"); }
         ;
 
 ecus:           BU ':' maybe_names
@@ -796,6 +799,19 @@ value:          int TEXT
                   $$.value  = $1;
                   $$.strptr = $2;
                 };
+
+category_definitions:
+                %empty
+        |       category_definition category_definitions
+        ;
+
+category_definition:
+                CAT_DEF UINT name UINT ';'
+                {
+                  printf("CAT_DEF_ %u %s %u ;\n", $2, $3, $4);
+                  g_free($3);
+                }
+        ;
 
 signal_type_refs:
                 %empty
