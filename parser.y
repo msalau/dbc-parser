@@ -241,7 +241,7 @@ tag_or_name:    name { printf("\t%s\n", $1); g_free($1); }
         |       BA_SGTYPE { printf("\tBA_SGTYPE_\n"); }
         |       CAT_DEF { printf("\tCAT_DEF_\n"); }
         |       CAT { printf("\tCAT_\n"); }
-        |       FILTER { printf("\tFILTER_\n"); }
+        |       FILTER { printf("\tFILTER\n"); }
         ;
 
 ecus:           BU ':' maybe_names
