@@ -52,7 +52,7 @@ parse: scanner.yy.o parser.tab.o
 		flex --outfile=$*.yy.c --header-file=$*.yy.h  $<
 
 %.tab.c %.tab.h %.xml: %.y
-		bison -x -v -d $<
+		bison -Werror -x -v -d $<
 
 %.dot: %.xml
 		xsltproc $(shell bison --print-datadir)/xslt/xml2dot.xsl $< >$@
