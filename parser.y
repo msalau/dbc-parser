@@ -238,15 +238,9 @@ bus_speed:      BS ':'
         |       BS ':' UINT ':' UINT ',' UINT
         ;
 
-ecus:           BU ':' maybe_names
+ecus:           BU ':' maybe_names[ecu_names]
                 {
-                    printf("BU_:");
-                    for (GSList *elem = $3; elem; elem = g_slist_next(elem))
-                    {
-                        printf(" %s", (char *)elem->data);
-                    }
-                    printf("\n\n");
-                    g_slist_free_full($3, g_free);
+                    g_slist_free_full($ecu_names, g_free);
                 };
 
 value_tables:   %empty
