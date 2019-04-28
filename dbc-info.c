@@ -1,4 +1,16 @@
 #include "dbc-info.h"
+#include <stdio.h>
+
+static gint dbc_find_frame_helper(gconstpointer frame, gconstpointer id)
+{
+    return ((const dbc_frame_t *)frame)->id == GPOINTER_TO_UINT(id) ? 0 : 1;
+}
+
+dbc_frame_t *dbc_find_frame(const dbc_file_t *file, uint32_t id)
+{
+    GSList *elem = g_slist_find_custom(file->frames, GUINT_TO_POINTER(id), dbc_find_frame_helper);
+    return elem ? elem->data : NULL;
+}
 
 static void free_value_string(gpointer data)
 {

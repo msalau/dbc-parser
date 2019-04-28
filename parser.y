@@ -356,15 +356,26 @@ frame_transmitter_lists:
         ;
 
 frame_transmitter_list:
-                BO_TX_BU UINT ':' comma_separated_names ';'
+                BO_TX_BU UINT[frame_id] ':' comma_separated_names[senders] ';'
                 {
-                  printf("BO_TX_BU_ %u : ", $2);
-                  for (GSList *elem = $4; elem; elem = g_slist_next(elem))
-                  {
-                    printf("%s%s", (char *)elem->data, (g_slist_next(elem) ? "," : ""));
-                  }
-                  printf(";\n");
-                  g_slist_free_full($4, g_free);
+                    dbc_frame_t *frame = dbc_find_frame(dbc, $frame_id);
+                    if (frame)
+                    {
+                        GArray   *arr = g_array_sized_new(TRUE, TRUE, sizeof(gchar *), g_slist_length($senders));
+                        unsigned  i   = 0;
+                        gchar    *senders_str;
+
+                        // TODO: Check is we need to keep the original sender name
+                        for (GSList *elem = $senders; elem; i++, elem = g_slist_next(elem))
+                            g_array_insert_val(arr, i, elem->data);
+
+                        senders_str = g_strjoinv("|", (gchar **)arr->data);
+                        g_array_free(arr, TRUE);
+                        g_free(frame->senders);
+                        frame->senders = senders_str;
+                    }
+
+                    g_slist_free_full($senders, g_free);
                 }
         ;
 
