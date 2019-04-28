@@ -195,54 +195,47 @@ version:        %empty
                 };
 
 symbols:        %empty
-        |       NS ':'
-                {
-                  printf("NS_ :\n");
-                }
-                tags_or_names
-                {
-                  printf("\n");
-                };
-
-bus_speed:      BS ':' { printf("BS_:\n\n"); };
-        |       BS ':' UINT { printf("BS_: %u\n\n", $3); };
-        |       BS ':' UINT ':' UINT ',' UINT { printf("BS_: %u : %u , %u\n\n", $3, $5, $7); };
-        ;
+        |       NS ':' tags_or_names;
 
 tags_or_names:  %empty
         |       tag_or_name tags_or_names
         ;
 
-tag_or_name:    name { printf("\t%s\n", $1); g_free($1); }
-        |       NS_DESC { printf("\tNS_DESC_\n"); }
-        |       CM { printf("\tCM_\n"); }
-        |       VAL { printf("\tVAL_\n"); }
-        |       VAL_TABLE { printf("\tVAL_TABLE_\n"); }
-        |       BA { printf("\tBA_\n"); }
-        |       BA_REL { printf("\tBA_REL_\n"); }
-        |       BA_DEF { printf("\tBA_DEF_\n"); }
-        |       BA_DEF_REL { printf("\tBA_DEF_REL_\n"); }
-        |       BA_DEF_DEF { printf("\tBA_DEF_DEF_\n"); }
-        |       BA_DEF_DEF_REL { printf("\tBA_DEF_DEF_REL_\n"); }
-        |       BU_BO_REL { printf("\tBU_BO_REL_\n"); }
-        |       BU_SG_REL { printf("\tBU_SG_REL_\n"); }
-        |       BU_EV_REL { printf("\tBU_EV_REL_\n"); }
-        |       SIG_VALTYPE { printf("\tSIG_VALTYPE_\n"); }
-        |       SIG_GROUP { printf("\tSIG_GROUP_\n"); }
-        |       SG_MUL_VAL { printf("\tSG_MUL_VAL_\n"); }
-        |       BO_TX_BU { printf("\tBO_TX_BU_\n"); }
-        |       EV { printf("\tEV_\n"); }
-        |       EV_DATA { printf("\tEV_DATA_\n"); }
-        |       ENVVAR_DATA { printf("\tENVVAR_DATA_\n"); }
-        |       SGTYPE { printf("\tSGTYPE_\n"); }
-        |       SIG_TYPE_REF { printf("\tSIG_TYPE_REF_\n"); }
-        |       SGTYPE_VAL { printf("\tSGTYPE_VAL_\n"); }
-        |       SIGTYPE_VALTYPE { printf("\tSIGTYPE_VALTYPE_\n"); }
-        |       BA_DEF_SGTYPE { printf("\tBA_DEF_SGTYPE_\n"); }
-        |       BA_SGTYPE { printf("\tBA_SGTYPE_\n"); }
-        |       CAT_DEF { printf("\tCAT_DEF_\n"); }
-        |       CAT { printf("\tCAT_\n"); }
-        |       FILTER { printf("\tFILTER\n"); }
+tag_or_name:    name { g_free($1); }
+        |       NS_DESC
+        |       CM
+        |       VAL
+        |       VAL_TABLE
+        |       BA
+        |       BA_REL
+        |       BA_DEF
+        |       BA_DEF_REL
+        |       BA_DEF_DEF
+        |       BA_DEF_DEF_REL
+        |       BU_BO_REL
+        |       BU_SG_REL
+        |       BU_EV_REL
+        |       SIG_VALTYPE
+        |       SIG_GROUP
+        |       SG_MUL_VAL
+        |       BO_TX_BU
+        |       EV
+        |       EV_DATA
+        |       ENVVAR_DATA
+        |       SGTYPE
+        |       SIG_TYPE_REF
+        |       SGTYPE_VAL
+        |       SIGTYPE_VALTYPE
+        |       BA_DEF_SGTYPE
+        |       BA_SGTYPE
+        |       CAT_DEF
+        |       CAT
+        |       FILTER
+        ;
+
+bus_speed:      BS ':'
+        |       BS ':' UINT
+        |       BS ':' UINT ':' UINT ',' UINT
         ;
 
 ecus:           BU ':' maybe_names
