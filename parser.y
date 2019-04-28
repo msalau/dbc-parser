@@ -113,6 +113,7 @@ typedef struct { unsigned val[2]; } mul_val_t;
   GArray *array;
   value_string value;
   dbc_frame_t *frame;
+  dbc_signal_t *signal;
 }
 
 %expect 0
@@ -150,6 +151,8 @@ typedef struct { unsigned val[2]; } mul_val_t;
 %type <attr_obj_value> attr_obj_value
 %type <cat_obj> category_object
 %type <frame> frame
+%type <signal> signal
+%type <list> signals
 
 %destructor { g_free($$); } <sval>
 %destructor { g_free($$.sval); } <mux>
@@ -163,6 +166,8 @@ typedef struct { unsigned val[2]; } mul_val_t;
 %destructor { if ($$.type == ATTR_VALUE_TYPE_STRING) g_free($$.sval); } attr_obj_value
 %destructor { g_free($$.name); } category_object
 %destructor { dbc_free_frame($$); } frame
+%destructor { dbc_free_signal($$); } signal
+%destructor { g_slist_free_full($$, (GDestroyNotify)dbc_free_signal); } signals
 
 %%
 
@@ -263,11 +268,12 @@ frames:         %empty
 frame_with_signals:
                 frame signals
                 {
+                    $frame->signals = $signals;
                     dbc->frames = g_slist_prepend(dbc->frames, $frame);
                 };
 
-signals:        %empty
-        |       signal signals
+signals:        %empty { $$ = NULL; }
+        |       signal signals { $$ = g_slist_prepend($2, $1); }
         ;
 
 maybe_name:     %empty { $$ = NULL; }
@@ -288,27 +294,28 @@ frame:          BO UINT[frame_id] name[frame_name] ':' UINT[frame_length] name[f
                     $$->senders = $frame_sender;
                 };
 
-signal:         SG name mux ':' UINT '|' UINT '@' UINT SIGN '(' float ',' float ')' '[' float '|' float ']' TEXT comma_separated_names
+signal:         SG name[signal_name] mux[signal_mux] ':'
+                UINT[signal_start] '|' UINT[signal_length] '@' UINT[signal_endianess] SIGN[signal_signess]
+                '(' float[signal_factor] ',' float[signal_offset] ')'
+                '[' float[signal_min] '|' float[signal_max] ']'
+                TEXT[signal_unit] comma_separated_names[signal_receivers]
                 {
-                  char muxstr[16] = "";
-                  if ($3.is_muxed && $3.is_muxer)
-                    sprintf(muxstr, "m%uM ", $3.value);
-                  else if ($3.is_muxed && !$3.is_muxer)
-                    sprintf(muxstr, "m%u ", $3.value);
-                  else if (!$3.is_muxed && $3.is_muxer)
-                    sprintf(muxstr, "M ");
-                  printf(" SG_ %s %s: %u|%u@%u%c (%g,%g) [%g|%g] \"%s\"  ",
-                         $2, muxstr,
-                         $5, $7, $9, $10,
-                         $12, $14, $17, $19, $21);
-                  g_free($2);
-                  g_free($21);
-                  for (GSList *elem = $22; elem; elem = g_slist_next(elem))
-                  {
-                    printf("%s%s", (char *)elem->data, (g_slist_next(elem) ? "," : ""));
-                  }
-                  printf("\n");
-                  g_slist_free_full($22, g_free);
+                    $$ = g_new0(dbc_signal_t, 1);
+
+                    $$->name      = $signal_name;
+                    $$->start     = $signal_start;
+                    $$->length    = $signal_length;
+                    $$->endianess = $signal_endianess;
+                    $$->signess   = ($signal_signess == '+') ? DBC_SIGNAL_SIGNESS_UNSIGNED : DBC_SIGNAL_SIGNESS_SIGNED;
+                    $$->factor    = $signal_factor;
+                    $$->offset    = $signal_offset;
+                    $$->min       = $signal_min;
+                    $$->max       = $signal_max;
+                    $$->unit      = $signal_unit;
+
+                    // TODO: Handle muxing
+                    (void)$signal_mux;
+                    g_slist_free_full($signal_receivers, g_free);
                 };
 
 mux:            %empty

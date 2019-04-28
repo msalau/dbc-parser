@@ -34,14 +34,14 @@ typedef struct
 
 typedef enum
 {
-    DBC_SIGNAL_ENDIANESS_INTEL,
-    DBC_SIGNAL_ENDIANESS_MOTOROLA,
+    DBC_SIGNAL_ENDIANESS_MOTOROLA = 0,
+    DBC_SIGNAL_ENDIANESS_INTEL    = 1,
 } dbc_signal_endianess_t;
 
 typedef enum
 {
-    DBC_SIGNAL_SIGNESS_UNSIGNED,
-    DBC_SIGNAL_SIGNESS_SIGNED,
+    DBC_SIGNAL_SIGNESS_UNSIGNED = 0,
+    DBC_SIGNAL_SIGNESS_SIGNED   = 1,
 } dbc_signal_signess_t;
 
 typedef enum
@@ -58,7 +58,7 @@ typedef struct
     uint32_t  start;
     uint32_t  length;
 
-    dbc_signal_endianess_t endian;
+    dbc_signal_endianess_t endianess;
     dbc_signal_signess_t   signess;
     dbc_signal_type_t      type;
 
