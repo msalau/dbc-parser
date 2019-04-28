@@ -413,13 +413,15 @@ signal_types:   %empty
         |       signal_type signal_types
         ;
 
-signal_type:    SGTYPE name ':' UINT '@' UINT SIGN '(' float ',' float ')' '[' float '|' float ']' TEXT float maybe_name ';'
+signal_type:    SGTYPE name[sigtype_name] ':'
+                UINT[sigtype_length] '@' UINT[sigtype_endianess] SIGN[sigtype_signess]
+                '(' float[sigtype_factor] ',' float[sigtype_offset] ')'
+                '[' float[sigtype_min] '|' float[sigtype_max] ']'
+                TEXT[sigtype_unit] float[sigtype_defaultvalue] maybe_name[sigtype_valtable] ';'
                 {
-                  printf("SGTYPE_ %s : %u@%u%c (%g,%g) [%g|%g] \"%s\" %g %s ;\n",
-                         $2, $4, $6, $7, $9, $11, $14, $16, $18, $19, $20 ? $20 : "");
-                  g_free($2);
-                  g_free($18);
-                  g_free($20);
+                    g_free($sigtype_name);
+                    g_free($sigtype_unit);
+                    g_free($sigtype_valtable);
                 }
         ;
 
