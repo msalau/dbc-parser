@@ -436,10 +436,10 @@ comment:        comment_net
         |       comment_env
         ;
 
-comment_net:    CM TEXT ';'
+comment_net:    CM TEXT[text] ';'
                 {
-                  printf("CM_ \"%s\";\n", $2);
-                  g_free($2);
+                    g_free(dbc->comment);
+                    dbc->comment = $text;
                 };
 
 comment_ecu:    CM BU name TEXT ';'
