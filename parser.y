@@ -3,11 +3,12 @@
 #include <gmodule.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include "dbc-info.h"
 #include "value_string.h"
 #include "parser.tab.h"
 #include "scanner.yy.h"
 
-void yyerror(const char *s);
+void yyerror(dbc_file_t *dbc, const char *s);
 
 typedef enum attr_obj_type
 {
@@ -116,6 +117,7 @@ typedef struct { unsigned val[2]; } mul_val_t;
 %expect 0
 %locations
 %define parse.error verbose
+%parse-param {dbc_file_t *dbc}
 
 %token VERSION NS BS BU VAL_TABLE BO SG BO_TX_BU EV EV_DATA ENVVAR_DATA CM VAL SIG_GROUP SIG_VALTYPE SG_MUL_VAL SGTYPE SIG_TYPE_REF
 %token BA_DEF BA_DEF_REL BA_DEF_DEF BA_DEF_DEF_REL BA BA_REL BU_BO_REL BU_SG_REL BU_EV_REL BA_DEF_SGTYPE BA_SGTYPE
@@ -187,10 +189,9 @@ file:           version
                 ;
 
 version:        %empty
-        |       VERSION TEXT
+        |       VERSION TEXT[version_string]
                 {
-                  printf("VERSION \"%s\"\n\n\n", $2);
-                  g_free($2);
+                    dbc->version = $version_string;
                 };
 
 symbols:        %empty
@@ -1028,7 +1029,9 @@ int main(int argc, char** argv)
         yyset_in(in);
         yylloc.last_line = 1;
         yylloc.last_column = 0;
-        yyparse();
+        dbc_file_t *dbc = g_new0(dbc_file_t, 1);
+        yyparse(dbc);
+        dbc_free(dbc);
         yylex_destroy();
 
         if (in != stdin)
@@ -1045,8 +1048,10 @@ int main(int argc, char** argv)
     return ret_code;
 }
 
-void yyerror(const char *s)
+void yyerror(dbc_file_t *dbc, const char *s)
 {
+    (void)dbc;
+
     fprintf(stderr, "%s:%i:%i: %s\n", filename, yylloc.first_line, yylloc.first_column, s);
     ret_code = 1;
 }

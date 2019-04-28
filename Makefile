@@ -45,7 +45,7 @@ SFP200%20v02.dbc:
 
 scanner.yy.o: parser.tab.h
 
-parse: scanner.yy.o parser.tab.o
+parse: scanner.yy.o parser.tab.o dbc-info.o
 		$(CC) $(LDFLAGS) -o $@ $^ $(LIBS)
 
 %.yy.c %.yy.h: %.l

@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include "value_string.h"
+#include "dbc-info.h"
 #include "parser.tab.h"
 
 #define YY_USER_ACTION \
