@@ -25,6 +25,8 @@ void dbc_free_frame(dbc_frame_t *frame)
     g_free(frame->senders);
 
     g_slist_free_full(frame->signals, (GDestroyNotify)dbc_free_signal);
+
+    g_free(frame);
 }
 
 void dbc_free_signal(dbc_signal_t *signal)

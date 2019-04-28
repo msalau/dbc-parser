@@ -112,6 +112,7 @@ typedef struct { unsigned val[2]; } mul_val_t;
   GSList *list;
   GArray *array;
   value_string value;
+  dbc_frame_t *frame;
 }
 
 %expect 0
@@ -148,6 +149,7 @@ typedef struct { unsigned val[2]; } mul_val_t;
 %type <attr_rel_obj> attr_rel_obj
 %type <attr_obj_value> attr_obj_value
 %type <cat_obj> category_object
+%type <frame> frame
 
 %destructor { g_free($$); } <sval>
 %destructor { g_free($$.sval); } <mux>
@@ -160,6 +162,7 @@ typedef struct { unsigned val[2]; } mul_val_t;
 %destructor { if ($$.type == ATTR_VALUE_TYPE_ENUM) g_slist_free_full($$.list, g_free); } attr_value_type
 %destructor { if ($$.type == ATTR_VALUE_TYPE_STRING) g_free($$.sval); } attr_obj_value
 %destructor { g_free($$.name); } category_object
+%destructor { dbc_free_frame($$); } frame
 
 %%
 
@@ -260,7 +263,7 @@ frames:         %empty
 frame_with_signals:
                 frame signals
                 {
-                  printf("\n");
+                    dbc->frames = g_slist_prepend(dbc->frames, $frame);
                 };
 
 signals:        %empty
@@ -275,11 +278,14 @@ name:           NAME { $$ = $1; }
         |       MUX  { $$ = $1.sval; }
         ;
 
-frame:          BO UINT name ':' UINT name
+frame:          BO UINT[frame_id] name[frame_name] ':' UINT[frame_length] name[frame_sender]
                 {
-                  printf("BO_ %u %s: %u %s\n", $2, $3, $5, $6);
-                  g_free($3);
-                  g_free($6);
+                    $$ = g_new0(dbc_frame_t, 1);
+
+                    $$->id      = $frame_id;
+                    $$->name    = $frame_name;
+                    $$->length  = $frame_length;
+                    $$->senders = $frame_sender;
                 };
 
 signal:         SG name mux ':' UINT '|' UINT '@' UINT SIGN '(' float ',' float ')' '[' float '|' float ']' TEXT comma_separated_names
