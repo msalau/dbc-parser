@@ -247,16 +247,10 @@ value_tables:   %empty
         |       value_table value_tables
                 ;
 
-value_table:    VAL_TABLE name values ';'
+value_table:    VAL_TABLE name[table_name] values[table_values] ';'
                 {
-                  printf("VAL_TABLE_ %s", $2);
-                  for (value_string *v = (value_string *)$3->data; v->strptr; v++)
-                  {
-                    printf(" %i \"%s\"", v->value, v->strptr);
-                  }
-                  printf(" ;\n");
-                  g_free($2);
-                  g_array_free($3, TRUE);
+                    g_free($table_name);
+                    g_array_free($table_values, TRUE);
                 };
 
 frames:         %empty
