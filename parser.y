@@ -383,19 +383,14 @@ env_variables:  %empty
         |       env_variable env_variables
         ;
 
-env_variable:   EV name ':' int '[' float '|' float ']' TEXT float int name comma_separated_names ';'
+env_variable:   EV name[ev_name] ':' int[ev_type]
+                '[' float[ev_min] '|' float[ev_max] ']'
+                TEXT[ev_unit] float[ev_initial] int[ev_id] name[ev_mode] comma_separated_names[ev_ecus] ';'
                 {
-                  printf("EV_ %s: %lli [%g|%g] \"%s\" %g %lli %s  ", $2, $4, $6, $8, $10, $11, $12, $13);
-                  g_free($2);
-                  g_free($10);
-                  g_free($13);
-
-                  for (GSList *elem = $14; elem; elem = g_slist_next(elem))
-                  {
-                    printf("%s%s", (char *)elem->data, (g_slist_next(elem) ? "," : ""));
-                  }
-                  printf(";\n");
-                  g_slist_free_full($14, g_free);
+                    g_free($ev_name);
+                    g_free($ev_unit);
+                    g_free($ev_mode);
+                    g_slist_free_full($ev_ecus, g_free);
                 }
         ;
 
@@ -404,15 +399,13 @@ env_variables_data:
         |       env_data env_variables_data
         ;
 
-env_data:       ENVVAR_DATA name ':' UINT ';'
+env_data:       ENVVAR_DATA name[ev_name] ':' UINT ';'
                 {
-                  printf("ENVVAR_DATA_ %s : %u;\n", $2, $4);
-                  g_free($2);
+                    g_free($ev_name);
                 }
-        |       EV_DATA name ':' UINT ';'
+        |       EV_DATA name[ev_name] ':' UINT ';'
                 {
-                  printf("EV_DATA_ %s : %u;\n", $2, $4);
-                  g_free($2);
+                    g_free($ev_name);
                 }
         ;
 
