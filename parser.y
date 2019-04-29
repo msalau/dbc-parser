@@ -633,93 +633,50 @@ attr_values:
         ;
 
 attr_value:
-                BA TEXT attr_obj attr_obj_value ';'
+                BA TEXT[attr_name] attr_obj attr_obj_value ';'
                 {
-                    printf("BA_ \"%s\" ", $2);
-                    g_free($2);
-                    switch ($3.type)
+                    if (g_strcmp0($attr_name, FRAME_TYPE_ATTRIBUTE_NAME) == 0 &&
+                        $attr_obj.type == ATTR_OBJ_TYPE_FRAME &&
+                        $attr_obj_value.type == ATTR_VALUE_TYPE_INT &&
+                        $attr_obj_value.ival == dbc->j1939_type_num)
                     {
-                    case ATTR_OBJ_TYPE_ECU:
-                        printf("BU_ %s ", $3.name);
-                        break;
-                    case ATTR_OBJ_TYPE_FRAME:
-                        printf("BO_ %lli ", $3.id);
-                        break;
-                    case ATTR_OBJ_TYPE_SIGNAL:
-                        printf("SG_ %lli %s ", $3.id, $3.name);
-                        break;
-                    case ATTR_OBJ_TYPE_ENV:
-                        printf("EV_ %s ", $3.name);
-                        break;
+                        dbc_frame_t *frame = dbc_find_frame(dbc, $attr_obj.id);
+                        if (frame)
+                            frame->type = DBC_FRAME_TYPE_J1939;
                     }
-                    g_free($3.name);
-                    switch ($4.type)
-                    {
-                    case ATTR_VALUE_TYPE_INT:
-                        printf("%lli", $4.ival);
-                        break;
-                    case ATTR_VALUE_TYPE_FLOAT:
-                        printf("%g", $4.fval);
-                        break;
-                    case ATTR_VALUE_TYPE_STRING:
-                        printf("\"%s\"", $4.sval);
-                        g_free($4.sval);
-                        break;
-                    }
-                    printf(";\n");
+                    g_free($attr_name);
+                    g_free($attr_obj.name);
+                    if ($attr_obj_value.type == ATTR_VALUE_TYPE_STRING)
+                        g_free($attr_obj_value.sval);
                 }
         |       BA_REL TEXT attr_rel_obj attr_obj_value ';'
                 {
-                    printf("BA_REL_ \"%s\" ", $2);
                     g_free($2);
-                    switch ($3.type)
-                    {
-                    case ATTR_OBJ_TYPE_ECU_FRAME_REL:
-                        printf("BU_BO_REL_ %s %u ", $3.ecu_name, $3.frame_id);
-                        break;
-                    case ATTR_OBJ_TYPE_ECU_SIGNAL_REL:
-                        printf("BU_SG_REL_ %s SG_ %u %s ", $3.ecu_name, $3.frame_id, $3.obj_name);
-                        break;
-                    case ATTR_OBJ_TYPE_ECU_ENV_REL:
-                        printf("BU_EV_REL_ %s %s ", $3.ecu_name, $3.obj_name);
-                        break;
-                    }
                     g_free($3.ecu_name);
                     g_free($3.obj_name);
                     switch ($4.type)
                     {
                     case ATTR_VALUE_TYPE_INT:
-                        printf("%lli", $4.ival);
-                        break;
                     case ATTR_VALUE_TYPE_FLOAT:
-                        printf("%g", $4.fval);
                         break;
                     case ATTR_VALUE_TYPE_STRING:
-                        printf("\"%s\"", $4.sval);
                         g_free($4.sval);
                         break;
                     }
-                    printf(";\n");
                 }
         |       BA_SGTYPE TEXT SGTYPE name attr_obj_value ';'
                 {
-                    printf("BA_SGTYPE_ \"%s\" SGTYPE_ %s ", $2, $4);
                     g_free($2);
                     g_free($4);
                     switch ($5.type)
                     {
                     case ATTR_VALUE_TYPE_INT:
-                        printf("%lli", $5.ival);
-                        break;
                     case ATTR_VALUE_TYPE_FLOAT:
-                        printf("%g", $5.fval);
                         break;
                     case ATTR_VALUE_TYPE_STRING:
-                        printf("\"%s\"", $5.sval);
                         g_free($5.sval);
                         break;
                     }
-                    printf(";\n");
                 }
         ;
 
