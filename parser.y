@@ -903,14 +903,10 @@ signal_groups:  %empty
         |       signal_group signal_groups
         ;
 
-signal_group:   SIG_GROUP UINT name UINT ':' names ';'
+signal_group:   SIG_GROUP UINT[frame_id] name[group_name] UINT[repetitions] ':' names[signals] ';'
                 {
-                  printf("SIG_GROUP_ %u %s %u :", $2, $3, $4);
-                  for (GSList *elem = $6; elem; elem = g_slist_next(elem))
-                    printf(" %s", (char *)elem->data);
-                  printf(";\n");
-                  g_free($3);
-                  g_slist_free_full($6, g_free);
+                    g_free($group_name);
+                    g_slist_free_full($signals, g_free);
                 }
         ;
 
