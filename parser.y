@@ -595,10 +595,9 @@ attr_sgtype_definitions:
         ;
 
 attr_sgtype_definition:
-                BA_DEF_SGTYPE TEXT ';'
+                BA_DEF_SGTYPE TEXT[attr_name] ';'
                 {
-                    printf("BA_DEF_SGTYPE_ \"%s\";\n", $2);
-                    g_free($2);
+                    g_free($attr_name);
                 }
         ;
 
@@ -608,27 +607,23 @@ attr_defaults:
         ;
 
 attr_default:
-                BA_DEF_DEF TEXT int ';'
+                BA_DEF_DEF TEXT[attr_name] int ';'
                 {
-                    printf("BA_DEF_DEF_  \"%s\" %lli;\n", $2, $3);
-                    g_free($2);
+                    g_free($attr_name);
                 }
-        |       BA_DEF_DEF TEXT TEXT ';'
+        |       BA_DEF_DEF TEXT[attr_name] TEXT[attr_value] ';'
                 {
-                    printf("BA_DEF_DEF_  \"%s\" \"%s\";\n", $2, $3);
-                    g_free($2);
-                    g_free($3);
+                    g_free($attr_name);
+                    g_free($attr_value);
                 }
-        |       BA_DEF_DEF_REL TEXT int ';'
+        |       BA_DEF_DEF_REL TEXT[attr_name] int ';'
                 {
-                    printf("BA_DEF_DEF_REL_  \"%s\" %lli;\n", $2, $3);
-                    g_free($2);
+                    g_free($attr_name);
                 }
-        |       BA_DEF_DEF_REL TEXT TEXT ';'
+        |       BA_DEF_DEF_REL TEXT[attr_name] TEXT[attr_value] ';'
                 {
-                    printf("BA_DEF_DEF_REL_  \"%s\" \"%s\";\n", $2, $3);
-                    g_free($2);
-                    g_free($3);
+                    g_free($attr_name);
+                    g_free($attr_value);
                 }
         ;
 
