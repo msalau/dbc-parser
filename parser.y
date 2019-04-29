@@ -855,10 +855,9 @@ category_definitions:
         ;
 
 category_definition:
-                CAT_DEF UINT name UINT ';'
+                CAT_DEF UINT name[category_name] UINT ';'
                 {
-                  printf("CAT_DEF_ %u %s %u ;\n", $2, $3, $4);
-                  g_free($3);
+                    g_free($category_name);
                 }
         ;
 
@@ -869,21 +868,7 @@ categories:
 
 category:       CAT category_object UINT ';'
                 {
-                  printf("CAT_ ");
-                  switch ($2.type)
-                  {
-                  case CAT_OBJ_TYPE_ENV:
-                    printf("EV_ %s", $2.name);
-                    break;
-                  case CAT_OBJ_TYPE_ECU:
-                    printf("BU_ %s", $2.name);
-                    break;
-                  case CAT_OBJ_TYPE_FRAME:
-                    printf("BO_ %u", $2.id);
-                    break;
-                  }
-                  printf(" %u ;\n", $3);
-                  g_free($2.name);
+                    g_free($category_object.name);
                 }
         ;
 
