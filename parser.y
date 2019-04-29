@@ -293,6 +293,7 @@ frame:          BO UINT[frame_id] name[frame_name] ':' UINT[frame_length] name[f
                     $$->name    = $frame_name;
                     $$->length  = $frame_length;
                     $$->senders = $frame_sender;
+                    $$->type    = DBC_FRAME_TYPE_GENERIC;
                 };
 
 endianess:      UINT

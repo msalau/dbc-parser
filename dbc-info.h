@@ -16,8 +16,8 @@ typedef struct
 
 typedef enum
 {
-    DBC_FRAME_TYPE_GENERIC,
-    DBC_FRAME_TYPE_J1939,
+    DBC_FRAME_TYPE_GENERIC = 0,
+    DBC_FRAME_TYPE_J1939   = 1,
 } dbc_frame_type_t;
 
 typedef struct
