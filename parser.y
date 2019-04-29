@@ -886,22 +886,12 @@ signal_mul_values:
         ;
 
 signal_mul_value:
-                SG_MUL_VAL UINT name name mul_values ';'
+                SG_MUL_VAL UINT[frame_id] name[muxed_signal] name[muxer_signal] mul_values ';'
                 {
-                    printf("SG_MUL_VAL_ %u %s %s", $2, $3, $4);
-                    unsigned i;
-                    mul_val_t v;
-                    for (i = 0; i < ($5->len - 1); i++)
-                    {
-                        v = g_array_index($5, mul_val_t, i);
-                        printf(" %u-%u,", v.val[0], v.val[1]);
-                    }
-                    v = g_array_index($5, mul_val_t, i);
-                    printf(" %u-%u;\n", v.val[0], v.val[1]);
-
-                    g_free($3);
-                    g_free($4);
-                    g_array_free($5, TRUE);
+                    // TODO: Handle extended multiplexing
+                    g_free($muxed_signal);
+                    g_free($muxer_signal);
+                    g_array_free($mul_values, TRUE);
                 }
         ;
 
