@@ -34,8 +34,7 @@ static void free_value_string(gpointer data)
 
 void dbc_free(dbc_file_t *file)
 {
-    g_free(file->name);
-    g_free(file->path);
+    g_free(file->filepath);
     g_free(file->comment);
     g_free(file->version);
 

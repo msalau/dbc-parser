@@ -7,8 +7,7 @@
 
 typedef struct
 {
-    char   *name;
-    char   *path;
+    char   *filepath;
     char   *comment;
     char   *version;
     GSList *frames;

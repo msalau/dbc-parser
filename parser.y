@@ -976,8 +976,7 @@ mul_values:     mul_values ',' MUL_VAL
 
 #include <unistd.h>
 
-static int   ret_code = 0;
-static char *filename = NULL;
+static int ret_code = 0;
 
 int main(int argc, char** argv)
 {
@@ -1009,6 +1008,8 @@ int main(int argc, char** argv)
 
     while (optind < argc && !ret_code)
     {
+        char *filename;
+
         if (strcmp(argv[optind], "-"))
         {
             filename = argv[optind];
@@ -1030,6 +1031,7 @@ int main(int argc, char** argv)
         yylloc.last_line = 1;
         yylloc.last_column = 0;
         dbc_file_t *dbc = g_new0(dbc_file_t, 1);
+        dbc->filepath = g_strdup(filename);
         yyparse(dbc);
         dbc_free(dbc);
         yylex_destroy();
@@ -1050,8 +1052,6 @@ int main(int argc, char** argv)
 
 void yyerror(dbc_file_t *dbc, const char *s)
 {
-    (void)dbc;
-
-    fprintf(stderr, "%s:%i:%i: %s\n", filename, yylloc.first_line, yylloc.first_column, s);
+    fprintf(stderr, "%s:%i:%i: %s\n", dbc->filepath, yylloc.first_line, yylloc.first_column, s);
     ret_code = 1;
 }
