@@ -442,11 +442,10 @@ comment_net:    CM TEXT[text] ';'
                     dbc->comment = $text;
                 };
 
-comment_ecu:    CM BU name TEXT ';'
+comment_ecu:    CM BU name[ecu_name] TEXT[text] ';'
                 {
-                  printf("CM_ BU_ %s \"%s\";\n", $3, $4);
-                  g_free($3);
-                  g_free($4);
+                    g_free($ecu_name);
+                    g_free($text);
                 };
 
 comment_frame:  CM BO UINT TEXT ';'
