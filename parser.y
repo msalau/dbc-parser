@@ -12,35 +12,35 @@ void yyerror(dbc_file_t *dbc, const char *s);
 
 typedef enum attr_obj_type
 {
-  ATTR_OBJ_TYPE_NET = 0,
-  ATTR_OBJ_TYPE_ECU,
-  ATTR_OBJ_TYPE_FRAME,
-  ATTR_OBJ_TYPE_SIGNAL,
-  ATTR_OBJ_TYPE_ENV,
-  ATTR_OBJ_TYPE_ECU_FRAME_REL,
-  ATTR_OBJ_TYPE_ECU_SIGNAL_REL,
-  ATTR_OBJ_TYPE_ECU_ENV_REL,
+    ATTR_OBJ_TYPE_NET = 0,
+    ATTR_OBJ_TYPE_ECU,
+    ATTR_OBJ_TYPE_FRAME,
+    ATTR_OBJ_TYPE_SIGNAL,
+    ATTR_OBJ_TYPE_ENV,
+    ATTR_OBJ_TYPE_ECU_FRAME_REL,
+    ATTR_OBJ_TYPE_ECU_SIGNAL_REL,
+    ATTR_OBJ_TYPE_ECU_ENV_REL,
 } attr_obj_type_t;
 
 typedef enum cat_obj_type
 {
-  CAT_OBJ_TYPE_ECU,
-  CAT_OBJ_TYPE_FRAME,
-  CAT_OBJ_TYPE_ENV,
+    CAT_OBJ_TYPE_ECU,
+    CAT_OBJ_TYPE_FRAME,
+    CAT_OBJ_TYPE_ENV,
 } cat_obj_type_t;
 
 typedef enum attr_value_type
 {
-  ATTR_VALUE_TYPE_INT = 0,
-  ATTR_VALUE_TYPE_HEX,
-  ATTR_VALUE_TYPE_ENUM,
-  ATTR_VALUE_TYPE_FLOAT,
-  ATTR_VALUE_TYPE_STRING,
+    ATTR_VALUE_TYPE_INT = 0,
+    ATTR_VALUE_TYPE_HEX,
+    ATTR_VALUE_TYPE_ENUM,
+    ATTR_VALUE_TYPE_FLOAT,
+    ATTR_VALUE_TYPE_STRING,
 } attr_value_type_t;
 
 void free_value_string(gpointer data)
 {
-  g_free(((value_string *)data)->strptr);
+    g_free(((value_string *)data)->strptr);
 }
 
 typedef struct { unsigned val[2]; } mul_val_t;
@@ -49,71 +49,71 @@ typedef struct { unsigned val[2]; } mul_val_t;
 
 %union {
 
-  struct
-  {
-    unsigned value;
-    bool     is_muxed;
-    bool     is_muxer;
-    char    *sval;
-  } mux;
-
-  struct
-  {
-    int type;
-    union
+    struct
     {
-      GSList   *list;
-      long long ival[2];
-      double    fval[2];
-    };
-  } attr_value_type;
+        unsigned  value;
+        bool      is_muxed;
+        bool      is_muxer;
+        char     *sval;
+    } mux;
 
-  struct
-  {
-    int       type;
-    long long id;
-    char     *name;
-  } attr_obj;
-
-  struct
-  {
-    int       type;
-    unsigned  id;
-    char     *name;
-  } cat_obj;
-
-  struct
-  {
-    int       type;
-    unsigned  frame_id;
-    char     *ecu_name;
-    char     *obj_name;
-  } attr_rel_obj;
-
-  struct
-  {
-    int   type;
-    union
+    struct
     {
-      long long ival;
-      double    fval;
-      char     *sval;
-    };
-  } attr_obj_value;
+        int type;
+        union
+        {
+            GSList     *list;
+            long long   ival[2];
+            double      fval[2];
+        };
+    } attr_value_type;
 
-  int    ival;
-  unsigned uval;
-  long long llval;
-  unsigned mval[2];
-  double fval;
-  char  *sval;
-  char   cval;
+    struct
+    {
+        int        type;
+        long long  id;
+        char      *name;
+    } attr_obj;
 
-  GSList *list;
-  GArray *array;
-  value_string value;
-  dbc_frame_t *frame;
-  dbc_signal_t *signal;
+    struct
+    {
+        int       type;
+        unsigned  id;
+        char     *name;
+    } cat_obj;
+
+    struct
+    {
+        int       type;
+        unsigned  frame_id;
+        char     *ecu_name;
+        char     *obj_name;
+    } attr_rel_obj;
+
+    struct
+    {
+        int type;
+        union
+        {
+            long long  ival;
+            double     fval;
+            char      *sval;
+        };
+    } attr_obj_value;
+
+    int        ival;
+    unsigned   uval;
+    long long  llval;
+    unsigned   mval[2];
+    double     fval;
+    char      *sval;
+    char       cval;
+
+    GSList       *list;
+    GArray       *array;
+    value_string  value;
+    dbc_frame_t  *frame;
+    dbc_signal_t *signal;
 }
 
 %expect 0
@@ -273,12 +273,12 @@ frame_with_signals:
                     dbc->frames = g_slist_prepend(dbc->frames, $frame);
                 };
 
-signals:        %empty { $$ = NULL; }
+signals:        %empty         { $$ = NULL; }
         |       signal signals { $$ = g_slist_prepend($2, $1); }
         ;
 
 maybe_name:     %empty { $$ = NULL; }
-        |       name { $$ = $1; }
+        |       name   { $$ = $1; }
         ;
 
 name:           NAME { $$ = $1; }
@@ -334,15 +334,15 @@ signal:         SG name[signal_name] mux[signal_mux] ':'
 
 mux:            %empty
                 {
-                  $$.sval = NULL;
-                  $$.is_muxed = false;
-                  $$.is_muxer = false;
+                    $$.sval     = NULL;
+                    $$.is_muxed = false;
+                    $$.is_muxer = false;
                 }
         |       MUX
                 {
-                  $$ = $1;
-                  $$.sval = NULL;
-                  g_free($1.sval);
+                    $$      = $1;
+                    $$.sval = NULL;
+                    g_free($1.sval);
                 }
         ;
 
@@ -352,7 +352,7 @@ comma_separated_names:
         ;
 
 maybe_names:    %empty { $$ = NULL; }
-        |       names { $$ = $1; }
+        |       names  { $$ = $1; }
         ;
 
 names:          name names { $$ = g_slist_prepend($2, $1); }
@@ -505,42 +505,42 @@ attr_definitions:
 attr_definition:
                 attr_def_with_obj_type TEXT attr_value_type ';'
                 {
-                  static const char * attr_obj_type_str[] = {
-                    [ATTR_OBJ_TYPE_NET] = "",
-                    [ATTR_OBJ_TYPE_ECU] = " BU_",
-                    [ATTR_OBJ_TYPE_FRAME] = " BO_",
-                    [ATTR_OBJ_TYPE_SIGNAL] = " SG_",
-                    [ATTR_OBJ_TYPE_ENV] = " EV_",
-                    [ATTR_OBJ_TYPE_ECU_FRAME_REL] = "REL_ BU_BO_REL_",
-                    [ATTR_OBJ_TYPE_ECU_SIGNAL_REL] = "REL_ BU_SG_REL_",
-                    [ATTR_OBJ_TYPE_ECU_ENV_REL] = "REL_ BU_EV_REL_",
-                  };
-                  printf("BA_DEF_%s  \"%s\" ", attr_obj_type_str[$1], $2);
-                  g_free($2);
-                  switch ($3.type)
-                  {
-                  case ATTR_VALUE_TYPE_INT:
-                    printf("INT %lli %lli;\n", $3.ival[0], $3.ival[0]);
-                    break;
-                  case ATTR_VALUE_TYPE_HEX:
-                    printf("HEX %lli %lli;\n", $3.ival[0], $3.ival[0]);
-                    break;
-                  case ATTR_VALUE_TYPE_ENUM:
-                    printf("ENUM  ");
-                    for (GSList *elem = $3.list; elem; elem = g_slist_next(elem))
+                    static const char * attr_obj_type_str[] = {
+                        [ATTR_OBJ_TYPE_NET] = "",
+                        [ATTR_OBJ_TYPE_ECU] = " BU_",
+                        [ATTR_OBJ_TYPE_FRAME] = " BO_",
+                        [ATTR_OBJ_TYPE_SIGNAL] = " SG_",
+                        [ATTR_OBJ_TYPE_ENV] = " EV_",
+                        [ATTR_OBJ_TYPE_ECU_FRAME_REL] = "REL_ BU_BO_REL_",
+                        [ATTR_OBJ_TYPE_ECU_SIGNAL_REL] = "REL_ BU_SG_REL_",
+                        [ATTR_OBJ_TYPE_ECU_ENV_REL] = "REL_ BU_EV_REL_",
+                    };
+                    printf("BA_DEF_%s  \"%s\" ", attr_obj_type_str[$1], $2);
+                    g_free($2);
+                    switch ($3.type)
                     {
-                      printf("\"%s\"%s", (char *)elem->data, (g_slist_next(elem) ? "," : ""));
+                    case ATTR_VALUE_TYPE_INT:
+                        printf("INT %lli %lli;\n", $3.ival[0], $3.ival[0]);
+                        break;
+                    case ATTR_VALUE_TYPE_HEX:
+                        printf("HEX %lli %lli;\n", $3.ival[0], $3.ival[0]);
+                        break;
+                    case ATTR_VALUE_TYPE_ENUM:
+                        printf("ENUM  ");
+                        for (GSList *elem = $3.list; elem; elem = g_slist_next(elem))
+                        {
+                            printf("\"%s\"%s", (char *)elem->data, (g_slist_next(elem) ? "," : ""));
+                        }
+                        printf(";\n");
+                        g_slist_free_full($3.list, g_free);
+                        break;
+                    case ATTR_VALUE_TYPE_FLOAT:
+                        printf("FLOAT %g %g;\n", $3.fval[0], $3.fval[0]);
+                        break;
+                    case ATTR_VALUE_TYPE_STRING:
+                        printf("STRING ;\n");
+                        break;
                     }
-                    printf(";\n");
-                    g_slist_free_full($3.list, g_free);
-                    break;
-                  case ATTR_VALUE_TYPE_FLOAT:
-                    printf("FLOAT %g %g;\n", $3.fval[0], $3.fval[0]);
-                    break;
-                  case ATTR_VALUE_TYPE_STRING:
-                    printf("STRING ;\n");
-                    break;
-                  }
                 }
         ;
 
@@ -550,10 +550,10 @@ attr_def_with_obj_type:
         ;
 
 attr_obj_type:  %empty { $$ = ATTR_OBJ_TYPE_NET; }
-        |       BU { $$ = ATTR_OBJ_TYPE_ECU; }
-        |       BO { $$ = ATTR_OBJ_TYPE_FRAME; }
-        |       SG { $$ = ATTR_OBJ_TYPE_SIGNAL; }
-        |       EV { $$ = ATTR_OBJ_TYPE_ENV; }
+        |       BU     { $$ = ATTR_OBJ_TYPE_ECU; }
+        |       BO     { $$ = ATTR_OBJ_TYPE_FRAME; }
+        |       SG     { $$ = ATTR_OBJ_TYPE_SIGNAL; }
+        |       EV     { $$ = ATTR_OBJ_TYPE_ENV; }
         ;
 
 attr_rel_obj_type:
@@ -565,30 +565,30 @@ attr_rel_obj_type:
 attr_value_type:
                 ATTR_INT int int
                 {
-                  $$.type = ATTR_VALUE_TYPE_INT;
-                  $$.ival[0] = $2;
-                  $$.ival[1] = $3;
+                    $$.type    = ATTR_VALUE_TYPE_INT;
+                    $$.ival[0] = $2;
+                    $$.ival[1] = $3;
                 }
         |       ATTR_HEX int int
                 {
-                  $$.type = ATTR_VALUE_TYPE_HEX;
-                  $$.ival[0] = $2;
-                  $$.ival[1] = $3;
+                    $$.type    = ATTR_VALUE_TYPE_HEX;
+                    $$.ival[0] = $2;
+                    $$.ival[1] = $3;
                 }
         |       ATTR_FLOAT float float
                 {
-                  $$.type = ATTR_VALUE_TYPE_FLOAT;
-                  $$.fval[0] = $2;
-                  $$.fval[1] = $3;
+                    $$.type    = ATTR_VALUE_TYPE_FLOAT;
+                    $$.fval[0] = $2;
+                    $$.fval[1] = $3;
                 }
         |       ATTR_STRING
                 {
-                  $$.type = ATTR_VALUE_TYPE_STRING;
+                    $$.type = ATTR_VALUE_TYPE_STRING;
                 }
         |       ATTR_ENUM enum_values
                 {
-                  $$.type = ATTR_VALUE_TYPE_ENUM;
-                  $$.list = $2;
+                    $$.type = ATTR_VALUE_TYPE_ENUM;
+                    $$.list = $2;
                 }
         ;
 
@@ -605,8 +605,8 @@ attr_sgtype_definitions:
 attr_sgtype_definition:
                 BA_DEF_SGTYPE TEXT ';'
                 {
-                  printf("BA_DEF_SGTYPE_ \"%s\";\n", $2);
-                  g_free($2);
+                    printf("BA_DEF_SGTYPE_ \"%s\";\n", $2);
+                    g_free($2);
                 }
         ;
 
@@ -618,25 +618,25 @@ attr_defaults:
 attr_default:
                 BA_DEF_DEF TEXT int ';'
                 {
-                  printf("BA_DEF_DEF_  \"%s\" %lli;\n", $2, $3);
-                  g_free($2);
+                    printf("BA_DEF_DEF_  \"%s\" %lli;\n", $2, $3);
+                    g_free($2);
                 }
         |       BA_DEF_DEF TEXT TEXT ';'
                 {
-                  printf("BA_DEF_DEF_  \"%s\" \"%s\";\n", $2, $3);
-                  g_free($2);
-                  g_free($3);
+                    printf("BA_DEF_DEF_  \"%s\" \"%s\";\n", $2, $3);
+                    g_free($2);
+                    g_free($3);
                 }
         |       BA_DEF_DEF_REL TEXT int ';'
                 {
-                  printf("BA_DEF_DEF_REL_  \"%s\" %lli;\n", $2, $3);
-                  g_free($2);
+                    printf("BA_DEF_DEF_REL_  \"%s\" %lli;\n", $2, $3);
+                    g_free($2);
                 }
         |       BA_DEF_DEF_REL TEXT TEXT ';'
                 {
-                  printf("BA_DEF_DEF_REL_  \"%s\" \"%s\";\n", $2, $3);
-                  g_free($2);
-                  g_free($3);
+                    printf("BA_DEF_DEF_REL_  \"%s\" \"%s\";\n", $2, $3);
+                    g_free($2);
+                    g_free($3);
                 }
         ;
 
@@ -648,160 +648,160 @@ attr_values:
 attr_value:
                 BA TEXT attr_obj attr_obj_value ';'
                 {
-                  printf("BA_ \"%s\" ", $2);
-                  g_free($2);
-                  switch ($3.type)
-                  {
-                  case ATTR_OBJ_TYPE_ECU:
-                    printf("BU_ %s ", $3.name);
-                    break;
-                  case ATTR_OBJ_TYPE_FRAME:
-                    printf("BO_ %lli ", $3.id);
-                    break;
-                  case ATTR_OBJ_TYPE_SIGNAL:
-                    printf("SG_ %lli %s ", $3.id, $3.name);
-                    break;
-                  case ATTR_OBJ_TYPE_ENV:
-                    printf("EV_ %s ", $3.name);
-                    break;
-                  }
-                  g_free($3.name);
-                  switch ($4.type)
-                  {
-                  case ATTR_VALUE_TYPE_INT:
-                    printf("%lli", $4.ival);
-                    break;
-                  case ATTR_VALUE_TYPE_FLOAT:
-                    printf("%g", $4.fval);
-                    break;
-                  case ATTR_VALUE_TYPE_STRING:
-                    printf("\"%s\"", $4.sval);
-                    g_free($4.sval);
-                    break;
-                  }
-                  printf(";\n");
+                    printf("BA_ \"%s\" ", $2);
+                    g_free($2);
+                    switch ($3.type)
+                    {
+                    case ATTR_OBJ_TYPE_ECU:
+                        printf("BU_ %s ", $3.name);
+                        break;
+                    case ATTR_OBJ_TYPE_FRAME:
+                        printf("BO_ %lli ", $3.id);
+                        break;
+                    case ATTR_OBJ_TYPE_SIGNAL:
+                        printf("SG_ %lli %s ", $3.id, $3.name);
+                        break;
+                    case ATTR_OBJ_TYPE_ENV:
+                        printf("EV_ %s ", $3.name);
+                        break;
+                    }
+                    g_free($3.name);
+                    switch ($4.type)
+                    {
+                    case ATTR_VALUE_TYPE_INT:
+                        printf("%lli", $4.ival);
+                        break;
+                    case ATTR_VALUE_TYPE_FLOAT:
+                        printf("%g", $4.fval);
+                        break;
+                    case ATTR_VALUE_TYPE_STRING:
+                        printf("\"%s\"", $4.sval);
+                        g_free($4.sval);
+                        break;
+                    }
+                    printf(";\n");
                 }
         |       BA_REL TEXT attr_rel_obj attr_obj_value ';'
                 {
-                  printf("BA_REL_ \"%s\" ", $2);
-                  g_free($2);
-                  switch ($3.type)
-                  {
-                  case ATTR_OBJ_TYPE_ECU_FRAME_REL:
-                    printf("BU_BO_REL_ %s %u ", $3.ecu_name, $3.frame_id);
-                    break;
-                  case ATTR_OBJ_TYPE_ECU_SIGNAL_REL:
-                    printf("BU_SG_REL_ %s SG_ %u %s ", $3.ecu_name, $3.frame_id, $3.obj_name);
-                    break;
-                  case ATTR_OBJ_TYPE_ECU_ENV_REL:
-                    printf("BU_EV_REL_ %s %s ", $3.ecu_name, $3.obj_name);
-                    break;
-                  }
-                  g_free($3.ecu_name);
-                  g_free($3.obj_name);
-                  switch ($4.type)
-                  {
-                  case ATTR_VALUE_TYPE_INT:
-                    printf("%lli", $4.ival);
-                    break;
-                  case ATTR_VALUE_TYPE_FLOAT:
-                    printf("%g", $4.fval);
-                    break;
-                  case ATTR_VALUE_TYPE_STRING:
-                    printf("\"%s\"", $4.sval);
-                    g_free($4.sval);
-                    break;
-                  }
-                  printf(";\n");
+                    printf("BA_REL_ \"%s\" ", $2);
+                    g_free($2);
+                    switch ($3.type)
+                    {
+                    case ATTR_OBJ_TYPE_ECU_FRAME_REL:
+                        printf("BU_BO_REL_ %s %u ", $3.ecu_name, $3.frame_id);
+                        break;
+                    case ATTR_OBJ_TYPE_ECU_SIGNAL_REL:
+                        printf("BU_SG_REL_ %s SG_ %u %s ", $3.ecu_name, $3.frame_id, $3.obj_name);
+                        break;
+                    case ATTR_OBJ_TYPE_ECU_ENV_REL:
+                        printf("BU_EV_REL_ %s %s ", $3.ecu_name, $3.obj_name);
+                        break;
+                    }
+                    g_free($3.ecu_name);
+                    g_free($3.obj_name);
+                    switch ($4.type)
+                    {
+                    case ATTR_VALUE_TYPE_INT:
+                        printf("%lli", $4.ival);
+                        break;
+                    case ATTR_VALUE_TYPE_FLOAT:
+                        printf("%g", $4.fval);
+                        break;
+                    case ATTR_VALUE_TYPE_STRING:
+                        printf("\"%s\"", $4.sval);
+                        g_free($4.sval);
+                        break;
+                    }
+                    printf(";\n");
                 }
         |       BA_SGTYPE TEXT SGTYPE name attr_obj_value ';'
                 {
-                  printf("BA_SGTYPE_ \"%s\" SGTYPE_ %s ", $2, $4);
-                  g_free($2);
-                  g_free($4);
-                  switch ($5.type)
-                  {
-                  case ATTR_VALUE_TYPE_INT:
-                    printf("%lli", $5.ival);
-                    break;
-                  case ATTR_VALUE_TYPE_FLOAT:
-                    printf("%g", $5.fval);
-                    break;
-                  case ATTR_VALUE_TYPE_STRING:
-                    printf("\"%s\"", $5.sval);
-                    g_free($5.sval);
-                    break;
-                  }
-                  printf(";\n");
+                    printf("BA_SGTYPE_ \"%s\" SGTYPE_ %s ", $2, $4);
+                    g_free($2);
+                    g_free($4);
+                    switch ($5.type)
+                    {
+                    case ATTR_VALUE_TYPE_INT:
+                        printf("%lli", $5.ival);
+                        break;
+                    case ATTR_VALUE_TYPE_FLOAT:
+                        printf("%g", $5.fval);
+                        break;
+                    case ATTR_VALUE_TYPE_STRING:
+                        printf("\"%s\"", $5.sval);
+                        g_free($5.sval);
+                        break;
+                    }
+                    printf(";\n");
                 }
         ;
 
 attr_obj:       %empty
                 {
-                  $$.type = ATTR_OBJ_TYPE_NET;
-                  $$.name = NULL;
+                    $$.type = ATTR_OBJ_TYPE_NET;
+                    $$.name = NULL;
                 }
         |       BU name
                 {
-                  $$.type = ATTR_OBJ_TYPE_ECU;
-                  $$.name = $2;
+                    $$.type = ATTR_OBJ_TYPE_ECU;
+                    $$.name = $2;
                 }
         |       BO UINT
                 {
-                  $$.type = ATTR_OBJ_TYPE_FRAME;
-                  $$.id = $2;
-                  $$.name = NULL;
+                    $$.type = ATTR_OBJ_TYPE_FRAME;
+                    $$.id   = $2;
+                    $$.name = NULL;
                 }
         |       SG UINT name
                 {
-                  $$.type = ATTR_OBJ_TYPE_SIGNAL;
-                  $$.id = $2;
-                  $$.name = $3;
+                    $$.type = ATTR_OBJ_TYPE_SIGNAL;
+                    $$.id   = $2;
+                    $$.name = $3;
                 }
         |       EV name
                 {
-                  $$.type = ATTR_OBJ_TYPE_ENV;
-                  $$.name = $2;
+                    $$.type = ATTR_OBJ_TYPE_ENV;
+                    $$.name = $2;
                 }
         ;
 
 attr_rel_obj:
                 BU_BO_REL name UINT
                 {
-                  $$.type = ATTR_OBJ_TYPE_ECU_FRAME_REL;
-                  $$.ecu_name = $2;
-                  $$.frame_id = $3;
-                  $$.obj_name = NULL;
+                    $$.type     = ATTR_OBJ_TYPE_ECU_FRAME_REL;
+                    $$.ecu_name = $2;
+                    $$.frame_id = $3;
+                    $$.obj_name = NULL;
                 }
         |       BU_SG_REL name SG UINT name
                 {
-                  $$.type = ATTR_OBJ_TYPE_ECU_SIGNAL_REL;
-                  $$.ecu_name = $2;
-                  $$.frame_id = $4;
-                  $$.obj_name = $5;
+                    $$.type     = ATTR_OBJ_TYPE_ECU_SIGNAL_REL;
+                    $$.ecu_name = $2;
+                    $$.frame_id = $4;
+                    $$.obj_name = $5;
                 }
         |       BU_EV_REL name name
                 {
-                  $$.type = ATTR_OBJ_TYPE_ECU_ENV_REL;
-                  $$.ecu_name = $2;
-                  $$.obj_name = $3;
+                    $$.type     = ATTR_OBJ_TYPE_ECU_ENV_REL;
+                    $$.ecu_name = $2;
+                    $$.obj_name = $3;
                 }
         ;
 
 attr_obj_value: int
                 {
-                  $$.type = ATTR_VALUE_TYPE_INT;
-                  $$.ival = $1;
+                    $$.type = ATTR_VALUE_TYPE_INT;
+                    $$.ival = $1;
                 }
         |       FLOAT
                 {
-                  $$.type = ATTR_VALUE_TYPE_FLOAT;
-                  $$.fval = $1;
+                    $$.type = ATTR_VALUE_TYPE_FLOAT;
+                    $$.fval = $1;
                 }
         |       TEXT
                 {
-                  $$.type = ATTR_VALUE_TYPE_STRING;
-                  $$.sval = $1;
+                    $$.type = ATTR_VALUE_TYPE_STRING;
+                    $$.sval = $1;
                 }
         ;
 
@@ -834,12 +834,12 @@ value_definition:
 
 values:         %empty
                 {
-                  $$ = g_array_new(TRUE, TRUE, sizeof(value_string));
-                  g_array_set_clear_func($$, free_value_string);
+                    $$ = g_array_new(TRUE, TRUE, sizeof(value_string));
+                    g_array_set_clear_func($$, free_value_string);
                 }
         |       values value
                 {
-                  $$ = g_array_append_val($1, $2);
+                    $$ = g_array_append_val($1, $2);
                 };
 
 uints:          UINT uints { $$ = g_slist_prepend($2, GUINT_TO_POINTER($1)); }
@@ -856,8 +856,8 @@ int:            UINT { $$ = $1; }
 
 value:          int TEXT
                 {
-                  $$.value  = $1;
-                  $$.strptr = $2;
+                    $$.value  = $1;
+                    $$.strptr = $2;
                 };
 
 category_definitions:
@@ -944,31 +944,31 @@ signal_mul_values:
 signal_mul_value:
                 SG_MUL_VAL UINT name name mul_values ';'
                 {
-                  printf("SG_MUL_VAL_ %u %s %s", $2, $3, $4);
-                  unsigned i;
-                  mul_val_t v;
-                  for (i = 0; i < ($5->len - 1); i++)
-                  {
+                    printf("SG_MUL_VAL_ %u %s %s", $2, $3, $4);
+                    unsigned i;
+                    mul_val_t v;
+                    for (i = 0; i < ($5->len - 1); i++)
+                    {
+                        v = g_array_index($5, mul_val_t, i);
+                        printf(" %u-%u,", v.val[0], v.val[1]);
+                    }
                     v = g_array_index($5, mul_val_t, i);
-                    printf(" %u-%u,", v.val[0], v.val[1]);
-                  }
-                  v = g_array_index($5, mul_val_t, i);
-                  printf(" %u-%u;\n", v.val[0], v.val[1]);
+                    printf(" %u-%u;\n", v.val[0], v.val[1]);
 
-                  g_free($3);
-                  g_free($4);
-                  g_array_free($5, TRUE);
+                    g_free($3);
+                    g_free($4);
+                    g_array_free($5, TRUE);
                 }
         ;
 
 mul_values:     mul_values ',' MUL_VAL
                 {
-                  $$ = g_array_append_val($1, $3);
+                    $$ = g_array_append_val($1, $3);
                 }
         |       MUL_VAL
                 {
-                  $$ = g_array_new(FALSE, FALSE, sizeof(mul_val_t));
-                  g_array_append_val($$, $1);
+                    $$ = g_array_new(FALSE, FALSE, sizeof(mul_val_t));
+                    g_array_append_val($$, $1);
                 }
         ;
 
