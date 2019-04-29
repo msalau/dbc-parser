@@ -894,17 +894,10 @@ category_object:
         ;
 
 filter:         %empty
-        |       FILTER UINT CAT maybe_uints BU maybe_names ';'
+        |       FILTER UINT CAT maybe_uints[category_ids] BU maybe_names[ecu_names] ';'
                 {
-                  printf("FILTER %u CAT_ ", $2);
-                  for (GSList *elem = $4; elem; elem = g_slist_next(elem))
-                    printf("%u ", GPOINTER_TO_UINT(elem->data));
-                  printf("BU_ ");
-                  for (GSList *elem = $6; elem; elem = g_slist_next(elem))
-                    printf("%s ", (char *)elem->data);
-                  printf(";\n");
-                  g_slist_free($4);
-                  g_slist_free_full($6, g_free);
+                    g_slist_free($category_ids);
+                    g_slist_free_full($ecu_names, g_free);
                 }
         ;
 
