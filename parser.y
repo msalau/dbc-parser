@@ -797,27 +797,24 @@ value_definitions:
         ;
 
 value_definition:
-                VAL UINT name values ';'
+                VAL UINT[frame_id] name[signal_name] values[signal_values] ';'
                 {
-                  printf("VAL_ %u %s", $2, $3);
-                  for (value_string *v = (value_string *)$4->data; v->strptr; v++)
-                  {
-                    printf(" %i \"%s\"", v->value, v->strptr);
-                  }
-                  printf(" ;\n");
-                  g_free($3);
-                  g_array_free($4, TRUE);
+                    dbc_signal_t *signal = dbc_find_signal(dbc, $frame_id, $signal_name);
+                    if (signal)
+                    {
+                        g_free(signal->values);
+                        signal->values = (value_string *)g_array_free($signal_values, FALSE);
+                    }
+                    else
+                    {
+                        g_array_free($signal_values, TRUE);
+                    }
+                    g_free($signal_name);
                 }
-        |       VAL name values ';'
+        |       VAL name[ev_name] values[ev_values] ';'
                 {
-                  printf("VAL_ %s", $2);
-                  for (value_string *v = (value_string *)$3->data; v->strptr; v++)
-                  {
-                    printf(" %i \"%s\"", v->value, v->strptr);
-                  }
-                  printf(" ;\n");
-                  g_free($2);
-                  g_array_free($3, TRUE);
+                    g_free($ev_name);
+                    g_array_free($ev_values, TRUE);
                 }
         ;
 

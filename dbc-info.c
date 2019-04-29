@@ -61,12 +61,12 @@ void dbc_free_signal(dbc_signal_t *signal)
     g_free(signal->name);
     g_free(signal->comment);
     g_free(signal->unit);
-    g_free(signal->value_strings);
 
-    if (signal->value_array)
+    if (signal->values)
     {
-        g_array_set_clear_func(signal->value_array, free_value_string);
-        g_array_free(signal->value_array, TRUE);
+        for (value_string *val = signal->values; val->strptr; val++)
+            free_value_string(val);
+        g_free(signal->values);
     }
 
     g_free(signal);

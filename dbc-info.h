@@ -68,8 +68,7 @@ typedef struct
     double  max;
     char   *unit;
 
-    GArray       *value_array;
-    value_string *value_strings;
+    value_string *values;
 } dbc_signal_t;
 
 
