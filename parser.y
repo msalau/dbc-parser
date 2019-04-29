@@ -914,11 +914,10 @@ signal_type_refs:
         ;
 
 signal_type_ref:
-                SIG_TYPE_REF UINT name ':' name ';'
+                SIG_TYPE_REF UINT[frame_id] name[signal_name] ':' name[sigtype_name] ';'
                 {
-                  printf("SIG_TYPE_REF_ %u %s : %s ;\n", $2, $3, $5);
-                  g_free($3);
-                  g_free($5);
+                    g_free($signal_name);
+                    g_free($sigtype_name);
                 }
         ;
 
