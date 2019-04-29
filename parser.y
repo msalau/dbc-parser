@@ -913,10 +913,12 @@ signal_value_types:
         ;
 
 signal_value_type:
-                SIG_VALTYPE UINT name ':' UINT ';'
+                SIG_VALTYPE UINT[frame_id] name[signal_name] ':' UINT[signal_type] ';'
                 {
-                  printf("SIG_VALTYPE_ %u %s : %u;\n", $2, $3, $5);
-                  g_free($3);
+                    dbc_signal_t *signal = dbc_find_signal(dbc, $frame_id, $signal_name);
+                    if (signal)
+                        signal->type = $signal_type;
+                    g_free($signal_name);
                 }
         ;
 

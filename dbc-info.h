@@ -46,9 +46,9 @@ typedef enum
 
 typedef enum
 {
-    DBC_SIGNAL_TYPE_INT,
-    DBC_SIGNAL_TYPE_FLOAT,
-    DBC_SIGNAL_TYPE_DOUBLE,
+    DBC_SIGNAL_TYPE_INT    = 0,
+    DBC_SIGNAL_TYPE_FLOAT  = 1,
+    DBC_SIGNAL_TYPE_DOUBLE = 2,
 } dbc_signal_type_t;
 
 typedef struct
