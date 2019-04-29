@@ -11,7 +11,7 @@ typedef struct
     char   *comment;
     char   *version;
     GSList *frames;
-    GSList *frame_types;
+    int     j1939_type_num;
 } dbc_file_t;
 
 typedef enum
@@ -19,6 +19,9 @@ typedef enum
     DBC_FRAME_TYPE_GENERIC = 0,
     DBC_FRAME_TYPE_J1939   = 1,
 } dbc_frame_type_t;
+
+#define FRAME_TYPE_ATTRIBUTE_NAME "VFrameFormat"
+#define FRAME_TYPE_J1939_VALUE    "J1939PG"
 
 typedef struct
 {

@@ -39,7 +39,6 @@ void dbc_free(dbc_file_t *file)
     g_free(file->version);
 
     g_slist_free_full(file->frames, (GDestroyNotify)dbc_free_frame);
-    g_slist_free_full(file->frame_types, (GDestroyNotify)free_value_string);
 
     g_free(file);
 }

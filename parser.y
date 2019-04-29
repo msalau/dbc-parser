@@ -504,44 +504,35 @@ attr_definitions:
         ;
 
 attr_definition:
-                attr_def_with_obj_type TEXT attr_value_type ';'
+                attr_def_with_obj_type[attr_type] TEXT[attr_name] attr_value_type[attr_value] ';'
                 {
-                    static const char * attr_obj_type_str[] = {
-                        [ATTR_OBJ_TYPE_NET] = "",
-                        [ATTR_OBJ_TYPE_ECU] = " BU_",
-                        [ATTR_OBJ_TYPE_FRAME] = " BO_",
-                        [ATTR_OBJ_TYPE_SIGNAL] = " SG_",
-                        [ATTR_OBJ_TYPE_ENV] = " EV_",
-                        [ATTR_OBJ_TYPE_ECU_FRAME_REL] = "REL_ BU_BO_REL_",
-                        [ATTR_OBJ_TYPE_ECU_SIGNAL_REL] = "REL_ BU_SG_REL_",
-                        [ATTR_OBJ_TYPE_ECU_ENV_REL] = "REL_ BU_EV_REL_",
-                    };
-                    printf("BA_DEF_%s  \"%s\" ", attr_obj_type_str[$1], $2);
-                    g_free($2);
-                    switch ($3.type)
+                    switch ($attr_value.type)
                     {
                     case ATTR_VALUE_TYPE_INT:
-                        printf("INT %lli %lli;\n", $3.ival[0], $3.ival[0]);
-                        break;
                     case ATTR_VALUE_TYPE_HEX:
-                        printf("HEX %lli %lli;\n", $3.ival[0], $3.ival[0]);
+                    case ATTR_VALUE_TYPE_FLOAT:
+                    case ATTR_VALUE_TYPE_STRING:
+                        /* Nothing to do for simple types */
                         break;
                     case ATTR_VALUE_TYPE_ENUM:
-                        printf("ENUM  ");
-                        for (GSList *elem = $3.list; elem; elem = g_slist_next(elem))
+                        if (g_strcmp0($attr_name, FRAME_TYPE_ATTRIBUTE_NAME) == 0)
                         {
-                            printf("\"%s\"%s", (char *)elem->data, (g_slist_next(elem) ? "," : ""));
+                            int type_num = 0;
+
+                            for (GSList *elem = $attr_value.list; elem; elem = g_slist_next(elem))
+                            {
+                                if (g_strcmp0(elem->data, FRAME_TYPE_J1939_VALUE) == 0)
+                                {
+                                    dbc->j1939_type_num = type_num;
+                                    break;
+                                }
+                                type_num++;
+                            }
                         }
-                        printf(";\n");
-                        g_slist_free_full($3.list, g_free);
-                        break;
-                    case ATTR_VALUE_TYPE_FLOAT:
-                        printf("FLOAT %g %g;\n", $3.fval[0], $3.fval[0]);
-                        break;
-                    case ATTR_VALUE_TYPE_STRING:
-                        printf("STRING ;\n");
+                        g_slist_free_full($attr_value.list, g_free);
                         break;
                     }
+                    g_free($attr_name);
                 }
         ;
 
@@ -1033,6 +1024,7 @@ int main(int argc, char** argv)
         yylloc.last_column = 0;
         dbc_file_t *dbc = g_new0(dbc_file_t, 1);
         dbc->filepath = g_strdup(filename);
+        dbc->j1939_type_num = -1;
         yyparse(dbc);
         dbc_free(dbc);
         yylex_destroy();
