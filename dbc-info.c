@@ -1,6 +1,16 @@
 #include "dbc-info.h"
 #include <stdio.h>
 
+dbc_file_t *dbc_new(char *filepath)
+{
+    dbc_file_t *dbc = g_new0(dbc_file_t, 1);
+
+    dbc->filepath       = g_strdup(filepath);
+    dbc->j1939_type_num = -1;
+
+    return dbc;
+}
+
 static gint dbc_find_frame_helper(gconstpointer frame, gconstpointer id)
 {
     return ((const dbc_frame_t *)frame)->id == GPOINTER_TO_UINT(id) ? 0 : 1;

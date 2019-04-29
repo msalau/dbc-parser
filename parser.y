@@ -1022,9 +1022,7 @@ int main(int argc, char** argv)
         yyset_in(in);
         yylloc.last_line = 1;
         yylloc.last_column = 0;
-        dbc_file_t *dbc = g_new0(dbc_file_t, 1);
-        dbc->filepath = g_strdup(filename);
-        dbc->j1939_type_num = -1;
+        dbc_file_t *dbc = dbc_new(filename);
         yyparse(dbc);
         dbc_free(dbc);
         yylex_destroy();
