@@ -477,11 +477,10 @@ comment_signal: CM SG UINT[frame_id] name[signal_name] TEXT[text] ';'
                     g_free($signal_name);
                 };
 
-comment_env: CM EV name TEXT ';'
+comment_env: CM EV name[ev_name] TEXT[text] ';'
                 {
-                  printf("CM_ EV_ %s \"%s\";\n", $3, $4);
-                  g_free($3);
-                  g_free($4);
+                    g_free($ev_name);
+                    g_free($text);
                 };
 
 attr_definitions:
