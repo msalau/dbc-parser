@@ -135,6 +135,7 @@ typedef struct { unsigned val[2]; } mul_val_t;
 %token <mux>  MUX
 %token <mval> MUL_VAL
 
+%type <uval> endianess
 %type <sval> name maybe_name
 %type <fval> float
 %type <llval> int
@@ -294,8 +295,21 @@ frame:          BO UINT[frame_id] name[frame_name] ':' UINT[frame_length] name[f
                     $$->senders = $frame_sender;
                 };
 
+endianess:      UINT
+                {
+                    if ($1 != DBC_SIGNAL_ENDIANESS_MOTOROLA &&
+                        $1 != DBC_SIGNAL_ENDIANESS_INTEL)
+                    {
+                        yyerror(dbc, "Invalid signal endianess");
+                        YYERROR;
+                    }
+
+                    $$ = $1;
+                }
+        ;
+
 signal:         SG name[signal_name] mux[signal_mux] ':'
-                UINT[signal_start] '|' UINT[signal_length] '@' UINT[signal_endianess] SIGN[signal_signess]
+                UINT[signal_start] '|' UINT[signal_length] '@' endianess[signal_endianess] SIGN[signal_signess]
                 '(' float[signal_factor] ',' float[signal_offset] ')'
                 '[' float[signal_min] '|' float[signal_max] ']'
                 TEXT[signal_unit] comma_separated_names[signal_receivers]
