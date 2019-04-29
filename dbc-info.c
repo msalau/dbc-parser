@@ -12,6 +12,21 @@ dbc_frame_t *dbc_find_frame(const dbc_file_t *file, uint32_t id)
     return elem ? elem->data : NULL;
 }
 
+static gint dbc_find_signal_helper(gconstpointer signal, gconstpointer name)
+{
+    return g_strcmp0(((const dbc_signal_t *)signal)->name, name);
+}
+
+dbc_signal_t *dbc_find_signal(const dbc_file_t *file, uint32_t id, const char *name)
+{
+    dbc_frame_t *frame = dbc_find_frame(file, id);
+    if (!frame)
+        return NULL;
+
+    GSList *elem = g_slist_find_custom(frame->signals, name, dbc_find_signal_helper);
+    return elem ? elem->data : NULL;
+}
+
 static void free_value_string(gpointer data)
 {
     g_free(((value_string *)data)->strptr);

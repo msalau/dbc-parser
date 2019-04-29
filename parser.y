@@ -448,17 +448,33 @@ comment_ecu:    CM BU name[ecu_name] TEXT[text] ';'
                     g_free($text);
                 };
 
-comment_frame:  CM BO UINT TEXT ';'
+comment_frame:  CM BO UINT[frame_id] TEXT[text] ';'
                 {
-                  printf("CM_ BO_ %u \"%s\";\n", $3, $4);
-                  g_free($4);
+                    dbc_frame_t *frame = dbc_find_frame(dbc, $frame_id);
+                    if (frame)
+                    {
+                        g_free(frame->comment);
+                        frame->comment = $text;
+                    }
+                    else
+                    {
+                        g_free($text);
+                    }
                 };
 
-comment_signal: CM SG UINT name TEXT ';'
+comment_signal: CM SG UINT[frame_id] name[signal_name] TEXT[text] ';'
                 {
-                  printf("CM_ SG_ %u %s \"%s\";\n", $3, $4, $5);
-                  g_free($4);
-                  g_free($5);
+                    dbc_signal_t *signal = dbc_find_signal(dbc, $frame_id, $signal_name);
+                    if (signal)
+                    {
+                        g_free(signal->comment);
+                        signal->comment = $text;
+                    }
+                    else
+                    {
+                        g_free($text);
+                    }
+                    g_free($signal_name);
                 };
 
 comment_env: CM EV name TEXT ';'

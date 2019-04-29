@@ -74,6 +74,7 @@ typedef struct
 
 
 dbc_frame_t *dbc_find_frame(const dbc_file_t *file, uint32_t id);
+dbc_signal_t *dbc_find_signal(const dbc_file_t *file, uint32_t id, const char *name);
 
 void dbc_free(dbc_file_t *file);
 void dbc_free_frame(dbc_frame_t *frame);
