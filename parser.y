@@ -38,7 +38,7 @@ typedef enum attr_value_type
     ATTR_VALUE_TYPE_STRING,
 } attr_value_type_t;
 
-void free_value_string(gpointer data)
+static void free_value_string(gpointer data)
 {
     g_free(((value_string *)data)->strptr);
 }
