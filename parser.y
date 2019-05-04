@@ -43,6 +43,11 @@ void free_value_string(gpointer data)
     g_free(((value_string *)data)->strptr);
 }
 
+static int compare_value_strings(gconstpointer a, gconstpointer b)
+{
+    return ((const value_string *)a)->value - ((const value_string *)b)->value;
+}
+
 typedef struct { unsigned val[2]; } mul_val_t;
 
 %}
@@ -761,6 +766,7 @@ value_definition:
                     if (signal)
                     {
                         g_free(signal->values);
+                        g_array_sort($signal_values, compare_value_strings);
                         signal->values = (value_string *)g_array_free($signal_values, FALSE);
                     }
                     else
