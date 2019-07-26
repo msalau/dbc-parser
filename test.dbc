@@ -70,6 +70,13 @@ BO_ 71 TestMsg6: 8 ECU0
  SG_ Float1 : 0|32@1+ (1,0) [0|0] "" ECU1
  SG_ Float2 : 32|32@1+ (1,0) [0|0] "" ECU1
 
+BO_ 72 TestComplexMuxing: 8 ECU2
+ SG_ Muxer M : 0|8@1+ (1,0) [0|3] "" ECU1
+ SG_ Muxed1 m1M : 8|8@1+ (1,0) [0|255] "" ECU1
+ SG_ Muxed2 m2 : 16|8@1+ (1,0) [0|255] "" ECU1
+ SG_ Muxed3 m3 : 16|8@1+ (1,0) [0|255] "" ECU1
+
+
 BO_TX_BU_ 71 : ECU0,ECU2,ECU3;
 
 EV_ EnvVar1: 0 [-1|5] "" -1 1 DUMMY_NODE_VECTOR8001  ECU0,ECU1,ECU2,ECU3;
@@ -215,3 +222,7 @@ SIG_VALTYPE_ 71 Float2 : 1;
 SG_MUL_VAL_ 69 m0 M 0-0, 1-1, 2-2;
 SG_MUL_VAL_ 69 m1 M 0-0, 1-1, 2-2;
 SG_MUL_VAL_ 69 m2 M 0-0, 1-1, 2-2;
+
+SG_MUL_VAL_ 72 Muxed1 Muxer 1-1;
+SG_MUL_VAL_ 72 Muxed2 Muxed1 2-2;
+SG_MUL_VAL_ 72 Muxed3 Muxed1 3-3;
