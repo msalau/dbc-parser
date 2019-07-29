@@ -1,4 +1,5 @@
 CFLAGS:=-g3 -O0 -Wall -Wextra -Wformat -Wformat-security -Warray-bounds -Werror -fsanitize=leak $(shell pkg-config --cflags glib-2.0)
+CFLAGS+=-I../common
 LDFLAGS:=-fsanitize=leak
 LIBS=-llsan $(shell pkg-config --libs glib-2.0)
 
@@ -6,9 +7,7 @@ LIBS=-llsan $(shell pkg-config --libs glib-2.0)
 
 all: parse
 
-#all: parser.png parser.html
-
-test: parse test.dbc j1939_utf8.dbc VBOX3i_LDWS_VCI.DBC VBOX_lite.dbc SFP200%20v02.dbc
+test: parse ../common/test.dbc j1939_utf8.dbc VBOX3i_LDWS_VCI.DBC VBOX_lite.dbc SFP200%20v02.dbc
 		./$< $(filter %.dbc,$^)
 
 test-cantools: parse cantools
@@ -18,7 +17,7 @@ test-opendbc: parse opendbc
 		./$< ./opendbc/*.dbc
 
 fuzz: parse
-		./fuzz.sh ./test.dbc
+		../common/fuzz.sh ./test.dbc
 
 clean:
 		-rm -f parse *.tab.c *.tab.h *.yy.c *.yy.h *.o *.png *.dot *.html *.xml *.output
@@ -42,6 +41,9 @@ VBOX_lite.dbc:
 
 SFP200%20v02.dbc:
 		wget -O $@ http://www.sendyne.com/Datasheets/SFP200%20v02.dbc
+
+
+VPATH=../common
 
 scanner.yy.o: parser.tab.h
 
