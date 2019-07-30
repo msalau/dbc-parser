@@ -110,11 +110,6 @@ dbc_file_t *dbc_read(const gchar *filename)
     dbc_state_t  state;
     FILE        *fd;
 
-    memset(&state, 0, sizeof(state));
-    state.lloc.first_line = 1;
-    state.lloc.last_line  = 1;
-    state.filename        = g_path_get_basename(filename);
-
     if (dbc_scanner_lex_init_extra(&state, &scanner) != 0)
     {
         return NULL;
@@ -126,6 +121,11 @@ dbc_file_t *dbc_read(const gchar *filename)
         perror(filename);
         return NULL;
     }
+
+    memset(&state, 0, sizeof(state));
+    state.lloc.first_line = 1;
+    state.lloc.last_line  = 1;
+    state.filename        = g_path_get_basename(filename);
 
     dbc_scanner_set_in(fd, scanner);
     parser = DbcParserAlloc(g_malloc);
