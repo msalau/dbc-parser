@@ -1,7 +1,7 @@
 #include "dbc-info.h"
 #include <stdio.h>
 
-dbc_file_t *dbc_new(char *filepath)
+dbc_file_t *dbc_new(const char *filepath)
 {
     dbc_file_t *dbc = g_new0(dbc_file_t, 1);
 

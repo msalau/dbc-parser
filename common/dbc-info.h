@@ -73,7 +73,7 @@ typedef struct
     value_string *values;
 } dbc_signal_t;
 
-dbc_file_t *dbc_new(char *filepath);
+dbc_file_t *dbc_new(const char *filepath);
 
 dbc_frame_t *dbc_find_frame(const dbc_file_t *file, uint32_t id);
 dbc_signal_t *dbc_find_signal(const dbc_file_t *file, uint32_t id, const char *name);

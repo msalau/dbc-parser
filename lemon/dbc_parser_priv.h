@@ -11,9 +11,10 @@ typedef struct {
 } dbc_scanner_lloc_t;
 
 typedef struct {
-    gchar *filename;
     gchar *token;
     gchar *parse_error;
+
+    dbc_file_t *file;
 
     dbc_scanner_lloc_t lloc;
 } dbc_state_t;

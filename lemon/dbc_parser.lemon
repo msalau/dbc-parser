@@ -44,7 +44,7 @@ _Pragma("GCC diagnostic ignored \"-Wsign-compare\"")
     g_string_append_printf(
         msg,
         "%s:%d:%d: syntax error: unexpected %s, expecting ",
-        state->filename,
+        state->file->filepath,
         state->lloc.first_line,
         state->lloc.first_column,
         yyTokenName[yymajor]);
@@ -90,9 +90,7 @@ spec ::= version .
 
 version ::= VERSION TEXT(str) .
 {
-    (void)state;
-    dbc_printf("%s: VERSION = \"%s\"\n", G_STRFUNC, str);
-    g_free(str);
+    state->file->version = str;
 }
 
 %code {
@@ -125,7 +123,7 @@ dbc_file_t *dbc_read(const gchar *filename)
     memset(&state, 0, sizeof(state));
     state.lloc.first_line = 1;
     state.lloc.last_line  = 1;
-    state.filename        = g_path_get_basename(filename);
+    state.file            = dbc_new(filename);
 
     dbc_scanner_set_in(fd, scanner);
     parser = DbcParserAlloc(g_malloc);
@@ -159,7 +157,7 @@ dbc_file_t *dbc_read(const gchar *filename)
 
     DbcParserFree(parser, g_free);
     dbc_scanner_lex_destroy(scanner);
-    g_free(state.filename);
+    dbc_free(state.file);
     fclose(fd);
 
     if (state.parse_error)
