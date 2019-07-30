@@ -1,0 +1,192 @@
+%include {
+
+#include <assert.h>
+#include <string.h>
+#include "dbc-info.h"
+#include "dbc_parser_priv.h"
+
+extern void *DbcParserAlloc(void *(*mallocProc)(size_t));
+extern void DbcParser(void *yyp, int yymajor, char *yyminor, dbc_state_t *state);
+extern void DbcParserFree(void *p, void (*freeProc)(void*));
+
+#ifdef DBC_TRACE
+extern void DbcParserTrace(FILE *TraceFILE, char *zTracePrompt);
+#endif
+
+#undef NDEBUG
+
+_Pragma("GCC diagnostic push")
+_Pragma("GCC diagnostic ignored \"-Wsign-compare\"")
+
+}
+
+%name DbcParser
+
+%token_prefix TK_
+
+%token_type { gchar * }
+%token_destructor
+{
+    (void)state;
+    (void)yypParser;
+
+    g_free(yypminor->yy0);
+}
+
+%extra_argument { dbc_state_t* state }
+
+%syntax_error
+{
+    (void)yyminor;
+
+    GString *msg = g_string_new(NULL);
+
+    g_string_append_printf(
+        msg,
+        "%s:%d:%d: syntax error: unexpected %s, expecting ",
+        state->filename,
+        state->lloc.first_line,
+        state->lloc.first_column,
+        yyTokenName[yymajor]);
+
+    for (YYCODETYPE token = 0; token < YYNTOKEN; ++token)
+    {
+        gboolean first = TRUE;
+        const YYACTIONTYPE action = yy_find_shift_action(token, yypParser->yytos->stateno);
+
+        if ((action == YY_ACCEPT_ACTION) ||
+            (action <= YY_MAX_SHIFT) ||
+            ((action >= YY_MIN_SHIFTREDUCE) && (action <= YY_MAX_SHIFTREDUCE)) ||
+            ((action >= YY_MIN_REDUCE) && (action <= YY_MAX_REDUCE)))
+        {
+            if (!first)
+                g_string_append(msg, ", ");
+            g_string_append(msg, yyTokenName[token]);
+            first = FALSE;
+        }
+    }
+
+    g_free(state->parse_error);
+    state->parse_error = g_string_free(msg, FALSE);
+}
+
+%parse_failure
+{
+    g_free(state->parse_error);
+    state->parse_error = g_strdup("Parse failure");
+}
+
+%stack_overflow
+{
+    g_free(state->parse_error);
+    state->parse_error = g_strdup("Stack overflow");
+}
+
+%nonassoc AT ATTR_ENUM ATTR_FLOAT ATTR_HEX ATTR_INT ATTR_STRING BA BA_DEF BA_DEF_DEF BA_DEF_DEF_REL BA_DEF_REL BA_DEF_SGTYPE BA_REL BA_SGTYPE BO BO_TX_BU BS BU BU_BO_REL BU_EV_REL BU_SG_REL CAT CAT_DEF CM COLOM ENVVAR_DATA EV EV_DATA FILTER FLOAT LEFT_BRACKET LEFT_PARENTHESIS MINUS MUX NAME NS NS_DESC PIPE PLUS RIGHT_BRACKET RIGHT_PARENTHESIS SEMICOLON SG SG_MUL_VAL SGTYPE SGTYPE_VAL SIG_GROUP SIG_TYPE_REF SIGTYPE_VALTYPE SIG_VALTYPE UINT UNKNOWN VAL VAL_TABLE .
+
+%start_symbol spec
+
+spec ::= version .
+
+version ::= VERSION TEXT(str) .
+{
+    (void)state;
+    dbc_printf("%s: VERSION = \"%s\"\n", G_STRFUNC, str);
+    g_free(str);
+}
+
+%code {
+
+_Pragma("GCC diagnostic pop")
+
+#include "dbc_scanner_lex.h"
+#include "dbc_parser.h"
+
+dbc_file_t *dbc_read(const gchar *filename)
+{
+    int          lex_code;
+    yyscan_t     scanner;
+    void        *parser;
+    dbc_state_t  state;
+    FILE        *fd;
+
+    memset(&state, 0, sizeof(state));
+    state.lloc.first_line = 1;
+    state.lloc.last_line  = 1;
+    state.filename        = g_path_get_basename(filename);
+
+    if (dbc_scanner_lex_init_extra(&state, &scanner) != 0)
+    {
+        return NULL;
+    }
+
+    fd = fopen(filename, "r");
+    if (!fd)
+    {
+        perror(filename);
+        return NULL;
+    }
+
+    dbc_scanner_set_in(fd, scanner);
+    parser = DbcParserAlloc(g_malloc);
+
+#ifdef DBC_TRACE
+    DbcParserTrace(stdout, "parser >> ");
+#endif
+
+    dbc_printf("%s: Starting parsing\n", G_STRFUNC);
+
+    do
+    {
+        lex_code = dbc_scanner_lex(scanner);
+
+        if (state.token)
+            dbc_printf("%s: Feeding %s = '%s'\n",
+                       G_STRFUNC, yyTokenName[lex_code],
+                       state.token);
+        else
+            dbc_printf("%s: Feeding %s\n",
+                       G_STRFUNC, yyTokenName[lex_code]);
+
+        DbcParser(parser, lex_code, state.token, &state);
+
+        if (state.parse_error)
+            break;
+    }
+    while (lex_code);
+
+    dbc_printf("%s: Done\n", G_STRFUNC);
+
+    DbcParserFree(parser, g_free);
+    dbc_scanner_lex_destroy(scanner);
+    g_free(state.filename);
+    fclose(fd);
+
+    if (state.parse_error)
+    {
+        dbc_printf("%s\n", state.parse_error);
+        g_free(state.parse_error);
+        return NULL;
+    }
+
+    return NULL;
+}
+
+int main(int argc, char **argv)
+{
+    dbc_file_t *dbc;
+
+    if (argc != 2)
+        return 1;
+
+    dbc = dbc_read(argv[1]);
+
+    if (!dbc)
+        return 0;
+
+    dbc_free(dbc);
+
+    return 0;
+}
+
+}

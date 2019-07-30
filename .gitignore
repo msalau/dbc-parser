@@ -3,6 +3,7 @@
 *.yy.[ch]
 *.tab.[ch]
 *.o
+*.d
 *.output
 *.xml
 *.dot
@@ -18,3 +19,8 @@
 **/SFP200%20v02.dbc
 **/cantools/
 **/opendbc/
+/lemon/lemon
+/lemon/*_scanner_lex.h
+/lemon/*_scanner.c
+/lemon/*_parser.[ch]
+/lemon/*_parser.out
