@@ -36,7 +36,8 @@ BU_: ECU0 ECU1 ECU2 ECU3
 VAL_TABLE_ TFS 0 "FALSE" 1 "TRUE";
 VAL_TABLE_ LRS 0 "LEFT" 1 "RIGHT";
 VAL_TABLE_ UDS 0 "UP" 1 "DOWN";
-VAL_TABLE_ FooSignalValues ;
+VAL_TABLE_ NUMBERS 0 "Zero" +1 "PlusOne" -1 "MinusOne" 1.5 "OneAndAHalf" -3.14 "MinusPi";
+VAL_TABLE_ EmptyValueTable ;
 
 BO_ 66 TestMsg1: 8 ECU1
  SG_ TestMsg1Voltage : 0|16@1- (0.001,0) [-32.768|32.767] "V" ECU2,ECU1,ECU0
