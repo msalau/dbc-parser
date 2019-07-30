@@ -22,8 +22,6 @@ clean:
 
 .PRECIOUS: %.c %.h %.out
 
-VPATH=../common
-
 parse: dbc_scanner.o dbc_parser.o dbc-info.o
 		$(CC) $(LDFLAGS) -o $@ $^ $(LIBS)
 

@@ -82,7 +82,7 @@ _Pragma("GCC diagnostic ignored \"-Wsign-compare\"")
     state->parse_error = g_strdup("Stack overflow");
 }
 
-%nonassoc AT ATTR_ENUM ATTR_FLOAT ATTR_HEX ATTR_INT ATTR_STRING BO BO_TX_BU BU FLOAT LEFT_BRACKET LEFT_PARENTHESIS PIPE RIGHT_BRACKET RIGHT_PARENTHESIS SG UNKNOWN .
+%nonassoc ATTR_ENUM ATTR_FLOAT ATTR_HEX ATTR_INT ATTR_STRING BO_TX_BU UNKNOWN .
 
 %start_symbol spec
 
@@ -91,6 +91,7 @@ spec ::= version
          bus_speed
          bus_units
          value_tables
+         messages
          .
 
 version ::= .
@@ -160,6 +161,12 @@ names(r) ::= names(l) name(v) . { r = g_slist_prepend(l, v); }
 name(r) ::= NAME(v) . { r = v; }
 name(r) ::= MUX(v) .  { r = v; }
 
+%type comma_separated_names { GSList * }
+%destructor comma_separated_names { g_slist_free_full($$, g_free); }
+
+comma_separated_names(r) ::= name(v) .                                { r = g_slist_prepend(NULL, v); }
+comma_separated_names(r) ::= comma_separated_names(l) COMMA name(v) . { r = g_slist_prepend(l, v); }
+
 value_tables ::= .
 value_tables ::= value_tables value_table .
 
@@ -182,18 +189,102 @@ values(r) ::= values(a) value(v) .
 %type value { value_string }
 %destructor value { free_value_string(&($$)); }
 
-value(r) ::= integer(v) TEXT(t) .
+value(r) ::= sint(v) TEXT(t) .
 {
     r.value  = v;
     r.strptr = t;
 }
 
-%type integer { gint64 }
+%type sint { gint64 }
 
-integer(r) ::= UINT(v) .       { r = strtoull(v, NULL, 10); g_free(v); }
-integer(r) ::= PLUS UINT(v) .  { r = strtoull(v, NULL, 10); g_free(v); }
-integer(r) ::= MINUS UINT(v) . { r = 0 - strtoull(v, NULL, 10); g_free(v); }
-integer(r) ::= FLOAT(v) .      { r = (gint64)strtod(v, NULL); g_free(v); }
+sint(r) ::= UINT(v) .       { r = strtoull(v, NULL, 10); g_free(v); }
+sint(r) ::= PLUS UINT(v) .  { r = strtoull(v, NULL, 10); g_free(v); }
+sint(r) ::= MINUS UINT(v) . { r = 0 - strtoull(v, NULL, 10); g_free(v); }
+sint(r) ::= FLOAT(v) .      { r = (gint64)strtod(v, NULL); g_free(v); }
+
+%type uint { guint64 }
+
+uint(r) ::= UINT(v) . { r = strtoull(v, NULL, 10); g_free(v); }
+
+%type float { double }
+
+float(r) ::= UINT(v) .       { r = strtoull(v, NULL, 10); g_free(v); }
+float(r) ::= PLUS UINT(v) .  { r = strtoull(v, NULL, 10); g_free(v); }
+float(r) ::= MINUS UINT(v) . { r = 0 - strtoull(v, NULL, 10); g_free(v); }
+float(r) ::= FLOAT(v) .      { r = strtod(v, NULL); g_free(v); }
+
+%type messages { GSList * }
+%destructor messages { g_slist_free_full($$, (GDestroyNotify)dbc_free_message); }
+
+messages(r) ::= .                        { r = NULL; }
+messages(r) ::= messages(l) message(v) . { r = g_slist_prepend(l, v); }
+
+%type message { dbc_message_t * }
+%destructor message { dbc_free_message($$); }
+
+message(r) ::= BO uint(msg_id) name(msg_name) COLON
+               uint(msg_length) name(msg_sender)
+               signals(msg_signals) .
+{
+    r = g_new0(dbc_message_t, 1);
+
+    r->id      = msg_id;
+    r->name    = msg_name;
+    r->length  = msg_length;
+    r->senders = msg_sender;
+    r->signals = msg_signals;
+}
+
+%type signals { GSList * }
+%destructor signals { g_slist_free_full($$, (GDestroyNotify)dbc_free_signal); }
+
+signals(r) ::= .                      { r = NULL; }
+signals(r) ::= signals(l) signal(v) . { r = g_slist_prepend(l, v); }
+
+%type signal { dbc_signal_t * }
+%destructor signal { dbc_free_signal($$); }
+
+signal(r) ::= SG name(sig_name) mux COLON
+              uint(sig_start) PIPE uint(sig_length) AT
+              endianess(sig_endianess) signess(sig_signess)
+              LEFT_PARENTHESIS float(sig_factor) COMMA float(sig_offset) RIGHT_PARENTHESIS
+              LEFT_BRACKET float(sig_min) PIPE float(sig_max) RIGHT_BRACKET
+              TEXT(sig_unit) comma_separated_names
+              .
+{
+    r = g_new0(dbc_signal_t, 1);
+
+    r->name      = sig_name;
+    r->start     = sig_start;
+    r->length    = sig_length;
+    r->signess   = sig_signess;
+    r->endianess = sig_endianess;
+    r->factor    = sig_factor;
+    r->offset    = sig_offset;
+    r->min       = sig_min;
+    r->max       = sig_max;
+    r->unit      = sig_unit;
+}
+
+mux ::= .
+mux ::= MUX .
+
+%type endianess { dbc_signal_endianess_t }
+endianess(r) ::= uint(v) .
+{
+    r = v;
+
+    if (v != DBC_SIGNAL_ENDIANESS_MOTOROLA &&
+        v != DBC_SIGNAL_ENDIANESS_INTEL)
+    {
+        g_free(state->parse_error);
+        state->parse_error = g_strdup("Invalid endianess");
+    }
+}
+
+%type signess { dbc_signal_signess_t }
+signess(r) ::= PLUS .  { r = DBC_SIGNAL_SIGNESS_UNSIGNED; }
+signess(r) ::= MINUS . { r = DBC_SIGNAL_SIGNESS_SIGNED; }
 
 %code {
 
