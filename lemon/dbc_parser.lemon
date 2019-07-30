@@ -30,7 +30,7 @@ _Pragma("GCC diagnostic ignored \"-Wsign-compare\"")
     (void)state;
     (void)yypParser;
 
-    g_free(yypminor->yy0);
+    g_free($$);
 }
 
 %extra_argument { dbc_state_t* state }
