@@ -82,16 +82,61 @@ _Pragma("GCC diagnostic ignored \"-Wsign-compare\"")
     state->parse_error = g_strdup("Stack overflow");
 }
 
-%nonassoc AT ATTR_ENUM ATTR_FLOAT ATTR_HEX ATTR_INT ATTR_STRING BA BA_DEF BA_DEF_DEF BA_DEF_DEF_REL BA_DEF_REL BA_DEF_SGTYPE BA_REL BA_SGTYPE BO BO_TX_BU BS BU BU_BO_REL BU_EV_REL BU_SG_REL CAT CAT_DEF CM COLON COMMA ENVVAR_DATA EV EV_DATA FILTER FLOAT LEFT_BRACKET LEFT_PARENTHESIS MINUS MUX NAME NS NS_DESC PIPE PLUS RIGHT_BRACKET RIGHT_PARENTHESIS SEMICOLON SG SG_MUL_VAL SGTYPE SGTYPE_VAL SIG_GROUP SIG_TYPE_REF SIGTYPE_VALTYPE SIG_VALTYPE UINT UNKNOWN VAL VAL_TABLE .
+%nonassoc AT ATTR_ENUM ATTR_FLOAT ATTR_HEX ATTR_INT ATTR_STRING BO BO_TX_BU BU FLOAT LEFT_BRACKET LEFT_PARENTHESIS MINUS MUX PIPE PLUS RIGHT_BRACKET RIGHT_PARENTHESIS SEMICOLON SG UNKNOWN .
 
 %start_symbol spec
 
-spec ::= version .
+spec ::= version
+         new_symbols
+         bus_speed
+         .
 
+version ::= .
 version ::= VERSION TEXT(str) .
 {
     state->file->version = str;
 }
+
+new_symbols ::= .
+new_symbols ::= NS COLON new_symbol_names .
+
+new_symbol_names ::= .
+new_symbol_names ::= new_symbol_names new_symbol_name.
+
+new_symbol_name ::= NAME .
+new_symbol_name ::= NS_DESC .
+new_symbol_name ::= CM .
+new_symbol_name ::= VAL .
+new_symbol_name ::= VAL_TABLE .
+new_symbol_name ::= BA .
+new_symbol_name ::= BA_REL .
+new_symbol_name ::= BA_DEF .
+new_symbol_name ::= BA_DEF_REL .
+new_symbol_name ::= BA_DEF_DEF .
+new_symbol_name ::= BA_DEF_DEF_REL .
+new_symbol_name ::= BU_BO_REL .
+new_symbol_name ::= BU_SG_REL .
+new_symbol_name ::= BU_EV_REL .
+new_symbol_name ::= SIG_VALTYPE .
+new_symbol_name ::= SIG_GROUP .
+new_symbol_name ::= SG_MUL_VAL .
+new_symbol_name ::= BO_TX_BU .
+new_symbol_name ::= EV .
+new_symbol_name ::= EV_DATA .
+new_symbol_name ::= ENVVAR_DATA .
+new_symbol_name ::= SGTYPE .
+new_symbol_name ::= SIG_TYPE_REF .
+new_symbol_name ::= SGTYPE_VAL .
+new_symbol_name ::= SIGTYPE_VALTYPE .
+new_symbol_name ::= BA_DEF_SGTYPE .
+new_symbol_name ::= BA_SGTYPE .
+new_symbol_name ::= CAT_DEF .
+new_symbol_name ::= CAT .
+new_symbol_name ::= FILTER .
+
+bus_speed ::= BS COLON .
+bus_speed ::= BS COLON UINT .
+bus_speed ::= BS COLON UINT COLON UINT COMMA UINT .
 
 %code {
 
