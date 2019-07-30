@@ -39,6 +39,7 @@ _Pragma("GCC diagnostic ignored \"-Wsign-compare\"")
 {
     (void)yyminor;
 
+    gboolean first = TRUE;
     GString *msg = g_string_new(NULL);
 
     g_string_append_printf(
@@ -51,7 +52,6 @@ _Pragma("GCC diagnostic ignored \"-Wsign-compare\"")
 
     for (YYCODETYPE token = 0; token < YYNTOKEN; ++token)
     {
-        gboolean first = TRUE;
         const YYACTIONTYPE action = yy_find_shift_action(token, yypParser->yytos->stateno);
 
         if ((action == YY_ACCEPT_ACTION) ||
