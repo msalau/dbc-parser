@@ -189,28 +189,27 @@ values(r) ::= values(a) value(v) .
 %type value { value_string }
 %destructor value { free_value_string(&($$)); }
 
-value(r) ::= sint(v) TEXT(t) .
+value(r) ::= float(v) TEXT(t) .
 {
-    r.value  = v;
+    r.value  = (gint64)v;
     r.strptr = t;
 }
 
-%type sint { gint64 }
-
-sint(r) ::= UINT(v) .       { r = strtoull(v, NULL, 10); g_free(v); }
-sint(r) ::= PLUS UINT(v) .  { r = strtoull(v, NULL, 10); g_free(v); }
-sint(r) ::= MINUS UINT(v) . { r = 0 - strtoull(v, NULL, 10); g_free(v); }
-sint(r) ::= FLOAT(v) .      { r = (gint64)strtod(v, NULL); g_free(v); }
-
 %type uint { guint64 }
 
+uint(r) ::= ZERO .    { r = 0; }
+uint(r) ::= ONE .     { r = 1; }
 uint(r) ::= UINT(v) . { r = strtoull(v, NULL, 10); g_free(v); }
+
+%type sint { gint64 }
+
+sint(r) ::= uint(v) .       { r = v; }
+sint(r) ::= PLUS uint(v) .  { r = v; }
+sint(r) ::= MINUS uint(v) . { r = 0 - v; }
 
 %type float { double }
 
-float(r) ::= UINT(v) .       { r = strtoull(v, NULL, 10); g_free(v); }
-float(r) ::= PLUS UINT(v) .  { r = strtoull(v, NULL, 10); g_free(v); }
-float(r) ::= MINUS UINT(v) . { r = 0 - strtoull(v, NULL, 10); g_free(v); }
+float(r) ::= sint(v) .       { r = v; }
 float(r) ::= FLOAT(v) .      { r = strtod(v, NULL); g_free(v); }
 
 %type messages { GSList * }
@@ -270,17 +269,8 @@ mux ::= .
 mux ::= MUX .
 
 %type endianess { dbc_signal_endianess_t }
-endianess(r) ::= uint(v) .
-{
-    r = v;
-
-    if (v != DBC_SIGNAL_ENDIANESS_MOTOROLA &&
-        v != DBC_SIGNAL_ENDIANESS_INTEL)
-    {
-        g_free(state->parse_error);
-        state->parse_error = g_strdup("Invalid endianess");
-    }
-}
+endianess(r) ::= ZERO . { r = DBC_SIGNAL_ENDIANESS_MOTOROLA; }
+endianess(r) ::= ONE .  { r = DBC_SIGNAL_ENDIANESS_INTEL; }
 
 %type signess { dbc_signal_signess_t }
 signess(r) ::= PLUS .  { r = DBC_SIGNAL_SIGNESS_UNSIGNED; }

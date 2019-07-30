@@ -117,6 +117,8 @@ m{NUM}M                   { yyextra->token = g_strdup(yytext); return TK_MUX; }
 
 [a-zA-Z_][a-zA-Z0-9_]*    { yyextra->token = g_strdup(yytext); return TK_NAME; }
 {FLOAT}                   { yyextra->token = g_strdup(yytext); return TK_FLOAT; }
+0                         { return TK_ZERO; }
+1                         { return TK_ONE; }
 {NUM}                     { yyextra->token = g_strdup(yytext); return TK_UINT; }
 
 "-"                       { return TK_MINUS; }
