@@ -128,7 +128,8 @@ m{NUM}M                   { yyextra->token = g_strdup(yytext); return TK_MUX; }
 "["                       { return TK_LEFT_BRACKET; }
 "]"                       { return TK_RIGHT_BRACKET; }
 ";"                       { return TK_SEMICOLON; }
-":"                       { return TK_COLOM; }
+":"                       { return TK_COLON; }
+","                       { return TK_COMMA; }
 ["]([^"]|\\["])*["]       { yyextra->token = g_strndup(yytext + 1, strlen(yytext) - 2); return TK_TEXT; }
 .                         { return TK_UNKNOWN; }
 
