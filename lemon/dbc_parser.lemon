@@ -82,13 +82,14 @@ _Pragma("GCC diagnostic ignored \"-Wsign-compare\"")
     state->parse_error = g_strdup("Stack overflow");
 }
 
-%nonassoc AT ATTR_ENUM ATTR_FLOAT ATTR_HEX ATTR_INT ATTR_STRING BO BO_TX_BU BU FLOAT LEFT_BRACKET LEFT_PARENTHESIS MINUS MUX PIPE PLUS RIGHT_BRACKET RIGHT_PARENTHESIS SEMICOLON SG UNKNOWN .
+%nonassoc AT ATTR_ENUM ATTR_FLOAT ATTR_HEX ATTR_INT ATTR_STRING BO BO_TX_BU BU FLOAT LEFT_BRACKET LEFT_PARENTHESIS MINUS PIPE PLUS RIGHT_BRACKET RIGHT_PARENTHESIS SEMICOLON SG UNKNOWN .
 
 %start_symbol spec
 
 spec ::= version
          new_symbols
          bus_speed
+         bus_units
          .
 
 version ::= .
@@ -137,6 +138,26 @@ new_symbol_name ::= FILTER .
 bus_speed ::= BS COLON .
 bus_speed ::= BS COLON UINT .
 bus_speed ::= BS COLON UINT COLON UINT COMMA UINT .
+
+bus_units ::= BU COLON maybe_names .
+
+%type maybe_names { GSList * }
+%destructor maybe_names { g_slist_free_full($$, g_free); }
+
+maybe_names(r) ::= .          { r = NULL; }
+maybe_names(r) ::= names(v) . { r = v; }
+
+%type names { GSList * }
+%destructor names { g_slist_free_full($$, g_free); }
+
+names(r) ::= name(v) .          { r = g_slist_prepend(NULL, v); }
+names(r) ::= names(l) name(v) . { r = g_slist_prepend(l, v); }
+
+%type name { gchar * }
+%destructor name { g_free($$); }
+
+name(r) ::= NAME(v) . { r = v; }
+name(r) ::= MUX(v) .  { r = v; }
 
 %code {
 
