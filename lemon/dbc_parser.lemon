@@ -82,7 +82,7 @@ _Pragma("GCC diagnostic ignored \"-Wsign-compare\"")
     state->parse_error = g_strdup("Stack overflow");
 }
 
-%nonassoc AT ATTR_ENUM ATTR_FLOAT ATTR_HEX ATTR_INT ATTR_STRING BO BO_TX_BU BU FLOAT LEFT_BRACKET LEFT_PARENTHESIS MINUS PIPE PLUS RIGHT_BRACKET RIGHT_PARENTHESIS SEMICOLON SG UNKNOWN .
+%nonassoc AT ATTR_ENUM ATTR_FLOAT ATTR_HEX ATTR_INT ATTR_STRING BO BO_TX_BU BU FLOAT LEFT_BRACKET LEFT_PARENTHESIS PIPE RIGHT_BRACKET RIGHT_PARENTHESIS SG UNKNOWN .
 
 %start_symbol spec
 
@@ -90,6 +90,7 @@ spec ::= version
          new_symbols
          bus_speed
          bus_units
+         value_tables
          .
 
 version ::= .
@@ -158,6 +159,41 @@ names(r) ::= names(l) name(v) . { r = g_slist_prepend(l, v); }
 
 name(r) ::= NAME(v) . { r = v; }
 name(r) ::= MUX(v) .  { r = v; }
+
+value_tables ::= .
+value_tables ::= value_tables value_table .
+
+value_table ::= VAL_TABLE name values SEMICOLON .
+
+%type values { GArray * }
+%destructor values { g_array_free($$, TRUE); }
+
+values(r) ::= .
+{
+    r = g_array_new(TRUE, TRUE, sizeof(value_string));
+    g_array_set_clear_func(r, free_value_string);
+}
+
+values(r) ::= values(a) value(v) .
+{
+    r = g_array_append_val(a, v);
+}
+
+%type value { value_string }
+%destructor value { free_value_string(&($$)); }
+
+value(r) ::= integer(v) TEXT(t) .
+{
+    r.value  = v;
+    r.strptr = t;
+}
+
+%type integer { gint64 }
+
+integer(r) ::= UINT(v) .       { r = strtoull(v, NULL, 10); g_free(v); }
+integer(r) ::= PLUS UINT(v) .  { r = strtoull(v, NULL, 10); g_free(v); }
+integer(r) ::= MINUS UINT(v) . { r = 0 - strtoull(v, NULL, 10); g_free(v); }
+integer(r) ::= FLOAT(v) .      { r = (gint64)strtod(v, NULL); g_free(v); }
 
 %code {
 
