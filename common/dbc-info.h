@@ -81,5 +81,6 @@ dbc_signal_t *dbc_find_signal(const dbc_file_t *file, uint32_t id, const char *n
 void dbc_free(dbc_file_t *file);
 void dbc_free_frame(dbc_frame_t *frame);
 void dbc_free_signal(dbc_signal_t *signal);
+void free_value_string(gpointer data);
 
 #endif /* DBC_INFO_H__ */

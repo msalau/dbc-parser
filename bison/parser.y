@@ -38,11 +38,6 @@ typedef enum attr_value_type
     ATTR_VALUE_TYPE_STRING,
 } attr_value_type_t;
 
-static void free_value_string(gpointer data)
-{
-    g_free(((value_string *)data)->strptr);
-}
-
 static int compare_value_strings(gconstpointer a, gconstpointer b)
 {
     return ((const value_string *)a)->value - ((const value_string *)b)->value;

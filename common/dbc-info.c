@@ -37,7 +37,7 @@ dbc_signal_t *dbc_find_signal(const dbc_file_t *file, uint32_t id, const char *n
     return elem ? elem->data : NULL;
 }
 
-static void free_value_string(gpointer data)
+void free_value_string(gpointer data)
 {
     g_free(((value_string *)data)->strptr);
 }
