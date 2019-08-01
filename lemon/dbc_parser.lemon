@@ -136,8 +136,8 @@ new_symbol_name ::= CAT .
 new_symbol_name ::= FILTER .
 
 bus_speed ::= BS COLON .
-bus_speed ::= BS COLON UINT .
-bus_speed ::= BS COLON UINT COLON UINT COMMA UINT .
+bus_speed ::= BS COLON uint .
+bus_speed ::= BS COLON uint COLON uint COMMA uint .
 
 bus_units ::= BU COLON maybe_names .
 
