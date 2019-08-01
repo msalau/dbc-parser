@@ -92,6 +92,7 @@ spec ::= version
          message_sender_lists
          environment_variables
          environment_variables_data
+         signal_types
          .
 
 version ::= .
@@ -162,6 +163,12 @@ maybe_names(r) ::= names(v) . { r = v; }
 
 names(r) ::= name(v) .          { r = g_slist_prepend(NULL, v); }
 names(r) ::= names(l) name(v) . { r = g_slist_prepend(l, v); }
+
+%type maybe_name { gchar * }
+%destructor maybe_name { g_free($$); }
+
+maybe_name(r) ::= .         { r = NULL; }
+maybe_name(r) ::= name(v) . { r = v; }
 
 %type name { gchar * }
 %destructor name { g_free($$); }
@@ -370,6 +377,16 @@ environment_variable_data ::= ev_data_tag name COLON uint /*length*/ SEMICOLON .
 
 ev_data_tag ::= ENVVAR_DATA .
 ev_data_tag ::= EV_DATA .
+
+signal_types ::= .
+signal_types ::= signal_types signal_type.
+
+signal_type ::= SGTYPE name COLON uint /*length*/ AT endianess signess
+                LEFT_PARENTHESIS float /*factor*/ COMMA float /*offset*/ RIGHT_PARENTHESIS
+                LEFT_BRACKET float /*min*/ PIPE float /*max*/ RIGHT_BRACKET
+                TEXT /*unit*/ float /*default-value*/
+                maybe_name /*value-table*/ SEMICOLON
+                .
 
 %code {
 
