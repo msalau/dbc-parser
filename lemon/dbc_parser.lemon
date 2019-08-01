@@ -15,6 +15,30 @@ extern void DbcParserTrace(FILE *TraceFILE, char *zTracePrompt);
 
 #undef NDEBUG
 
+G_GNUC_PRINTF(2, 3)
+static void
+dbc_warning(dbc_state_t *state, const char *format, ...)
+{
+    va_list ap;
+    va_start(ap, format);
+    char *str = g_strdup_vprintf(format, ap);
+    va_end(ap);
+
+    state->warnings = g_slist_append(state->warnings, str);
+}
+
+G_GNUC_PRINTF(2, 3)
+static void
+dbc_error(dbc_state_t *state, const char *format, ...)
+{
+    va_list ap;
+    va_start(ap, format);
+    char *str = g_strdup_vprintf(format, ap);
+    va_end(ap);
+
+    state->errors = g_slist_append(state->errors, str);
+}
+
 _Pragma("GCC diagnostic push")
 _Pragma("GCC diagnostic ignored \"-Wsign-compare\"")
 
@@ -44,8 +68,7 @@ _Pragma("GCC diagnostic ignored \"-Wsign-compare\"")
 
     g_string_append_printf(
         msg,
-        "%s:%d:%d: syntax error: unexpected %s, expecting ",
-        state->file->filepath,
+        "%d:%d: syntax error: unexpected %s, expecting ",
         state->lloc.first_line,
         state->lloc.first_column,
         yyTokenName[yymajor]);
@@ -66,17 +89,19 @@ _Pragma("GCC diagnostic ignored \"-Wsign-compare\"")
         }
     }
 
-    state->errors = g_slist_prepend(state->errors, g_string_free(msg, FALSE));
+    gchar *str = g_string_free(msg, FALSE);
+    dbc_error(state, "%s", str);
+    g_free(str);
 }
 
 %parse_failure
 {
-    state->errors = g_slist_prepend(state->errors, g_strdup("Parse failure"));
+    dbc_error(state, "Parse failure");
 }
 
 %stack_overflow
 {
-    state->errors = g_slist_prepend(state->errors, g_strdup("Stack overflow"));
+    dbc_error(state, "Stack overflow");
 }
 
 %nonassoc ATTR_ENUM ATTR_FLOAT ATTR_HEX ATTR_INT ATTR_STRING UNKNOWN .
@@ -257,13 +282,11 @@ message ::= BO uint(msg_id) name(msg_name) COLON
 
     if (strlen(msg->name) > DBC_MAX_MESSAGE_LENGTH)
     {
-        gchar *str = g_strdup_printf("%s: warning: message %u '%s': Name is longer than %u symbols",
-                                     state->file->filepath,
-                                     msg->id,
-                                     msg->name,
-                                     DBC_MAX_MESSAGE_LENGTH);
-
-        state->warnings = g_slist_prepend(state->warnings, str);
+        dbc_warning(state,
+                    "warning: message %u '%s': Name is longer than %u symbols",
+                    msg->id,
+                    msg->name,
+                    DBC_MAX_MESSAGE_LENGTH);
     }
 
     state->file->messages = g_slist_prepend(state->file->messages, msg);
@@ -338,9 +361,7 @@ message_sender_list ::= BO_TX_BU uint(msg_id) COLON
     }
     else
     {
-        gchar *str = g_strdup_printf("Message with id %" G_GINT64_FORMAT " not found", msg_id);
-
-        state->errors = g_slist_prepend(state->errors, str);
+        dbc_error(state, "Message with id %" G_GINT64_FORMAT " not found", msg_id);
     }
 
     g_slist_free_full(msg_senders, g_free);
@@ -399,10 +420,8 @@ comment ::= CM TEXT(text) SEMICOLON .
 {
     if (state->file->comment)
     {
-        gchar *str = g_strdup_printf("%s: warning: File comment present", state->file->filepath);
-
         g_free(state->file->comment);
-        state->warnings = g_slist_prepend(state->warnings, str);
+        dbc_warning(state, "warning: File comment redefined");
     }
 
     state->file->comment = text;
@@ -416,20 +435,16 @@ comment ::= CM BO uint(msg_id) TEXT(text) SEMICOLON .
     {
         if (msg->comment)
         {
-            gchar *str = g_strdup_printf("%s: warning: Message %" G_GINT64_FORMAT " comment redefined", state->file->filepath, msg_id);
-
             g_free(msg->comment);
-            state->warnings = g_slist_prepend(state->warnings, str);
+            dbc_warning(state, "warning: Message %" G_GINT64_FORMAT " comment redefined", msg_id);
         }
 
         msg->comment = text;
     }
     else
     {
-        gchar *str = g_strdup_printf("%s: error: Message %" G_GINT64_FORMAT " not found", state->file->filepath, msg_id);
-
-        state->errors = g_slist_prepend(state->errors, str);
         g_free(text);
+        dbc_error(state, "error: Message %" G_GINT64_FORMAT " not found", msg_id);
     }
 }
 
@@ -441,22 +456,18 @@ comment ::= CM SG uint(msg_id) name(sig_name) TEXT(text) SEMICOLON .
     {
         if (sig->comment)
         {
-            gchar *str = g_strdup_printf("%s: warning: Signal %s message %" G_GINT64_FORMAT "comment redefined",
-                                         state->file->filepath, sig_name, msg_id);
-
             g_free(sig->comment);
-            state->warnings = g_slist_prepend(state->warnings, str);
+            dbc_warning(state, "warning: Signal %s message %" G_GINT64_FORMAT " comment redefined",
+                        sig_name, msg_id);
         }
 
         sig->comment = text;
     }
     else
     {
-        gchar *str = g_strdup_printf("%s: error: Signal %s in message %" G_GINT64_FORMAT " not found",
-                                     state->file->filepath, sig_name, msg_id);
-
-        state->errors = g_slist_prepend(state->errors, str);
         g_free(text);
+        dbc_error(state, "error: Signal %s in message %" G_GINT64_FORMAT " not found",
+                  sig_name, msg_id);
     }
 
     g_free(sig_name);
