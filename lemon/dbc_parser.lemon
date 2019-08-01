@@ -90,6 +90,8 @@ spec ::= version
          value_tables
          messages
          message_sender_lists
+         environment_variables
+         environment_variables_data
          .
 
 version ::= .
@@ -134,6 +136,14 @@ new_symbol_name ::= BA_SGTYPE .
 new_symbol_name ::= CAT_DEF .
 new_symbol_name ::= CAT .
 new_symbol_name ::= FILTER .
+new_symbol_name ::= DUMMY_0 .
+new_symbol_name ::= DUMMY_1 .
+new_symbol_name ::= DUMMY_2 .
+new_symbol_name ::= DUMMY_3 .
+new_symbol_name ::= DUMMY_8000 .
+new_symbol_name ::= DUMMY_8001 .
+new_symbol_name ::= DUMMY_8002 .
+new_symbol_name ::= DUMMY_8003 .
 
 bus_speed ::= BS COLON .
 bus_speed ::= BS COLON uint /*baudrate*/ .
@@ -158,6 +168,14 @@ names(r) ::= names(l) name(v) . { r = g_slist_prepend(l, v); }
 
 name(r) ::= NAME(v) . { r = v; }
 name(r) ::= MUX(v) .  { r = v; }
+name(r) ::= DUMMY_0(v) . { r = v; }
+name(r) ::= DUMMY_1(v) . { r = v; }
+name(r) ::= DUMMY_2(v) . { r = v; }
+name(r) ::= DUMMY_3(v) . { r = v; }
+name(r) ::= DUMMY_8000(v) . { r = v; }
+name(r) ::= DUMMY_8001(v) . { r = v; }
+name(r) ::= DUMMY_8002(v) . { r = v; }
+name(r) ::= DUMMY_8003(v) . { r = v; }
 
 %type comma_separated_names { GSList * }
 %destructor comma_separated_names { g_slist_free_full($$, g_free); }
@@ -318,6 +336,39 @@ message_sender_list ::= BO_TX_BU uint(msg_id) COLON
 
     g_slist_free_full(msg_senders, g_free);
 }
+
+environment_variables ::= .
+environment_variables ::= environment_variables environment_variable .
+
+environment_variable ::= EV name COLON value_type
+                         LEFT_BRACKET float /*min*/ PIPE float /*max*/ RIGHT_BRACKET
+                         TEXT /*unit*/ float /*default*/ uint /*id*/
+                         dummy_name /*access-rights*/ comma_separated_names /*ecus*/
+                         SEMICOLON
+                         .
+
+%type value_type { dbc_value_type_t }
+
+value_type(r) ::= ZERO . { r = DBC_SIGNAL_TYPE_INT; }
+value_type(r) ::= ONE .  { r = DBC_SIGNAL_TYPE_FLOAT; }
+value_type(r) ::= TWO .  { r = DBC_SIGNAL_TYPE_DOUBLE; }
+
+dummy_name ::= DUMMY_0 .
+dummy_name ::= DUMMY_1 .
+dummy_name ::= DUMMY_2 .
+dummy_name ::= DUMMY_3 .
+dummy_name ::= DUMMY_8000 .
+dummy_name ::= DUMMY_8001 .
+dummy_name ::= DUMMY_8002 .
+dummy_name ::= DUMMY_8003 .
+
+environment_variables_data ::= .
+environment_variables_data ::= environment_variables_data environment_variable_data .
+
+environment_variable_data ::= ev_data_tag name COLON uint /*length*/ SEMICOLON .
+
+ev_data_tag ::= ENVVAR_DATA .
+ev_data_tag ::= EV_DATA .
 
 %code {
 

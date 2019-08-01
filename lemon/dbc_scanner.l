@@ -119,6 +119,15 @@ M                         { yyextra->token = g_strdup(yytext); return TK_MUX; }
 m{NUM}                    { yyextra->token = g_strdup(yytext); return TK_MUX; }
 m{NUM}M                   { yyextra->token = g_strdup(yytext); return TK_MUX; }
 
+DUMMY_NODE_VECTOR0        { yyextra->token = g_strdup(yytext); return TK_DUMMY_0; }
+DUMMY_NODE_VECTOR1        { yyextra->token = g_strdup(yytext); return TK_DUMMY_1; }
+DUMMY_NODE_VECTOR2        { yyextra->token = g_strdup(yytext); return TK_DUMMY_2; }
+DUMMY_NODE_VECTOR3        { yyextra->token = g_strdup(yytext); return TK_DUMMY_3; }
+DUMMY_NODE_VECTOR8000     { yyextra->token = g_strdup(yytext); return TK_DUMMY_8000; }
+DUMMY_NODE_VECTOR8001     { yyextra->token = g_strdup(yytext); return TK_DUMMY_8001; }
+DUMMY_NODE_VECTOR8002     { yyextra->token = g_strdup(yytext); return TK_DUMMY_8002; }
+DUMMY_NODE_VECTOR8003     { yyextra->token = g_strdup(yytext); return TK_DUMMY_8003; }
+
 [a-zA-Z_][a-zA-Z0-9_]*    { yyextra->token = g_strdup(yytext); return TK_NAME; }
 {FLOAT}                   { yyextra->token = g_strdup(yytext); return TK_FLOAT; }
 0                         { return TK_ZERO; }

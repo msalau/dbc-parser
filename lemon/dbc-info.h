@@ -53,7 +53,7 @@ typedef enum
     DBC_SIGNAL_TYPE_INT    = 0,
     DBC_SIGNAL_TYPE_FLOAT  = 1,
     DBC_SIGNAL_TYPE_DOUBLE = 2,
-} dbc_signal_type_t;
+} dbc_value_type_t;
 
 typedef struct
 {
@@ -64,7 +64,7 @@ typedef struct
 
     dbc_signal_endianess_t endianess;
     dbc_signal_signess_t   signess;
-    dbc_signal_type_t      type;
+    dbc_value_type_t       type;
 
     double  factor;
     double  offset;
