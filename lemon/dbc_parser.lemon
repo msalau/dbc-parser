@@ -631,7 +631,24 @@ signal_value_type ::= SIG_VALTYPE uint(msg_id) name(sig_name) COLON value_type(s
 signal_multiplexing_definitions ::= .
 signal_multiplexing_definitions ::= signal_multiplexing_definitions signal_multiplexing_definition .
 
-signal_multiplexing_definition ::= SG_MUL_VAL uint /*msg_id*/ name /*sig_name*/ name /*mux_name*/ mux_values SEMICOLON .
+signal_multiplexing_definition ::= SG_MUL_VAL uint(msg_id) name(sig_name) name(mux_name) mux_values SEMICOLON .
+{
+    dbc_signal_t *signal = dbc_find_signal(state->file, msg_id, sig_name);
+    dbc_signal_t *mux    = dbc_find_signal(state->file, msg_id, mux_name);
+
+    if (!signal)
+    {
+        dbc_error(state, "error: multiplexed signal %s in message %" G_GINT64_FORMAT " not found", sig_name, msg_id);
+    }
+
+    if (!mux)
+    {
+        dbc_error(state, "error: multiplexer signal %s in message %" G_GINT64_FORMAT " not found", mux_name, msg_id);
+    }
+
+    g_free(sig_name);
+    g_free(mux_name);
+}
 
 mux_values ::= mux_value .
 mux_values ::= mux_values COMMA mux_value .
