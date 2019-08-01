@@ -257,10 +257,17 @@ values(r) ::= values(a) value(v) .
 %type value { value_string }
 %destructor value { free_value_string(&($$)); }
 
-value(r) ::= float(v) TEXT(t) .
+value(r) ::= sint(v) TEXT(t) .
 {
-    r.value  = (gint64)v;
+    r.value  = v;
     r.strptr = t;
+}
+
+value(r) ::= FLOAT(v) TEXT(t) .
+{
+    r.value  = (gint64)strtod(v, NULL);
+    r.strptr = t;
+    g_free(v);
 }
 
 %type uint { guint64 }
@@ -524,9 +531,11 @@ attribute_sgtype_definition ::= BA_DEF_SGTYPE TEXT /*name*/ SEMICOLON .
 attribute_default_values ::= .
 attribute_default_values ::= attribute_default_values attribute_default_value .
 
-attribute_default_value ::= BA_DEF_DEF TEXT /*name*/ float /*value*/ SEMICOLON .
+attribute_default_value ::= BA_DEF_DEF TEXT /*name*/ sint /*value*/ SEMICOLON .
+attribute_default_value ::= BA_DEF_DEF TEXT /*name*/ FLOAT /*value*/ SEMICOLON .
 attribute_default_value ::= BA_DEF_DEF TEXT /*name*/ TEXT /*value*/ SEMICOLON .
-attribute_default_value ::= BA_DEF_DEF_REL TEXT /*name*/ float /*value*/ SEMICOLON .
+attribute_default_value ::= BA_DEF_DEF_REL TEXT /*name*/ sint /*value*/ SEMICOLON .
+attribute_default_value ::= BA_DEF_DEF_REL TEXT /*name*/ FLOAT /*value*/ SEMICOLON .
 attribute_default_value ::= BA_DEF_DEF_REL TEXT /*name*/ TEXT /*value*/ SEMICOLON .
 
 attribute_values ::= .
@@ -546,7 +555,8 @@ attribute_rel_object ::= BU_EV_REL name name .
 attribute_rel_object ::= BU_BO_REL name uint .
 attribute_rel_object ::= BU_SG_REL name SG uint name .
 
-attribute_object_value ::= float .
+attribute_object_value ::= sint .
+attribute_object_value ::= FLOAT .
 attribute_object_value ::= TEXT .
 
 value_definitions ::= .
