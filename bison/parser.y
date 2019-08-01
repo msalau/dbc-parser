@@ -760,6 +760,8 @@ value_definition:
                     dbc_signal_t *signal = dbc_find_signal(dbc, $frame_id, $signal_name);
                     if (signal)
                     {
+                        for (value_string *v = signal->values; v->strptr; v++)
+                            free_value_string(v);
                         g_free(signal->values);
                         g_array_sort($signal_values, compare_value_strings);
                         signal->values = (value_string *)g_array_free($signal_values, FALSE);
