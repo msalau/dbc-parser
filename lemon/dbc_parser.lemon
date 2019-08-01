@@ -66,20 +66,17 @@ _Pragma("GCC diagnostic ignored \"-Wsign-compare\"")
         }
     }
 
-    g_free(state->parse_error);
-    state->parse_error = g_string_free(msg, FALSE);
+    state->errors = g_slist_prepend(state->errors, g_string_free(msg, FALSE));
 }
 
 %parse_failure
 {
-    g_free(state->parse_error);
-    state->parse_error = g_strdup("Parse failure");
+    state->errors = g_slist_prepend(state->errors, g_strdup("Parse failure"));
 }
 
 %stack_overflow
 {
-    g_free(state->parse_error);
-    state->parse_error = g_strdup("Stack overflow");
+    state->errors = g_slist_prepend(state->errors, g_strdup("Stack overflow"));
 }
 
 %nonassoc ATTR_ENUM ATTR_FLOAT ATTR_HEX ATTR_INT ATTR_STRING UNKNOWN .
@@ -302,9 +299,9 @@ message_sender_list ::= BO_TX_BU uint(msg_id) COLON
     }
     else
     {
-        /* TODO: make state->parse_error a list of strings */
-        g_free(state->parse_error);
-        state->parse_error = g_strdup_printf("Message with id %" G_GINT64_FORMAT " not found", msg_id);
+        gchar *str = g_strdup_printf("Message with id %" G_GINT64_FORMAT " not found", msg_id);
+
+        state->errors = g_slist_prepend(state->errors, str);
     }
 
     g_slist_free_full(msg_senders, g_free);
@@ -365,7 +362,7 @@ dbc_file_t *dbc_read(const gchar *filename)
 
         DbcParser(parser, lex_code, state.token, &state);
 
-        if (state.parse_error)
+        if (state.errors)
             break;
     }
     while (lex_code);
@@ -376,10 +373,11 @@ dbc_file_t *dbc_read(const gchar *filename)
     dbc_scanner_lex_destroy(scanner);
     fclose(fd);
 
-    if (state.parse_error)
+    if (state.errors)
     {
-        dbc_printf("%s\n", state.parse_error);
-        g_free(state.parse_error);
+        for (GSList *elem = state.errors; elem; elem = g_slist_next(elem))
+            dbc_printf("%s\n", (gchar *)elem->data);
+        g_slist_free_full(state.errors, g_free);
         dbc_free(state.file);
         return NULL;
     }

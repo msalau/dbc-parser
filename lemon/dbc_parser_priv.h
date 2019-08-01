@@ -12,7 +12,8 @@ typedef struct {
 
 typedef struct {
     gchar *token;
-    gchar *parse_error;
+
+    GSList *errors;
 
     dbc_file_t *file;
 
