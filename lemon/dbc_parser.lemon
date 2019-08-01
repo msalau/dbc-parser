@@ -197,6 +197,7 @@ value(r) ::= float(v) TEXT(t) .
 
 uint(r) ::= ZERO .    { r = 0; }
 uint(r) ::= ONE .     { r = 1; }
+uint(r) ::= TWO .     { r = 2; }
 uint(r) ::= UINT(v) . { r = strtoull(v, NULL, 10); g_free(v); }
 
 %type sint { gint64 }

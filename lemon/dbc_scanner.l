@@ -123,6 +123,7 @@ m{NUM}M                   { yyextra->token = g_strdup(yytext); return TK_MUX; }
 {FLOAT}                   { yyextra->token = g_strdup(yytext); return TK_FLOAT; }
 0                         { return TK_ZERO; }
 1                         { return TK_ONE; }
+2                         { return TK_TWO; }
 {NUM}                     { yyextra->token = g_strdup(yytext); return TK_UINT; }
 
 "-"                       { return TK_MINUS; }
