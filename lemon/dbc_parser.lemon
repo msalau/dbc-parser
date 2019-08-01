@@ -130,6 +130,9 @@ spec ::= version
          attribute_default_values
          attribute_values
          value_definitions
+         category_definitions
+         categories
+         filter
          .
 
 version ::= .
@@ -569,6 +572,27 @@ value_definition ::= VAL uint(msg_id) name(sig_name) values(sig_values) SEMICOLO
     }
     g_free(sig_name);
 }
+
+category_definitions ::= .
+category_definitions ::= category_definitions category_definition .
+
+category_definition ::= CAT_DEF uint name uint SEMICOLON .
+
+categories ::= .
+categories ::= categories category .
+
+category ::= CAT EV name uint SEMICOLON .
+category ::= CAT BU name uint SEMICOLON .
+category ::= CAT BO uint uint SEMICOLON .
+
+filter ::= .
+filter ::= FILTER uint CAT maybe_uints BU maybe_names SEMICOLON .
+
+maybe_uints ::= .
+maybe_uints ::= uints .
+
+uints ::= uint .
+uints ::= uints uint .
 
 %code {
 
