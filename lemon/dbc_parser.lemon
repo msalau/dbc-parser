@@ -133,6 +133,10 @@ spec ::= version
          category_definitions
          categories
          filter
+         signal_type_referencies
+         signal_groups
+         signal_value_types
+         signal_multiplexing_definitions
          .
 
 version ::= .
@@ -593,6 +597,45 @@ maybe_uints ::= uints .
 
 uints ::= uint .
 uints ::= uints uint .
+
+signal_type_referencies ::= .
+signal_type_referencies ::= signal_type_referencies signal_type_reference .
+
+signal_type_reference ::= SIG_TYPE_REF uint /*msg_id*/ name /*sig_name*/ COLON name /*type*/ SEMICOLON .
+
+signal_groups ::= .
+signal_groups ::= signal_groups signal_group .
+
+signal_group ::= SIG_GROUP uint /*msg_id*/ name /*group_name*/ uint /*repetitions*/ COLON names /*signal_names*/ SEMICOLON .
+
+signal_value_types ::= .
+signal_value_types ::= signal_value_types signal_value_type .
+
+signal_value_type ::= SIG_VALTYPE uint(msg_id) name(sig_name) COLON value_type(sig_type) SEMICOLON .
+{
+    dbc_signal_t *signal = dbc_find_signal(state->file, msg_id, sig_name);
+
+    if (signal)
+    {
+        signal->type = sig_type;
+    }
+    else
+    {
+        dbc_error(state, "error: signal %s in message %" G_GINT64_FORMAT " not found", sig_name, msg_id);
+    }
+
+    g_free(sig_name);
+}
+
+signal_multiplexing_definitions ::= .
+signal_multiplexing_definitions ::= signal_multiplexing_definitions signal_multiplexing_definition .
+
+signal_multiplexing_definition ::= SG_MUL_VAL uint /*msg_id*/ name /*sig_name*/ name /*mux_name*/ mux_values SEMICOLON .
+
+mux_values ::= mux_value .
+mux_values ::= mux_values COMMA mux_value .
+
+mux_value ::= uint MINUS uint .
 
 %code {
 
