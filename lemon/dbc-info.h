@@ -22,7 +22,7 @@ typedef enum
     DBC_MESSAGE_TYPE_J1939   = 1,
 } dbc_message_type_t;
 
-#define MESSAGE_TYPE_ATTRIBUTE_NAME "VMessageFormat"
+#define MESSAGE_TYPE_ATTRIBUTE_NAME "VFrameFormat"
 #define MESSAGE_TYPE_J1939_VALUE    "J1939PG"
 
 typedef struct

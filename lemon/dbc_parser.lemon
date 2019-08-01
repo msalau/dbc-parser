@@ -45,6 +45,29 @@ dbc_error(dbc_state_t *state, const char *format, ...)
     state->errors = g_slist_append(state->errors, str);
 }
 
+typedef enum {
+    DBC_ATTRIBUTE_INT,
+    DBC_ATTRIBUTE_HEX,
+    DBC_ATTRIBUTE_FLOAT,
+    DBC_ATTRIBUTE_STRING,
+    DBC_ATTRIBUTE_ENUM,
+} dbc_attribute_type_t;
+
+typedef struct {
+    dbc_attribute_type_t type;
+    union {
+        struct {
+            gint64 min;
+            gint64 max;
+        } ival;
+        struct {
+            double min;
+            double max;
+        } fval;
+        GSList *enum_values;
+    };
+} dbc_attribute_t;
+
 _Pragma("GCC diagnostic push")
 _Pragma("GCC diagnostic ignored \"-Wsign-compare\"")
 
@@ -305,6 +328,7 @@ message ::= BO uint(msg_id) name(msg_name) COLON
     msg->length  = msg_length;
     msg->senders = msg_sender;
     msg->signals = msg_signals;
+    msg->type    = DBC_MESSAGE_TYPE_GENERIC;
 
     if (strlen(msg->name) > DBC_MAX_MESSAGE_LENGTH)
     {
@@ -505,17 +529,70 @@ attribute_definitions ::= attribute_definitions attribute_definition.
 attribute_definition ::= BA_DEF TEXT /*name*/ attribute_type SEMICOLON .
 attribute_definition ::= BA_DEF EV TEXT /*name*/ attribute_type SEMICOLON .
 attribute_definition ::= BA_DEF BU TEXT /*name*/ attribute_type SEMICOLON .
-attribute_definition ::= BA_DEF BO TEXT /*name*/ attribute_type SEMICOLON .
+attribute_definition ::= BA_DEF BO TEXT(attr_name) attribute_type(attr_type) SEMICOLON .
+{
+    if (attr_type.type == DBC_ATTRIBUTE_ENUM)
+    {
+        if (g_strcmp0(attr_name, MESSAGE_TYPE_ATTRIBUTE_NAME) == 0)
+        {
+            int type_num = 0;
+
+            for (GSList *elem = attr_type.enum_values; elem; elem = g_slist_next(elem))
+            {
+                if (g_strcmp0(elem->data, MESSAGE_TYPE_J1939_VALUE) == 0)
+                {
+                    state->file->j1939_type_num = type_num;
+                    break;
+                }
+                type_num++;
+            }
+        }
+
+        g_slist_free_full(attr_type.enum_values, g_free);
+    }
+
+    g_free(attr_name);
+}
+
 attribute_definition ::= BA_DEF SG TEXT /*name*/ attribute_type SEMICOLON .
 attribute_definition ::= BA_DEF_REL BU_EV_REL TEXT /*name*/ attribute_type SEMICOLON .
 attribute_definition ::= BA_DEF_REL BU_BO_REL TEXT /*name*/ attribute_type SEMICOLON .
 attribute_definition ::= BA_DEF_REL BU_SG_REL TEXT /*name*/ attribute_type SEMICOLON .
 
-attribute_type ::= ATTR_STRING .
-attribute_type ::= ATTR_INT sint /*min*/ sint /*max*/ .
-attribute_type ::= ATTR_HEX sint /*min*/ sint /*max*/ .
-attribute_type ::= ATTR_FLOAT float /*min*/ float /*max*/ .
-attribute_type ::= ATTR_ENUM enum_values .
+%type attribute_type { dbc_attribute_t }
+%destructor attribute_type { if ($$.type == DBC_ATTRIBUTE_ENUM) g_slist_free_full($$.enum_values, g_free); }
+
+attribute_type(r) ::= ATTR_STRING .
+{
+    r.type = DBC_ATTRIBUTE_STRING;
+}
+
+attribute_type(r) ::= ATTR_INT sint(val_min) sint(val_max) .
+{
+    r.type     = DBC_ATTRIBUTE_INT;
+    r.ival.min = val_min;
+    r.ival.max = val_max;
+}
+
+attribute_type(r) ::= ATTR_HEX sint(val_min) sint(val_max) .
+{
+    r.type     = DBC_ATTRIBUTE_HEX;
+    r.ival.min = val_min;
+    r.ival.max = val_max;
+}
+
+attribute_type(r) ::= ATTR_FLOAT float(val_min) float(val_max) .
+{
+    r.type     = DBC_ATTRIBUTE_FLOAT;
+    r.fval.min = val_min;
+    r.fval.max = val_max;
+}
+
+attribute_type(r) ::= ATTR_ENUM enum_values(v) .
+{
+    r.type        = DBC_ATTRIBUTE_ENUM;
+    r.enum_values = v;
+}
 
 %type enum_values { GSList * }
 %destructor enum_values { g_slist_free_full($$, g_free); }
@@ -541,15 +618,35 @@ attribute_default_value ::= BA_DEF_DEF_REL TEXT /*name*/ TEXT /*value*/ SEMICOLO
 attribute_values ::= .
 attribute_values ::= attribute_values attribute_value .
 
-attribute_value ::= BA TEXT /*name*/ attribute_object /*object*/ attribute_object_value /*value*/ SEMICOLON .
+attribute_value ::= BA TEXT /*name*/ attribute_object_value /*value*/ SEMICOLON .
+attribute_value ::= BA TEXT /*name*/ EV name attribute_object_value /*value*/ SEMICOLON .
+attribute_value ::= BA TEXT /*name*/ BU name attribute_object_value /*value*/ SEMICOLON .
+attribute_value ::= BA TEXT /*name*/ SG uint name attribute_object_value /*value*/ SEMICOLON .
+
+attribute_value ::= BA TEXT /*name*/ BO uint /*msg_id*/ FLOAT /*value*/ SEMICOLON .
+attribute_value ::= BA TEXT /*name*/ BO uint /*msg_id*/ TEXT /*value*/ SEMICOLON .
+attribute_value ::= BA TEXT(attr_name) BO uint(msg_id) sint(attr_value) SEMICOLON .
+{
+    if ((g_strcmp0(attr_name, MESSAGE_TYPE_ATTRIBUTE_NAME) == 0) &&
+        (state->file->j1939_type_num == attr_value))
+    {
+        dbc_message_t *msg = dbc_find_message(state->file, msg_id);
+
+        if (msg)
+        {
+            msg->type = DBC_MESSAGE_TYPE_J1939;
+        }
+        else
+        {
+            dbc_error(state, "error: Message %" G_GINT64_FORMAT " not found", msg_id);
+        }
+    }
+
+    g_free(attr_name);
+}
+
 attribute_value ::= BA_REL TEXT /*name*/ attribute_rel_object /*object*/ attribute_object_value /*value*/ SEMICOLON .
 attribute_value ::= BA_SGTYPE TEXT /*name*/ SGTYPE name /*type*/ attribute_object_value /*value*/ SEMICOLON .
-
-attribute_object ::= .
-attribute_object ::= EV name .
-attribute_object ::= BU name .
-attribute_object ::= BO uint .
-attribute_object ::= SG uint name .
 
 attribute_rel_object ::= BU_EV_REL name name .
 attribute_rel_object ::= BU_BO_REL name uint .
