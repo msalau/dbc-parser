@@ -5,6 +5,8 @@
 #include "value_string.h"
 #include <gmodule.h>
 
+#define DBC_MAX_MESSAGE_LENGTH 32
+
 typedef struct
 {
     char   *filepath;

@@ -14,6 +14,7 @@ typedef struct {
     gchar *token;
 
     GSList *errors;
+    GSList *warnings;
 
     dbc_file_t *file;
 
