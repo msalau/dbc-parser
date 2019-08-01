@@ -93,6 +93,7 @@ spec ::= version
          environment_variables
          environment_variables_data
          signal_types
+         comments
          .
 
 version ::= .
@@ -387,6 +388,79 @@ signal_type ::= SGTYPE name COLON uint /*length*/ AT endianess signess
                 TEXT /*unit*/ float /*default-value*/
                 maybe_name /*value-table*/ SEMICOLON
                 .
+
+comments ::= .
+comments ::= comments comment .
+
+comment ::= CM BU name TEXT SEMICOLON .
+comment ::= CM EV name TEXT SEMICOLON .
+
+comment ::= CM TEXT(text) SEMICOLON .
+{
+    if (state->file->comment)
+    {
+        gchar *str = g_strdup_printf("%s: warning: File comment present", state->file->filepath);
+
+        g_free(state->file->comment);
+        state->warnings = g_slist_prepend(state->warnings, str);
+    }
+
+    state->file->comment = text;
+}
+
+comment ::= CM BO uint(msg_id) TEXT(text) SEMICOLON .
+{
+    dbc_message_t *msg = dbc_find_message(state->file, msg_id);
+
+    if (msg)
+    {
+        if (msg->comment)
+        {
+            gchar *str = g_strdup_printf("%s: warning: Message %" G_GINT64_FORMAT " comment redefined", state->file->filepath, msg_id);
+
+            g_free(msg->comment);
+            state->warnings = g_slist_prepend(state->warnings, str);
+        }
+
+        msg->comment = text;
+    }
+    else
+    {
+        gchar *str = g_strdup_printf("%s: error: Message %" G_GINT64_FORMAT " not found", state->file->filepath, msg_id);
+
+        state->errors = g_slist_prepend(state->errors, str);
+        g_free(text);
+    }
+}
+
+comment ::= CM SG uint(msg_id) name(sig_name) TEXT(text) SEMICOLON .
+{
+    dbc_signal_t *sig = dbc_find_signal(state->file, msg_id, sig_name);
+
+    if (sig)
+    {
+        if (sig->comment)
+        {
+            gchar *str = g_strdup_printf("%s: warning: Signal %s message %" G_GINT64_FORMAT "comment redefined",
+                                         state->file->filepath, sig_name, msg_id);
+
+            g_free(sig->comment);
+            state->warnings = g_slist_prepend(state->warnings, str);
+        }
+
+        sig->comment = text;
+    }
+    else
+    {
+        gchar *str = g_strdup_printf("%s: error: Signal %s in message %" G_GINT64_FORMAT " not found",
+                                     state->file->filepath, sig_name, msg_id);
+
+        state->errors = g_slist_prepend(state->errors, str);
+        g_free(text);
+    }
+
+    g_free(sig_name);
+}
 
 %code {
 
