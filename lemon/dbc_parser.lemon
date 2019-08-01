@@ -104,7 +104,7 @@ _Pragma("GCC diagnostic ignored \"-Wsign-compare\"")
     dbc_error(state, "Stack overflow");
 }
 
-%nonassoc ATTR_ENUM ATTR_FLOAT ATTR_HEX ATTR_INT ATTR_STRING UNKNOWN .
+%nonassoc UNKNOWN .
 
 %start_symbol spec
 
@@ -119,6 +119,7 @@ spec ::= version
          environment_variables_data
          signal_types
          comments
+         attribute_definitions
          .
 
 version ::= .
@@ -472,6 +473,30 @@ comment ::= CM SG uint(msg_id) name(sig_name) TEXT(text) SEMICOLON .
 
     g_free(sig_name);
 }
+
+attribute_definitions ::= .
+attribute_definitions ::= attribute_definitions attribute_definition.
+
+attribute_definition ::= BA_DEF TEXT /*name*/ attribute_type SEMICOLON .
+attribute_definition ::= BA_DEF EV TEXT /*name*/ attribute_type SEMICOLON .
+attribute_definition ::= BA_DEF BU TEXT /*name*/ attribute_type SEMICOLON .
+attribute_definition ::= BA_DEF BO TEXT /*name*/ attribute_type SEMICOLON .
+attribute_definition ::= BA_DEF SG TEXT /*name*/ attribute_type SEMICOLON .
+attribute_definition ::= BA_DEF_REL BU_EV_REL TEXT /*name*/ attribute_type SEMICOLON .
+attribute_definition ::= BA_DEF_REL BU_BO_REL TEXT /*name*/ attribute_type SEMICOLON .
+attribute_definition ::= BA_DEF_REL BU_SG_REL TEXT /*name*/ attribute_type SEMICOLON .
+
+attribute_type ::= ATTR_STRING .
+attribute_type ::= ATTR_INT sint /*min*/ sint /*max*/ .
+attribute_type ::= ATTR_HEX sint /*min*/ sint /*max*/ .
+attribute_type ::= ATTR_FLOAT float /*min*/ float /*max*/ .
+attribute_type ::= ATTR_ENUM enum_values .
+
+%type enum_values { GSList * }
+%destructor enum_values { g_slist_free_full($$, g_free); }
+
+enum_values(r) ::= TEXT(v) .                      { r = g_slist_append(NULL, v); }
+enum_values(r) ::= enum_values(l) COMMA TEXT(v) . { r = g_slist_append(l, v); }
 
 %code {
 
