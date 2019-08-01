@@ -724,14 +724,14 @@ dbc_file_t *dbc_read(const gchar *filename)
     if (state.warnings)
     {
         for (GSList *elem = state.warnings; elem; elem = g_slist_next(elem))
-            dbc_printf("%s\n", (gchar *)elem->data);
+            fprintf(stderr, "%s:%s\n", filename, (gchar *)elem->data);
         g_slist_free_full(state.warnings, g_free);
     }
 
     if (state.errors)
     {
         for (GSList *elem = state.errors; elem; elem = g_slist_next(elem))
-            dbc_printf("%s\n", (gchar *)elem->data);
+            fprintf(stderr, "%s:%s\n", filename, (gchar *)elem->data);
         g_slist_free_full(state.errors, g_free);
         dbc_free(state.file);
         return NULL;

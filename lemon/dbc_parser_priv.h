@@ -21,7 +21,7 @@ typedef struct {
     dbc_scanner_lloc_t lloc;
 } dbc_state_t;
 
-#define DBC_DEBUG
+//#define DBC_DEBUG
 //#define DBC_TRACE
 
 #ifdef DBC_DEBUG
