@@ -120,6 +120,7 @@ spec ::= version
          signal_types
          comments
          attribute_definitions
+         attribute_sgtype_definitions
          .
 
 version ::= .
@@ -497,6 +498,11 @@ attribute_type ::= ATTR_ENUM enum_values .
 
 enum_values(r) ::= TEXT(v) .                      { r = g_slist_append(NULL, v); }
 enum_values(r) ::= enum_values(l) COMMA TEXT(v) . { r = g_slist_append(l, v); }
+
+attribute_sgtype_definitions ::= .
+attribute_sgtype_definitions ::= attribute_sgtype_definitions attribute_sgtype_definition .
+
+attribute_sgtype_definition ::= BA_DEF_SGTYPE TEXT /*name*/ SEMICOLON .
 
 %code {
 
