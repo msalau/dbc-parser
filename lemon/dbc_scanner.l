@@ -30,6 +30,10 @@
 #define YY_NO_UNISTD_H
 #endif
 
+/*
+ * Reset token at rule setup, so we don't assign NULL in every handler.
+ * Also trace position in the file by counting line and column numbers.
+ */
 #define YY_USER_ACTION \
     yyextra->token = NULL; \
     yyextra->lloc.first_line   = yyextra->lloc.last_line; \
