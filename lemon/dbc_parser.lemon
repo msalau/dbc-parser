@@ -290,6 +290,7 @@ signal(r) ::= SG name(sig_name) mux COLON
     r->min       = sig_min;
     r->max       = sig_max;
     r->unit      = sig_unit;
+    r->type      = DBC_SIGNAL_TYPE_INT;
 }
 
 mux ::= .
