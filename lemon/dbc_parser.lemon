@@ -121,6 +121,7 @@ spec ::= version
          comments
          attribute_definitions
          attribute_sgtype_definitions
+         attribute_default_values
          .
 
 version ::= .
@@ -503,6 +504,14 @@ attribute_sgtype_definitions ::= .
 attribute_sgtype_definitions ::= attribute_sgtype_definitions attribute_sgtype_definition .
 
 attribute_sgtype_definition ::= BA_DEF_SGTYPE TEXT /*name*/ SEMICOLON .
+
+attribute_default_values ::= .
+attribute_default_values ::= attribute_default_values attribute_default_value .
+
+attribute_default_value ::= BA_DEF_DEF TEXT /*name*/ float /*value*/ SEMICOLON .
+attribute_default_value ::= BA_DEF_DEF TEXT /*name*/ TEXT /*value*/ SEMICOLON .
+attribute_default_value ::= BA_DEF_DEF_REL TEXT /*name*/ float /*value*/ SEMICOLON .
+attribute_default_value ::= BA_DEF_DEF_REL TEXT /*name*/ TEXT /*value*/ SEMICOLON .
 
 %code {
 
