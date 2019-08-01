@@ -119,6 +119,8 @@ M                         { yyextra->token = g_strdup(yytext); return TK_MUX; }
 m{NUM}                    { yyextra->token = g_strdup(yytext); return TK_MUX; }
 m{NUM}M                   { yyextra->token = g_strdup(yytext); return TK_MUX; }
 
+Vector__XXX               { yyextra->token = g_strdup(yytext); return TK_VECTOR__XXX; }
+
 DUMMY_NODE_VECTOR0        { yyextra->token = g_strdup(yytext); return TK_DUMMY_0; }
 DUMMY_NODE_VECTOR1        { yyextra->token = g_strdup(yytext); return TK_DUMMY_1; }
 DUMMY_NODE_VECTOR2        { yyextra->token = g_strdup(yytext); return TK_DUMMY_2; }

@@ -227,6 +227,7 @@ name(r) ::= DUMMY_8000(v) . { r = v; }
 name(r) ::= DUMMY_8001(v) . { r = v; }
 name(r) ::= DUMMY_8002(v) . { r = v; }
 name(r) ::= DUMMY_8003(v) . { r = v; }
+name(r) ::= VECTOR__XXX(v) . { r = v;  }
 
 %type comma_separated_names { GSList * }
 %destructor comma_separated_names { g_slist_free_full($$, g_free); }
