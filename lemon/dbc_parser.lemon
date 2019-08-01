@@ -82,7 +82,7 @@ _Pragma("GCC diagnostic ignored \"-Wsign-compare\"")
     state->parse_error = g_strdup("Stack overflow");
 }
 
-%nonassoc ATTR_ENUM ATTR_FLOAT ATTR_HEX ATTR_INT ATTR_STRING BO_TX_BU UNKNOWN .
+%nonassoc ATTR_ENUM ATTR_FLOAT ATTR_HEX ATTR_INT ATTR_STRING UNKNOWN .
 
 %start_symbol spec
 
@@ -92,6 +92,7 @@ spec ::= version
          bus_units
          value_tables
          messages
+         message_sender_lists
          .
 
 version ::= .
@@ -274,6 +275,40 @@ endianess(r) ::= ONE .  { r = DBC_SIGNAL_ENDIANESS_INTEL; }
 %type signess { dbc_signal_signess_t }
 signess(r) ::= PLUS .  { r = DBC_SIGNAL_SIGNESS_UNSIGNED; }
 signess(r) ::= MINUS . { r = DBC_SIGNAL_SIGNESS_SIGNED; }
+
+message_sender_lists ::= .
+message_sender_lists ::= message_sender_lists message_sender_list .
+
+message_sender_list ::= BO_TX_BU uint(msg_id) COLON
+                        comma_separated_names(msg_senders) SEMICOLON
+                        .
+{
+    dbc_message_t *msg = dbc_find_message(state->file, msg_id);
+
+    if (msg)
+    {
+        GArray   *arr = g_array_sized_new(TRUE, TRUE, sizeof(gchar *), g_slist_length(msg_senders));
+        unsigned  i   = 0;
+        gchar    *senders_str;
+
+        /* TODO: Check if we need to keep the original sender name */
+        for (GSList *elem = msg_senders; elem; i++, elem = g_slist_next(elem))
+            g_array_insert_val(arr, i, elem->data);
+
+        senders_str = g_strjoinv(" | ", (gchar **)arr->data);
+        g_array_free(arr, TRUE);
+        g_free(msg->senders);
+        msg->senders = senders_str;
+    }
+    else
+    {
+        /* TODO: make state->parse_error a list of strings */
+        g_free(state->parse_error);
+        state->parse_error = g_strdup_printf("Message with id %" G_GINT64_FORMAT " not found", msg_id);
+    }
+
+    g_slist_free_full(msg_senders, g_free);
+}
 
 %code {
 
