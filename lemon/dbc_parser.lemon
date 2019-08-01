@@ -15,6 +15,12 @@ extern void DbcParserTrace(FILE *TraceFILE, char *zTracePrompt);
 
 #undef NDEBUG
 
+static int
+compare_value_strings(gconstpointer a, gconstpointer b)
+{
+    return ((const value_string *)a)->value - ((const value_string *)b)->value;
+}
+
 G_GNUC_PRINTF(2, 3)
 static void
 dbc_warning(dbc_state_t *state, const char *format, ...)
@@ -123,6 +129,7 @@ spec ::= version
          attribute_sgtype_definitions
          attribute_default_values
          attribute_values
+         value_definitions
          .
 
 version ::= .
@@ -533,6 +540,35 @@ attribute_rel_object ::= BU_SG_REL name SG uint name .
 
 attribute_object_value ::= float .
 attribute_object_value ::= TEXT .
+
+value_definitions ::= .
+value_definitions ::= value_definitions value_definition .
+
+value_definition ::= VAL name /*environment-variable-name*/ values SEMICOLON .
+value_definition ::= VAL uint(msg_id) name(sig_name) values(sig_values) SEMICOLON .
+{
+    dbc_signal_t *signal = dbc_find_signal(state->file, msg_id, sig_name);
+
+    if (signal)
+    {
+        if (signal->values)
+        {
+            for (value_string *v = signal->values; v->strptr; v++)
+                free_value_string(v);
+            g_free(signal->values);
+            dbc_warning(state, "warning: signal %s in message %" G_GINT64_FORMAT " values redefined", sig_name, msg_id);
+        }
+
+        g_array_sort(sig_values, compare_value_strings);
+        signal->values = (value_string *)g_array_free(sig_values, FALSE);
+    }
+    else
+    {
+        g_array_free(sig_values, TRUE);
+        dbc_error(state, "error: signal %s in message %" G_GINT64_FORMAT " not found", sig_name, msg_id);
+    }
+    g_free(sig_name);
+}
 
 %code {
 
