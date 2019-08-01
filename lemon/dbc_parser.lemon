@@ -136,10 +136,10 @@ new_symbol_name ::= CAT .
 new_symbol_name ::= FILTER .
 
 bus_speed ::= BS COLON .
-bus_speed ::= BS COLON uint .
-bus_speed ::= BS COLON uint COLON uint COMMA uint .
+bus_speed ::= BS COLON uint /*baudrate*/ .
+bus_speed ::= BS COLON uint /*baudrate*/ COLON uint /*BTR1*/  COMMA uint /*BTR2*/ .
 
-bus_units ::= BU COLON maybe_names .
+bus_units ::= BU COLON maybe_names /*node-names*/ .
 
 %type maybe_names { GSList * }
 %destructor maybe_names { g_slist_free_full($$, g_free); }
