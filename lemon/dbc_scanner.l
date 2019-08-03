@@ -151,4 +151,12 @@ DUMMY_NODE_VECTOR8003     { yyextra->token = g_strdup(yytext); return TK_DUMMY_8
 ["]([^"]|\\["])*["]       { yyextra->token = g_strndup(yytext + 1, strlen(yytext) - 2); return TK_TEXT; }
 .                         { return TK_UNKNOWN; }
 
+ /*
+  * YY_RULE_SETUP is not called by flex-generated code in case of <<EOF>>,
+  * thus leading to incorrect location of the offending token (end of file)
+  * also an invalid token value is passed to the parser which may lead
+  * to double free exception.
+  */
+<<EOF>>                   { YY_RULE_SETUP; yyterminate(); }
+
 %%
