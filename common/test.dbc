@@ -36,8 +36,9 @@ BU_: ECU0 ECU1 ECU2 ECU3
 VAL_TABLE_ TFS 0 "FALSE" 1 "TRUE";
 VAL_TABLE_ LRS 0 "LEFT" 1 "RIGHT";
 VAL_TABLE_ UDS 0 "UP" 1 "DOWN";
-VAL_TABLE_ NUMBERS 0 "Zero" +1 "PlusOne" -1 "MinusOne" 1.5 "OneAndAHalf" -3.14 "MinusPi";
+VAL_TABLE_ NUMBERS 0 "Zero" +5 "PlusFive" -1 "MinusOne" 1.5 "OneAndAHalf" -3.14 "MinusPi";
 VAL_TABLE_ EmptyValueTable ;
+VAL_TABLE_ FooSignalValues ;
 
 BO_ 66 TestMsg1: 8 ECU1
  SG_ TestMsg1Voltage : 0|16@1- (0.001,0) [-32.768|32.767] "V" ECU2,ECU1,ECU0
@@ -54,7 +55,7 @@ BO_ 68 TestMsg3: 8 ECU1
  SG_ TestMsg3Power : 32|16@1+ (1.0e-3,0) [0|65.535] "W" ECU2
  SG_ TestMsg3Energy : 48|16@1+ (0.001,1e2) [1.e2|165.535] "kWh" ECU2
 
-BO_ 69 TestMsg4: 8 ECU2
+BO_ 69 TestMsg4: 8 ECU3
  SG_ Muxer M : 0|8@1+ (1,0) [0|3] "" ECU1
  SG_ Muxed0 m0 : 8|8@1+ (1,0) [0|255] "" ECU1
  SG_ Muxed1 m1 : 8|8@1+ (1,0) [0|255] "" ECU1
@@ -72,7 +73,7 @@ BO_ 71 TestMsg6: 8 ECU0
  SG_ Float2 : 32|32@1+ (1,0) [0|0] "" ECU1
 
 BO_ 72 TestComplexMuxing: 8 ECU2
- SG_ Muxer M : 0|8@1+ (1,0) [0|3] "" ECU1
+ SG_ RootMuxer M : 0|8@1+ (1,0) [0|3] "" ECU1
  SG_ Muxed1 m1M : 8|8@1+ (1,0) [0|255] "" ECU1
  SG_ Muxed2 m2 : 16|8@1+ (1,0) [0|255] "" ECU1
  SG_ Muxed3 m3 : 16|8@1+ (1,0) [0|255] "" ECU1
@@ -220,10 +221,10 @@ SIG_GROUP_ 71 FloatValues 1 : Float1 Float2;
 SIG_VALTYPE_ 71 Float1 : 1;
 SIG_VALTYPE_ 71 Float2 : 1;
 
-SG_MUL_VAL_ 69 m0 M 0-0, 1-1, 2-2;
-SG_MUL_VAL_ 69 m1 M 0-0, 1-1, 2-2;
-SG_MUL_VAL_ 69 m2 M 0-0, 1-1, 2-2;
+SG_MUL_VAL_ 69 m0 M 0-3, 16-23;
+SG_MUL_VAL_ 69 m1 M 4-7, 24-31;
+SG_MUL_VAL_ 69 m2 M 8-15, 32-47;
 
-SG_MUL_VAL_ 72 Muxed1 Muxer 1-1;
+SG_MUL_VAL_ 72 Muxed1 RootMuxer 1-1;
 SG_MUL_VAL_ 72 Muxed2 Muxed1 2-2;
 SG_MUL_VAL_ 72 Muxed3 Muxed1 3-3;
