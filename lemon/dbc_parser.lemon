@@ -423,7 +423,7 @@ message_sender_list ::= BO_TX_BU uint(msg_id) COLON
         unsigned  i   = 0;
         gchar    *senders_str;
 
-        /* TODO: Check if we need to keep the original sender name */
+        /* The original sender is ignored */
         for (GSList *elem = msg_senders; elem; i++, elem = g_slist_next(elem))
             g_array_insert_val(arr, i, elem->data);
 
