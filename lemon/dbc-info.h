@@ -14,6 +14,7 @@ typedef struct
     char   *version;
     GSList *messages;
     int     j1939_type_num;
+    int     cyclic_send_type_num;
 } dbc_file_t;
 
 typedef enum
@@ -23,18 +24,33 @@ typedef enum
     DBC_MESSAGE_TYPE_J1939,
 } dbc_message_type_t;
 
-#define MESSAGE_TYPE_ATTRIBUTE_NAME "VFrameFormat"
-#define MESSAGE_TYPE_J1939_VALUE    "J1939PG"
+typedef enum
+{
+    DBC_MESSAGE_SEND_TYPE_UNDEFINED,
+    DBC_MESSAGE_SEND_TYPE_CYCLIC,
+    DBC_MESSAGE_SEND_TYPE_OTHER,
+} dbc_message_send_type_t;
+
+#define DBC_MESSAGE_TYPE_ATTRIBUTE_NAME "VFrameFormat"
+#define DBC_MESSAGE_TYPE_J1939_VALUE    "J1939PG"
+
+#define DBC_MESSAGE_SEND_TYPE_ATTRIBUTE_NAME "GenMsgSendType"
+#define DBC_MESSAGE_SEND_TYPE_CYCLIC_VALUE   "Cyclic"
+
+#define DBC_MESSAGE_CYCLE_TIME_ATTRIBUTE_NAME "GenMsgCycleTime"
+#define DBC_MESSAGE_CYCLE_TIME_UNDEFINED      -1
 
 typedef struct
 {
-    uint32_t          id;
-    uint32_t          length;
-    dbc_message_type_t  type;
-    char             *name;
-    char             *comment;
-    char             *senders;
-    GSList           *signals;
+    uint32_t                 id;
+    uint32_t                 length;
+    dbc_message_type_t       type;
+    dbc_message_send_type_t  send_type;
+    int64_t                  cycle_time;
+    char                    *name;
+    char                    *comment;
+    char                    *senders;
+    GSList                  *signals;
 } dbc_message_t;
 
 typedef enum

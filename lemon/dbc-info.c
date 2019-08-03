@@ -5,8 +5,9 @@ dbc_file_t *dbc_new(const char *filepath)
 {
     dbc_file_t *dbc = g_new0(dbc_file_t, 1);
 
-    dbc->filepath       = g_strdup(filepath);
-    dbc->j1939_type_num = -1;
+    dbc->filepath             = g_strdup(filepath);
+    dbc->j1939_type_num       = -1;
+    dbc->cyclic_send_type_num = -1;
 
     return dbc;
 }

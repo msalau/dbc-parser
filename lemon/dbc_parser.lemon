@@ -44,6 +44,27 @@ dbc_error(dbc_state_t *state, const char *format, ...)
     state->errors = g_slist_append(state->errors, str);
 }
 
+static gint
+dbc_find_enum_value(GSList *enum_values, const gchar *value)
+{
+    gint    ret      = -1;
+    gint    type_num = 0;
+    GSList *elem;
+
+    for (elem = enum_values; elem; elem = g_slist_next(elem))
+    {
+        if (g_strcmp0(elem->data, value) == 0)
+        {
+            ret = type_num;
+            break;
+        }
+        type_num++;
+    }
+
+    return ret;
+}
+
+
 typedef enum {
     DBC_ATTRIBUTE_INT,
     DBC_ATTRIBUTE_HEX,
@@ -329,6 +350,9 @@ message ::= BO uint(msg_id) name(msg_name) COLON
     msg->signals = msg_signals;
     msg->type    = DBC_MESSAGE_TYPE_UNDEFINED;
 
+    msg->send_type  = DBC_MESSAGE_SEND_TYPE_UNDEFINED;
+    msg->cycle_time = DBC_MESSAGE_CYCLE_TIME_UNDEFINED;
+
     if (strlen(msg->name) > DBC_MAX_MESSAGE_LENGTH)
     {
         dbc_warning(state,
@@ -532,18 +556,22 @@ attribute_definition ::= BA_DEF BO TEXT(attr_name) attribute_type(attr_type) SEM
 {
     if (attr_type.type == DBC_ATTRIBUTE_ENUM)
     {
-        if (g_strcmp0(attr_name, MESSAGE_TYPE_ATTRIBUTE_NAME) == 0)
+        if (g_strcmp0(attr_name, DBC_MESSAGE_TYPE_ATTRIBUTE_NAME) == 0)
         {
-            int type_num = 0;
+            gint type_num = dbc_find_enum_value(attr_type.enum_values, DBC_MESSAGE_TYPE_J1939_VALUE);
 
-            for (GSList *elem = attr_type.enum_values; elem; elem = g_slist_next(elem))
+            if (type_num >= 0)
             {
-                if (g_strcmp0(elem->data, MESSAGE_TYPE_J1939_VALUE) == 0)
-                {
-                    state->file->j1939_type_num = type_num;
-                    break;
-                }
-                type_num++;
+                state->file->j1939_type_num = type_num;
+            }
+        }
+        else if (g_strcmp0(attr_name, DBC_MESSAGE_SEND_TYPE_ATTRIBUTE_NAME) == 0)
+        {
+            gint type_num = dbc_find_enum_value(attr_type.enum_values, DBC_MESSAGE_SEND_TYPE_CYCLIC_VALUE);
+
+            if (type_num >= 0)
+            {
+                state->file->cyclic_send_type_num = type_num;
             }
         }
 
@@ -626,22 +654,38 @@ attribute_value ::= BA TEXT /*name*/ BO uint /*msg_id*/ FLOAT /*value*/ SEMICOLO
 attribute_value ::= BA TEXT /*name*/ BO uint /*msg_id*/ TEXT /*value*/ SEMICOLON .
 attribute_value ::= BA TEXT(attr_name) BO uint(msg_id) sint(attr_value) SEMICOLON .
 {
-    if ((g_strcmp0(attr_name, MESSAGE_TYPE_ATTRIBUTE_NAME) == 0) &&
-        (state->file->j1939_type_num == attr_value))
+    dbc_message_t *msg = dbc_find_message(state->file, msg_id);
+
+    if (!msg)
     {
-        dbc_message_t *msg = dbc_find_message(state->file, msg_id);
+        dbc_error(state, "error: Message %" G_GINT64_FORMAT " not found", msg_id);
+    }
+    else if ((g_strcmp0(attr_name, DBC_MESSAGE_TYPE_ATTRIBUTE_NAME) == 0) &&
+             (state->file->j1939_type_num >= 0))
+    {
+        if (msg->type != DBC_MESSAGE_TYPE_UNDEFINED)
+            dbc_warning(state, "warning: Message %" G_GINT64_FORMAT " type redefined", msg_id);
 
-        if (msg)
-        {
-            if (msg->type != DBC_MESSAGE_TYPE_UNDEFINED)
-                dbc_warning(state, "warning: Message %" G_GINT64_FORMAT " type redefined", msg_id);
+        msg->type = (state->file->j1939_type_num == attr_value)
+            ? DBC_MESSAGE_TYPE_J1939
+            : DBC_MESSAGE_TYPE_GENERIC;
+    }
+    else if ((g_strcmp0(attr_name, DBC_MESSAGE_SEND_TYPE_ATTRIBUTE_NAME) == 0) &&
+             (state->file->cyclic_send_type_num >= 0))
+    {
+        if (msg->send_type != DBC_MESSAGE_SEND_TYPE_UNDEFINED)
+            dbc_warning(state, "warning: Message %" G_GINT64_FORMAT " send_type redefined", msg_id);
 
-            msg->type = DBC_MESSAGE_TYPE_J1939;
-        }
-        else
-        {
-            dbc_error(state, "error: Message %" G_GINT64_FORMAT " not found", msg_id);
-        }
+        msg->send_type = (state->file->cyclic_send_type_num == attr_value)
+            ? DBC_MESSAGE_SEND_TYPE_CYCLIC
+            : DBC_MESSAGE_SEND_TYPE_OTHER;
+    }
+    else if (g_strcmp0(attr_name, DBC_MESSAGE_CYCLE_TIME_ATTRIBUTE_NAME) == 0)
+    {
+        if (msg->cycle_time != DBC_MESSAGE_CYCLE_TIME_UNDEFINED)
+            dbc_warning(state, "warning: Message %" G_GINT64_FORMAT " cycle time redefined", msg_id);
+
+        msg->cycle_time = attr_value;
     }
 
     g_free(attr_name);
