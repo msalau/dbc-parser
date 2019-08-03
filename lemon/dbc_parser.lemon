@@ -1,6 +1,5 @@
 %include {
 
-#include <assert.h>
 #include <string.h>
 #include "dbc-info.h"
 #include "dbc_parser_priv.h"
@@ -767,7 +766,6 @@ mux_value ::= uint MINUS uint .
 _Pragma("GCC diagnostic pop")
 
 #include "dbc_scanner_lex.h"
-#include "dbc_parser.h"
 
 dbc_file_t *dbc_read(const gchar *filename)
 {
@@ -777,15 +775,15 @@ dbc_file_t *dbc_read(const gchar *filename)
     dbc_state_t  state;
     FILE        *fd;
 
-    if (dbc_scanner_lex_init_extra(&state, &scanner) != 0)
-    {
-        return NULL;
-    }
-
     fd = fopen(filename, "r");
     if (!fd)
     {
         perror(filename);
+        return NULL;
+    }
+
+    if (dbc_scanner_lex_init_extra(&state, &scanner) != 0)
+    {
         return NULL;
     }
 
