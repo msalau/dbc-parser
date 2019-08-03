@@ -18,8 +18,9 @@ typedef struct
 
 typedef enum
 {
-    DBC_MESSAGE_TYPE_GENERIC = 0,
-    DBC_MESSAGE_TYPE_J1939   = 1,
+    DBC_MESSAGE_TYPE_UNDEFINED,
+    DBC_MESSAGE_TYPE_GENERIC,
+    DBC_MESSAGE_TYPE_J1939,
 } dbc_message_type_t;
 
 #define MESSAGE_TYPE_ATTRIBUTE_NAME "VFrameFormat"
@@ -38,21 +39,22 @@ typedef struct
 
 typedef enum
 {
-    DBC_SIGNAL_ENDIANESS_MOTOROLA = 0,
-    DBC_SIGNAL_ENDIANESS_INTEL    = 1,
+    DBC_SIGNAL_ENDIANESS_MOTOROLA,
+    DBC_SIGNAL_ENDIANESS_INTEL,
 } dbc_signal_endianess_t;
 
 typedef enum
 {
-    DBC_SIGNAL_SIGNESS_UNSIGNED = 0,
-    DBC_SIGNAL_SIGNESS_SIGNED   = 1,
+    DBC_SIGNAL_SIGNESS_UNSIGNED,
+    DBC_SIGNAL_SIGNESS_SIGNED,
 } dbc_signal_signess_t;
 
 typedef enum
 {
-    DBC_SIGNAL_TYPE_INT    = 0,
-    DBC_SIGNAL_TYPE_FLOAT  = 1,
-    DBC_SIGNAL_TYPE_DOUBLE = 2,
+    DBC_SIGNAL_TYPE_UNDEFINED,
+    DBC_SIGNAL_TYPE_INT,
+    DBC_SIGNAL_TYPE_FLOAT,
+    DBC_SIGNAL_TYPE_DOUBLE,
 } dbc_value_type_t;
 
 typedef struct

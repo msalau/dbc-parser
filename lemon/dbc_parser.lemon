@@ -327,7 +327,7 @@ message ::= BO uint(msg_id) name(msg_name) COLON
     msg->length  = msg_length;
     msg->senders = msg_sender;
     msg->signals = msg_signals;
-    msg->type    = DBC_MESSAGE_TYPE_GENERIC;
+    msg->type    = DBC_MESSAGE_TYPE_UNDEFINED;
 
     if (strlen(msg->name) > DBC_MAX_MESSAGE_LENGTH)
     {
@@ -370,7 +370,7 @@ signal(r) ::= SG name(sig_name) mux COLON
     r->min       = sig_min;
     r->max       = sig_max;
     r->unit      = sig_unit;
-    r->type      = DBC_SIGNAL_TYPE_INT;
+    r->type      = DBC_SIGNAL_TYPE_UNDEFINED;
 }
 
 mux ::= .
@@ -633,6 +633,9 @@ attribute_value ::= BA TEXT(attr_name) BO uint(msg_id) sint(attr_value) SEMICOLO
 
         if (msg)
         {
+            if (msg->type != DBC_MESSAGE_TYPE_UNDEFINED)
+                dbc_warning(state, "warning: Message %" G_GINT64_FORMAT " type redefined", msg_id);
+
             msg->type = DBC_MESSAGE_TYPE_J1939;
         }
         else
@@ -724,6 +727,9 @@ signal_value_type ::= SIG_VALTYPE uint(msg_id) name(sig_name) COLON value_type(s
 
     if (signal)
     {
+        if (signal->type != DBC_SIGNAL_TYPE_UNDEFINED)
+            dbc_warning(state, "warning: signal %s in message %" G_GINT64_FORMAT " type redefined", sig_name, msg_id);
+
         signal->type = sig_type;
     }
     else
