@@ -296,6 +296,26 @@ values(r) ::= .
 
 values(r) ::= values(a) value(v) .
 {
+#ifdef DBC_WARNINGS
+    if (strlen(v.strptr) >= DBC_MAX_VALUE_STRING_LENGTH)
+        dbc_warning(state,
+                    "warning: value '%s': String is longer than %u symbols",
+                    v.strptr,
+                    DBC_MAX_VALUE_STRING_LENGTH);
+
+    const value_string *av = (const value_string *)a->data;
+    for (guint i = 0; i < a->len; ++av, ++i)
+    {
+        if (av->value == v.value)
+        {
+            dbc_warning(state,
+                        "warning: value '%" G_GINT32_FORMAT "' is already present",
+                        v.value);
+            break;
+        }
+    }
+#endif
+
     r = g_array_append_val(a, v);
 }
 
