@@ -185,7 +185,7 @@ spec ::= version
 version ::= .
 version ::= VERSION TEXT(str) .
 {
-    state->file->version = str;
+    state->dbc->version = str;
 }
 
 new_symbols ::= .
@@ -362,7 +362,7 @@ message ::= BO uint(msg_id) name(msg_name) COLON
                     DBC_MAX_MESSAGE_LENGTH);
     }
 
-    state->file->messages = g_slist_prepend(state->file->messages, msg);
+    state->dbc->messages = g_slist_prepend(state->dbc->messages, msg);
 }
 
 %type signals { GSList * }
@@ -415,7 +415,7 @@ message_sender_list ::= BO_TX_BU uint(msg_id) COLON
                         comma_separated_names(msg_senders) SEMICOLON
                         .
 {
-    dbc_message_t *msg = dbc_find_message(state->file, msg_id);
+    dbc_message_t *msg = dbc_find_message(state->dbc, msg_id);
 
     if (msg)
     {
@@ -491,18 +491,18 @@ comment ::= CM EV name TEXT SEMICOLON .
 
 comment ::= CM TEXT(text) SEMICOLON .
 {
-    if (state->file->comment)
+    if (state->dbc->comment)
     {
-        g_free(state->file->comment);
+        g_free(state->dbc->comment);
         dbc_warning(state, "warning: File comment redefined");
     }
 
-    state->file->comment = text;
+    state->dbc->comment = text;
 }
 
 comment ::= CM BO uint(msg_id) TEXT(text) SEMICOLON .
 {
-    dbc_message_t *msg = dbc_find_message(state->file, msg_id);
+    dbc_message_t *msg = dbc_find_message(state->dbc, msg_id);
 
     if (msg)
     {
@@ -523,7 +523,7 @@ comment ::= CM BO uint(msg_id) TEXT(text) SEMICOLON .
 
 comment ::= CM SG uint(msg_id) name(sig_name) TEXT(text) SEMICOLON .
 {
-    dbc_signal_t *sig = dbc_find_signal(state->file, msg_id, sig_name);
+    dbc_signal_t *sig = dbc_find_signal(state->dbc, msg_id, sig_name);
 
     if (sig)
     {
@@ -562,7 +562,7 @@ attribute_definition ::= BA_DEF BO TEXT(attr_name) attribute_type(attr_type) SEM
 
             if (type_num >= 0)
             {
-                state->file->j1939_type_num = type_num;
+                state->dbc->j1939_type_num = type_num;
             }
         }
         else if (g_strcmp0(attr_name, DBC_MESSAGE_SEND_TYPE_ATTRIBUTE_NAME) == 0)
@@ -571,7 +571,7 @@ attribute_definition ::= BA_DEF BO TEXT(attr_name) attribute_type(attr_type) SEM
 
             if (type_num >= 0)
             {
-                state->file->cyclic_send_type_num = type_num;
+                state->dbc->cyclic_send_type_num = type_num;
             }
         }
 
@@ -654,29 +654,29 @@ attribute_value ::= BA TEXT /*name*/ BO uint /*msg_id*/ FLOAT /*value*/ SEMICOLO
 attribute_value ::= BA TEXT /*name*/ BO uint /*msg_id*/ TEXT /*value*/ SEMICOLON .
 attribute_value ::= BA TEXT(attr_name) BO uint(msg_id) sint(attr_value) SEMICOLON .
 {
-    dbc_message_t *msg = dbc_find_message(state->file, msg_id);
+    dbc_message_t *msg = dbc_find_message(state->dbc, msg_id);
 
     if (!msg)
     {
         dbc_error(state, "error: Message %" G_GINT64_FORMAT " not found", msg_id);
     }
     else if ((g_strcmp0(attr_name, DBC_MESSAGE_TYPE_ATTRIBUTE_NAME) == 0) &&
-             (state->file->j1939_type_num >= 0))
+             (state->dbc->j1939_type_num >= 0))
     {
         if (msg->type != DBC_MESSAGE_TYPE_UNDEFINED)
             dbc_warning(state, "warning: Message %" G_GINT64_FORMAT " type redefined", msg_id);
 
-        msg->type = (state->file->j1939_type_num == attr_value)
+        msg->type = (state->dbc->j1939_type_num == attr_value)
             ? DBC_MESSAGE_TYPE_J1939
             : DBC_MESSAGE_TYPE_GENERIC;
     }
     else if ((g_strcmp0(attr_name, DBC_MESSAGE_SEND_TYPE_ATTRIBUTE_NAME) == 0) &&
-             (state->file->cyclic_send_type_num >= 0))
+             (state->dbc->cyclic_send_type_num >= 0))
     {
         if (msg->send_type != DBC_MESSAGE_SEND_TYPE_UNDEFINED)
             dbc_warning(state, "warning: Message %" G_GINT64_FORMAT " send_type redefined", msg_id);
 
-        msg->send_type = (state->file->cyclic_send_type_num == attr_value)
+        msg->send_type = (state->dbc->cyclic_send_type_num == attr_value)
             ? DBC_MESSAGE_SEND_TYPE_CYCLIC
             : DBC_MESSAGE_SEND_TYPE_OTHER;
     }
@@ -708,7 +708,7 @@ value_definitions ::= value_definitions value_definition .
 value_definition ::= VAL name /*environment-variable-name*/ values SEMICOLON .
 value_definition ::= VAL uint(msg_id) name(sig_name) values(sig_values) SEMICOLON .
 {
-    dbc_signal_t *signal = dbc_find_signal(state->file, msg_id, sig_name);
+    dbc_signal_t *signal = dbc_find_signal(state->dbc, msg_id, sig_name);
 
     if (signal)
     {
@@ -767,7 +767,7 @@ signal_value_types ::= signal_value_types signal_value_type .
 
 signal_value_type ::= SIG_VALTYPE uint(msg_id) name(sig_name) COLON value_type(sig_type) SEMICOLON .
 {
-    dbc_signal_t *signal = dbc_find_signal(state->file, msg_id, sig_name);
+    dbc_signal_t *signal = dbc_find_signal(state->dbc, msg_id, sig_name);
 
     if (signal)
     {
@@ -789,8 +789,8 @@ signal_multiplexing_definitions ::= signal_multiplexing_definitions signal_multi
 
 signal_multiplexing_definition ::= SG_MUL_VAL uint(msg_id) name(sig_name) name(mux_name) mux_values SEMICOLON .
 {
-    dbc_signal_t *signal = dbc_find_signal(state->file, msg_id, sig_name);
-    dbc_signal_t *mux    = dbc_find_signal(state->file, msg_id, mux_name);
+    dbc_signal_t *signal = dbc_find_signal(state->dbc, msg_id, sig_name);
+    dbc_signal_t *mux    = dbc_find_signal(state->dbc, msg_id, mux_name);
 
     if (!signal)
     {
@@ -840,7 +840,7 @@ dbc_file_t *dbc_read(const gchar *filename)
     memset(&state, 0, sizeof(state));
     state.lloc.first_line = 1;
     state.lloc.last_line  = 1;
-    state.file            = dbc_new(filename);
+    state.dbc             = dbc_new(filename);
 
     dbc_scanner_set_in(fd, scanner);
     parser = DbcParserAlloc(g_malloc);
@@ -888,11 +888,11 @@ dbc_file_t *dbc_read(const gchar *filename)
         for (GSList *elem = state.errors; elem; elem = g_slist_next(elem))
             fprintf(stderr, "%s:%s\n", filename, (gchar *)elem->data);
         g_slist_free_full(state.errors, g_free);
-        dbc_free(state.file);
+        dbc_free(state.dbc);
         return NULL;
     }
 
-    return state.file;
+    return state.dbc;
 }
 
 int main(int argc, char **argv)

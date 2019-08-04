@@ -16,7 +16,7 @@ typedef struct {
     GSList *errors;
     GSList *warnings;
 
-    dbc_file_t *file;
+    dbc_file_t *dbc;
 
     dbc_scanner_lloc_t lloc;
 } dbc_state_t;
