@@ -20,6 +20,7 @@ compare_value_strings(gconstpointer a, gconstpointer b)
     return ((const value_string *)a)->value - ((const value_string *)b)->value;
 }
 
+#ifdef DBC_WARNINGS
 G_GNUC_PRINTF(2, 3)
 static void
 dbc_warning(dbc_state_t *state, const char *format, ...)
@@ -31,6 +32,7 @@ dbc_warning(dbc_state_t *state, const char *format, ...)
 
     state->warnings = g_slist_append(state->warnings, str);
 }
+#endif
 
 G_GNUC_PRINTF(2, 3)
 static void
@@ -353,6 +355,7 @@ message ::= BO uint(msg_id) name(msg_name) COLON
     msg->send_type  = DBC_MESSAGE_SEND_TYPE_UNDEFINED;
     msg->cycle_time = DBC_MESSAGE_CYCLE_TIME_UNDEFINED;
 
+#ifdef DBC_WARNINGS
     if (strlen(msg->name) > DBC_MAX_MESSAGE_LENGTH)
     {
         dbc_warning(state,
@@ -361,6 +364,7 @@ message ::= BO uint(msg_id) name(msg_name) COLON
                     msg->name,
                     DBC_MAX_MESSAGE_LENGTH);
     }
+#endif
 
     state->dbc->messages = g_slist_prepend(state->dbc->messages, msg);
 }
@@ -494,7 +498,10 @@ comment ::= CM TEXT(text) SEMICOLON .
     if (state->dbc->comment)
     {
         g_free(state->dbc->comment);
+
+#ifdef DBC_WARNINGS
         dbc_warning(state, "warning: File comment redefined");
+#endif
     }
 
     state->dbc->comment = text;
@@ -509,7 +516,10 @@ comment ::= CM BO uint(msg_id) TEXT(text) SEMICOLON .
         if (msg->comment)
         {
             g_free(msg->comment);
+
+#ifdef DBC_WARNINGS
             dbc_warning(state, "warning: Message %" G_GINT64_FORMAT " comment redefined", msg_id);
+#endif
         }
 
         msg->comment = text;
@@ -530,8 +540,11 @@ comment ::= CM SG uint(msg_id) name(sig_name) TEXT(text) SEMICOLON .
         if (sig->comment)
         {
             g_free(sig->comment);
+
+#ifdef DBC_WARNINGS
             dbc_warning(state, "warning: Signal %s message %" G_GINT64_FORMAT " comment redefined",
                         sig_name, msg_id);
+#endif
         }
 
         sig->comment = text;
@@ -663,8 +676,10 @@ attribute_value ::= BA TEXT(attr_name) BO uint(msg_id) sint(attr_value) SEMICOLO
     else if ((g_strcmp0(attr_name, DBC_MESSAGE_TYPE_ATTRIBUTE_NAME) == 0) &&
              (state->dbc->j1939_type_num >= 0))
     {
+#ifdef DBC_WARNINGS
         if (msg->type != DBC_MESSAGE_TYPE_UNDEFINED)
             dbc_warning(state, "warning: Message %" G_GINT64_FORMAT " type redefined", msg_id);
+#endif
 
         msg->type = (state->dbc->j1939_type_num == attr_value)
             ? DBC_MESSAGE_TYPE_J1939
@@ -673,8 +688,10 @@ attribute_value ::= BA TEXT(attr_name) BO uint(msg_id) sint(attr_value) SEMICOLO
     else if ((g_strcmp0(attr_name, DBC_MESSAGE_SEND_TYPE_ATTRIBUTE_NAME) == 0) &&
              (state->dbc->cyclic_send_type_num >= 0))
     {
+#ifdef DBC_WARNINGS
         if (msg->send_type != DBC_MESSAGE_SEND_TYPE_UNDEFINED)
             dbc_warning(state, "warning: Message %" G_GINT64_FORMAT " send_type redefined", msg_id);
+#endif
 
         msg->send_type = (state->dbc->cyclic_send_type_num == attr_value)
             ? DBC_MESSAGE_SEND_TYPE_CYCLIC
@@ -682,8 +699,10 @@ attribute_value ::= BA TEXT(attr_name) BO uint(msg_id) sint(attr_value) SEMICOLO
     }
     else if (g_strcmp0(attr_name, DBC_MESSAGE_CYCLE_TIME_ATTRIBUTE_NAME) == 0)
     {
+#ifdef DBC_WARNINGS
         if (msg->cycle_time != DBC_MESSAGE_CYCLE_TIME_UNDEFINED)
             dbc_warning(state, "warning: Message %" G_GINT64_FORMAT " cycle time redefined", msg_id);
+#endif
 
         msg->cycle_time = attr_value;
     }
@@ -717,9 +736,13 @@ value_definition ::= VAL uint(msg_id) name(sig_name) values(sig_values) SEMICOLO
             for (value_string *v = signal->values; v->strptr; v++)
                 free_value_string(v);
             g_free(signal->values);
+
+#ifdef DBC_WARNINGS
             dbc_warning(state, "warning: signal %s in message %" G_GINT64_FORMAT " values redefined", sig_name, msg_id);
+#endif
         }
 
+        /* No sorting needed */
         g_array_sort(sig_values, compare_value_strings);
         signal->values = (value_string *)g_array_free(sig_values, FALSE);
     }
@@ -771,8 +794,10 @@ signal_value_type ::= SIG_VALTYPE uint(msg_id) name(sig_name) COLON value_type(s
 
     if (signal)
     {
+#ifdef DBC_WARNINGS
         if (signal->type != DBC_SIGNAL_TYPE_UNDEFINED)
             dbc_warning(state, "warning: signal %s in message %" G_GINT64_FORMAT " type redefined", sig_name, msg_id);
+#endif
 
         signal->type = sig_type;
     }
@@ -876,12 +901,14 @@ dbc_file_t *dbc_read(const gchar *filename)
     dbc_scanner_lex_destroy(scanner);
     fclose(fd);
 
+#ifdef DBC_WARNINGS
     if (state.warnings)
     {
         for (GSList *elem = state.warnings; elem; elem = g_slist_next(elem))
             fprintf(stderr, "%s:%s\n", filename, (gchar *)elem->data);
         g_slist_free_full(state.warnings, g_free);
     }
+#endif
 
     if (state.errors)
     {

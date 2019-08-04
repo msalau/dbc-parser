@@ -3,6 +3,10 @@
 
 #include <gmodule.h>
 
+//#define DBC_WARNINGS
+//#define DBC_DEBUG
+//#define DBC_TRACE
+
 typedef struct {
     unsigned first_line;
     unsigned first_column;
@@ -14,15 +18,15 @@ typedef struct {
     gchar *token;
 
     GSList *errors;
+
+#ifdef DBC_WARNINGS
     GSList *warnings;
+#endif
 
     dbc_file_t *dbc;
 
     dbc_scanner_lloc_t lloc;
 } dbc_state_t;
-
-//#define DBC_DEBUG
-//#define DBC_TRACE
 
 #ifdef DBC_DEBUG
 #define dbc_printf(...) printf(__VA_ARGS__)
