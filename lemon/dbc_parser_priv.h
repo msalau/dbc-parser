@@ -3,7 +3,7 @@
 
 #include <gmodule.h>
 
-//#define DBC_WARNINGS
+#define DBC_WARNINGS
 //#define DBC_DEBUG
 //#define DBC_TRACE
 
