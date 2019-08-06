@@ -306,7 +306,7 @@ values(r) ::= values(a) value(v) .
     const value_string *av = (const value_string *)a->data;
     for (guint i = 0; i < a->len; ++av, ++i)
     {
-        if (av->value == v.value)
+        if (compare_value_strings(av, &v) == 0)
         {
             dbc_warning(state,
                         "warning: value '%" G_GINT32_FORMAT "' is already present",
