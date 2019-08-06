@@ -34,6 +34,9 @@ typedef enum
 #define DBC_MESSAGE_TYPE_ATTRIBUTE_NAME "VFrameFormat"
 #define DBC_MESSAGE_TYPE_J1939_VALUE    "J1939PG"
 
+#define DBC_MESSAGE_LONG_NAME_ATTRIBUTE_NAME "SystemMessageLongSymbol"
+#define DBC_SIGNAL_LONG_NAME_ATTRIBUTE_NAME  "SystemSignalLongSymbol"
+
 #define DBC_MESSAGE_SEND_TYPE_ATTRIBUTE_NAME "GenMsgSendType"
 #define DBC_MESSAGE_SEND_TYPE_CYCLIC_VALUE   "Cyclic"
 
@@ -48,6 +51,7 @@ typedef struct
     dbc_message_send_type_t  send_type;
     int64_t                  cycle_time;
     char                    *name;
+    char                    *long_name;
     char                    *comment;
     char                    *senders;
     GSList                  *signals;
@@ -76,6 +80,7 @@ typedef enum
 typedef struct
 {
     char     *name;
+    char     *long_name;
     char     *comment;
     uint32_t  start;
     uint32_t  length;

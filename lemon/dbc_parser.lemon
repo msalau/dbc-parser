@@ -697,10 +697,53 @@ attribute_values ::= attribute_values attribute_value .
 attribute_value ::= BA TEXT /*name*/ attribute_object_value /*value*/ SEMICOLON .
 attribute_value ::= BA TEXT /*name*/ EV name attribute_object_value /*value*/ SEMICOLON .
 attribute_value ::= BA TEXT /*name*/ BU name attribute_object_value /*value*/ SEMICOLON .
-attribute_value ::= BA TEXT /*name*/ SG uint name attribute_object_value /*value*/ SEMICOLON .
+
+attribute_value ::= BA TEXT /*name*/ SG uint name sint /*value*/ SEMICOLON .
+attribute_value ::= BA TEXT /*name*/ SG uint name FLOAT /*value*/ SEMICOLON .
+attribute_value ::= BA TEXT(attr_name) SG uint(msg_id) name(sig_name) TEXT(attr_value) SEMICOLON .
+{
+    dbc_signal_t *sig = dbc_find_signal(state->dbc, msg_id, sig_name);
+
+    if (!sig)
+    {
+        dbc_error(state, "error: Signal %s in message %" G_GINT64_FORMAT " not found", sig_name, msg_id);
+        g_free(attr_value);
+    }
+    else if (g_strcmp0(attr_name, DBC_SIGNAL_LONG_NAME_ATTRIBUTE_NAME) == 0)
+    {
+        sig->long_name = attr_value;
+    }
+    else
+    {
+        g_free(attr_value);
+    }
+
+    g_free(sig_name);
+    g_free(attr_name);
+}
 
 attribute_value ::= BA TEXT /*name*/ BO uint /*msg_id*/ FLOAT /*value*/ SEMICOLON .
-attribute_value ::= BA TEXT /*name*/ BO uint /*msg_id*/ TEXT /*value*/ SEMICOLON .
+attribute_value ::= BA TEXT(attr_name) BO uint(msg_id) TEXT(attr_value) SEMICOLON .
+{
+    dbc_message_t *msg = dbc_find_message(state->dbc, msg_id);
+
+    if (!msg)
+    {
+        dbc_error(state, "error: Message %" G_GINT64_FORMAT " not found", msg_id);
+        g_free(attr_value);
+    }
+    else if (g_strcmp0(attr_name, DBC_MESSAGE_LONG_NAME_ATTRIBUTE_NAME) == 0)
+    {
+        msg->long_name = attr_value;
+    }
+    else
+    {
+        g_free(attr_value);
+    }
+
+    g_free(attr_name);
+}
+
 attribute_value ::= BA TEXT(attr_name) BO uint(msg_id) sint(attr_value) SEMICOLON .
 {
     dbc_message_t *msg = dbc_find_message(state->dbc, msg_id);

@@ -57,6 +57,7 @@ void dbc_free(dbc_file_t *file)
 void dbc_free_message(dbc_message_t *message)
 {
     g_free(message->name);
+    g_free(message->long_name);
     g_free(message->comment);
     g_free(message->senders);
 
@@ -68,6 +69,7 @@ void dbc_free_message(dbc_message_t *message)
 void dbc_free_signal(dbc_signal_t *signal)
 {
     g_free(signal->name);
+    g_free(signal->long_name);
     g_free(signal->comment);
     g_free(signal->unit);
 
