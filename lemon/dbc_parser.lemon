@@ -297,11 +297,11 @@ values(r) ::= .
 values(r) ::= values(a) value(v) .
 {
 #ifdef DBC_WARNINGS
-    if (strlen(v.strptr) >= DBC_MAX_VALUE_STRING_LENGTH)
+    if (strlen(v.strptr) >= DBC_MAX_SYMBOL_NAME_LENGTH)
         dbc_warning(state,
                     "warning: value '%s': String is longer than %u symbols",
                     v.strptr,
-                    DBC_MAX_VALUE_STRING_LENGTH);
+                    DBC_MAX_SYMBOL_NAME_LENGTH);
 
     const value_string *av = (const value_string *)a->data;
     for (guint i = 0; i < a->len; ++av, ++i)
@@ -376,13 +376,13 @@ message ::= BO uint(msg_id) name(msg_name) COLON
     msg->cycle_time = DBC_MESSAGE_CYCLE_TIME_UNDEFINED;
 
 #ifdef DBC_WARNINGS
-    if (strlen(msg->name) > DBC_MAX_MESSAGE_LENGTH)
+    if (strlen(msg->name) > DBC_MAX_SYMBOL_NAME_LENGTH)
     {
         dbc_warning(state,
                     "warning: message %u '%s': Name is longer than %u symbols",
                     msg->id,
                     msg->name,
-                    DBC_MAX_MESSAGE_LENGTH);
+                    DBC_MAX_SYMBOL_NAME_LENGTH);
     }
 #endif
 
