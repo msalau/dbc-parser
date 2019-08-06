@@ -419,6 +419,16 @@ signal(r) ::= SG name(sig_name) mux COLON
     r->max       = sig_max;
     r->unit      = sig_unit;
     r->type      = DBC_SIGNAL_TYPE_UNDEFINED;
+
+#ifdef DBC_WARNINGS
+    if (strlen(r->name) > DBC_MAX_SYMBOL_NAME_LENGTH)
+    {
+        dbc_warning(state,
+                    "warning: signal '%s': Name is longer than %u symbols",
+                    r->name,
+                    DBC_MAX_SYMBOL_NAME_LENGTH);
+    }
+#endif
 }
 
 mux ::= .
