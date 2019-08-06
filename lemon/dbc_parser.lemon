@@ -298,7 +298,7 @@ name(r) ::= DUMMY_8000(v) . { r = v; }
 name(r) ::= DUMMY_8001(v) . { r = v; }
 name(r) ::= DUMMY_8002(v) . { r = v; }
 name(r) ::= DUMMY_8003(v) . { r = v; }
-name(r) ::= VECTOR__XXX(v) . { r = v;  }
+name(r) ::= VECTOR__XXX .   { r = NULL; }
 
 %type comma_separated_names { GSList * }
 %destructor comma_separated_names { g_slist_free_full($$, g_free); }
@@ -390,19 +390,26 @@ message ::= BO uint(msg_id) name(msg_name) COLON
     dbc_message_t *msg;
     dbc_node_t    *sender;
 
-    sender = dbc_find_node(state->dbc, msg_sender);
-    if (!sender)
+    if (msg_sender)
     {
-        dbc_error(state, "error: Node %s not found", msg_sender);
+        sender = dbc_find_node(state->dbc, msg_sender);
+        if (!sender)
+        {
+            dbc_error(state, "error: Node %s not found", msg_sender);
+        }
+        g_free(msg_sender);
     }
-    g_free(msg_sender);
+    else
+    {
+        sender = NULL;
+    }
 
     msg = g_new0(dbc_message_t, 1);
 
     msg->id      = msg_id;
     msg->name    = msg_name;
     msg->length  = msg_length;
-    msg->senders = g_slist_prepend(NULL, sender);
+    msg->senders = sender ? g_slist_prepend(NULL, sender) : NULL;
     msg->signals = msg_signals;
     msg->type    = DBC_MESSAGE_TYPE_UNDEFINED;
 
