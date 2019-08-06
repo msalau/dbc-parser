@@ -12,6 +12,17 @@ dbc_file_t *dbc_new(const char *filepath)
     return dbc;
 }
 
+static gint dbc_find_node_helper(gconstpointer node, gconstpointer name)
+{
+    return g_strcmp0(((const dbc_node_t *)node)->name, name);
+}
+
+dbc_node_t *dbc_find_node(const dbc_file_t *file, const char *name)
+{
+    GSList *elem = g_slist_find_custom(file->nodes, name, dbc_find_node_helper);
+    return elem ? elem->data : NULL;
+}
+
 static gint dbc_find_message_helper(gconstpointer message, gconstpointer id)
 {
     return ((const dbc_message_t *)message)->id == GPOINTER_TO_UINT(id) ? 0 : 1;
@@ -49,9 +60,17 @@ void dbc_free(dbc_file_t *file)
     g_free(file->comment);
     g_free(file->version);
 
+    g_slist_free_full(file->nodes, (GDestroyNotify)dbc_free_node);
     g_slist_free_full(file->messages, (GDestroyNotify)dbc_free_message);
 
     g_free(file);
+}
+
+void dbc_free_node(dbc_node_t *node)
+{
+    g_free(node->name);
+    g_free(node->long_name);
+    g_free(node);
 }
 
 void dbc_free_message(dbc_message_t *message)
@@ -59,8 +78,8 @@ void dbc_free_message(dbc_message_t *message)
     g_free(message->name);
     g_free(message->long_name);
     g_free(message->comment);
-    g_free(message->senders);
 
+    g_slist_free(message->senders);
     g_slist_free_full(message->signals, (GDestroyNotify)dbc_free_signal);
 
     g_free(message);

@@ -239,7 +239,33 @@ bus_speed ::= BS COLON .
 bus_speed ::= BS COLON uint /*baudrate*/ .
 bus_speed ::= BS COLON uint /*baudrate*/ COLON uint /*BTR1*/  COMMA uint /*BTR2*/ .
 
-bus_units ::= BU COLON maybe_names /*node-names*/ .
+bus_units ::= BU COLON node_names(node_names) .
+{
+    state->dbc->nodes = node_names;
+}
+
+%type node_names { GSList * }
+%destructor node_names { g_slist_free_full($$, (GDestroyNotify)dbc_free_node); }
+
+node_names(r) ::= .                            { r = NULL; }
+node_names(r) ::= node_names(l) node_name(v) . { r = g_slist_prepend(l, v); }
+
+%type node_name { dbc_node_t * }
+%destructor node_name { dbc_free_node($$); }
+
+node_name(r) ::= name(v) .
+{
+    r = g_new0(dbc_node_t, 1);
+    r->name = v;
+
+#ifdef DBC_WARNINGS
+    if (strlen(r->name) >= DBC_MAX_SYMBOL_NAME_LENGTH)
+        dbc_warning(state,
+                    "warning: node '%s': Name is longer than %u symbols",
+                    r->name,
+                    DBC_MAX_SYMBOL_NAME_LENGTH);
+#endif
+}
 
 %type maybe_names { GSList * }
 %destructor maybe_names { g_slist_free_full($$, g_free); }
@@ -362,13 +388,21 @@ message ::= BO uint(msg_id) name(msg_name) COLON
             .
 {
     dbc_message_t *msg;
+    dbc_node_t    *sender;
+
+    sender = dbc_find_node(state->dbc, msg_sender);
+    if (!sender)
+    {
+        dbc_error(state, "error: Node %s not found", msg_sender);
+    }
+    g_free(msg_sender);
 
     msg = g_new0(dbc_message_t, 1);
 
     msg->id      = msg_id;
     msg->name    = msg_name;
     msg->length  = msg_length;
-    msg->senders = msg_sender;
+    msg->senders = g_slist_prepend(NULL, sender);
     msg->signals = msg_signals;
     msg->type    = DBC_MESSAGE_TYPE_UNDEFINED;
 
@@ -457,28 +491,33 @@ message_sender_list ::= BO_TX_BU uint(msg_id) COLON
 {
     dbc_message_t *msg = dbc_find_message(state->dbc, msg_id);
 
-    if (msg)
+    if (!msg)
     {
-        GArray   *arr = g_array_sized_new(TRUE, TRUE, sizeof(gchar *), g_slist_length(msg_senders));
-        unsigned  i   = 0;
-        gchar    *senders_str;
-
-        /* The original sender is ignored */
-        for (GSList *elem = msg_senders; elem; i++, elem = g_slist_next(elem))
-            g_array_insert_val(arr, i, elem->data);
-
-        senders_str = g_strjoinv(" | ", (gchar **)arr->data);
-        g_array_free(arr, TRUE);
-        g_free(msg->senders);
-        msg->senders = senders_str;
+        dbc_error(state, "Message with id %" G_GINT64_FORMAT " not found", msg_id);
     }
     else
     {
-        dbc_error(state, "Message with id %" G_GINT64_FORMAT " not found", msg_id);
+        g_slist_free(msg->senders);
+
+        for (GSList *elem = msg_senders; elem; elem = g_slist_next(elem))
+        {
+            const gchar *node_name = (const gchar *)elem->data;
+            dbc_node_t  *node = dbc_find_node(state->dbc, node_name);
+
+            if (!node)
+            {
+                dbc_error(state, "error: Node %s not found", node_name);
+                break;
+            }
+            msg->senders = g_slist_prepend(msg->senders, node);
+        }
     }
 
     g_slist_free_full(msg_senders, g_free);
 }
+
+%type comma_separated_node_names { GSList * }
+%destructor comma_separated_node_names { g_slist_free_full($$, (GDestroyNotify)dbc_free_node); }
 
 environment_variables ::= .
 environment_variables ::= environment_variables environment_variable .
@@ -696,7 +735,30 @@ attribute_values ::= attribute_values attribute_value .
 
 attribute_value ::= BA TEXT /*name*/ attribute_object_value /*value*/ SEMICOLON .
 attribute_value ::= BA TEXT /*name*/ EV name attribute_object_value /*value*/ SEMICOLON .
-attribute_value ::= BA TEXT /*name*/ BU name attribute_object_value /*value*/ SEMICOLON .
+
+attribute_value ::= BA TEXT /*name*/ BU name sint /*value*/ SEMICOLON .
+attribute_value ::= BA TEXT /*name*/ BU name FLOAT /*value*/ SEMICOLON .
+attribute_value ::= BA TEXT(attr_name) BU name(node_name) TEXT(attr_value) SEMICOLON .
+{
+    dbc_node_t *node = dbc_find_node(state->dbc, node_name);
+
+    if (!node)
+    {
+        dbc_error(state, "error: Node %s not found", node_name);
+        g_free(attr_value);
+    }
+    else if (g_strcmp0(attr_name, DBC_NODE_LONG_NAME_ATTRIBUTE_NAME) == 0)
+    {
+        node->long_name = attr_value;
+    }
+    else
+    {
+        g_free(attr_value);
+    }
+
+    g_free(node_name);
+    g_free(attr_name);
+}
 
 attribute_value ::= BA TEXT /*name*/ SG uint name sint /*value*/ SEMICOLON .
 attribute_value ::= BA TEXT /*name*/ SG uint name FLOAT /*value*/ SEMICOLON .

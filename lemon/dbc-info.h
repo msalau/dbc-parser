@@ -12,10 +12,17 @@ typedef struct
     char   *filepath;
     char   *comment;
     char   *version;
+    GSList *nodes;
     GSList *messages;
     int     j1939_type_num;
     int     cyclic_send_type_num;
 } dbc_file_t;
+
+typedef struct
+{
+    char *name;
+    char *long_name;
+} dbc_node_t;
 
 typedef enum
 {
@@ -34,6 +41,8 @@ typedef enum
 #define DBC_MESSAGE_TYPE_ATTRIBUTE_NAME "VFrameFormat"
 #define DBC_MESSAGE_TYPE_J1939_VALUE    "J1939PG"
 
+#define DBC_NODE_LONG_NAME_ATTRIBUTE_NAME    "SystemNodeLongSymbol"
+#define DBC_ENV_VAR_LONG_NAME_ATTRIBUTE_NAME "SystemEnvVarLongSymbol"
 #define DBC_MESSAGE_LONG_NAME_ATTRIBUTE_NAME "SystemMessageLongSymbol"
 #define DBC_SIGNAL_LONG_NAME_ATTRIBUTE_NAME  "SystemSignalLongSymbol"
 
@@ -53,7 +62,7 @@ typedef struct
     char                    *name;
     char                    *long_name;
     char                    *comment;
-    char                    *senders;
+    GSList                  *senders;
     GSList                  *signals;
 } dbc_message_t;
 
@@ -100,10 +109,12 @@ typedef struct
 
 dbc_file_t *dbc_new(const char *filepath);
 
+dbc_node_t *dbc_find_node(const dbc_file_t *file, const char *name);
 dbc_message_t *dbc_find_message(const dbc_file_t *file, uint32_t id);
 dbc_signal_t *dbc_find_signal(const dbc_file_t *file, uint32_t id, const char *name);
 
 void dbc_free(dbc_file_t *file);
+void dbc_free_node(dbc_node_t *node);
 void dbc_free_message(dbc_message_t *message);
 void dbc_free_signal(dbc_signal_t *signal);
 void free_value_string(gpointer data);
