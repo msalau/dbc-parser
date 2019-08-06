@@ -428,6 +428,12 @@ signal(r) ::= SG name(sig_name) mux COLON
                     r->name,
                     DBC_MAX_SYMBOL_NAME_LENGTH);
     }
+    if (r->length <= 8 && (r->start / 8) != ((r->start + r->length - 1) / 8))
+    {
+        dbc_warning(state,
+                    "warning: signal '%s' <= 8 bits crosses byte boundary",
+                    r->name);
+    }
 #endif
 }
 
