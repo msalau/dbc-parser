@@ -86,6 +86,18 @@ typedef enum
     DBC_SIGNAL_TYPE_DOUBLE,
 } dbc_value_type_t;
 
+typedef struct {
+    guint32 min;
+    guint32 max;
+} dbc_mux_value_t;
+
+typedef struct {
+    gboolean  is_muxer;
+    gboolean  is_muxed;
+    gchar    *muxer_name;
+    GArray   *muxer_values;
+} dbc_mux_info_t;
+
 typedef struct
 {
     char     *name;
@@ -104,6 +116,8 @@ typedef struct
     double  max;
     char   *unit;
 
+    dbc_mux_info_t *mux_info;
+
     value_string *values;
 } dbc_signal_t;
 
@@ -117,6 +131,7 @@ void dbc_free(dbc_file_t *file);
 void dbc_free_node(dbc_node_t *node);
 void dbc_free_message(dbc_message_t *message);
 void dbc_free_signal(dbc_signal_t *signal);
+void dbc_free_mux_info(dbc_mux_info_t *mux);
 void free_value_string(gpointer data);
 
 #endif /* DBC_INFO_H__ */

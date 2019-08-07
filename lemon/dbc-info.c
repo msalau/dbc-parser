@@ -92,6 +92,8 @@ void dbc_free_signal(dbc_signal_t *signal)
     g_free(signal->comment);
     g_free(signal->unit);
 
+    dbc_free_mux_info(signal->mux_info);
+
     if (signal->values)
     {
         for (value_string *val = signal->values; val->strptr; val++)
@@ -100,4 +102,16 @@ void dbc_free_signal(dbc_signal_t *signal)
     }
 
     g_free(signal);
+}
+
+void dbc_free_mux_info(dbc_mux_info_t *mux)
+{
+    if (!mux)
+        return;
+
+    if (mux->muxer_values)
+        g_array_free(mux->muxer_values, TRUE);
+
+    g_free(mux->muxer_name);
+    g_free(mux);
 }

@@ -439,7 +439,7 @@ signals(r) ::= signals(l) signal(v) . { r = g_slist_prepend(l, v); }
 %type signal { dbc_signal_t * }
 %destructor signal { dbc_free_signal($$); }
 
-signal(r) ::= SG name(sig_name) mux COLON
+signal(r) ::= SG name(sig_name) mux(sig_mux_info) COLON
               uint(sig_start) PIPE uint(sig_length) AT
               endianess(sig_endianess) signess(sig_signess)
               LEFT_PARENTHESIS float(sig_factor) COMMA float(sig_offset) RIGHT_PARENTHESIS
@@ -459,6 +459,7 @@ signal(r) ::= SG name(sig_name) mux COLON
     r->min       = sig_min;
     r->max       = sig_max;
     r->unit      = sig_unit;
+    r->mux_info  = sig_mux_info;
     r->type      = DBC_SIGNAL_TYPE_UNDEFINED;
 
 #ifdef DBC_WARNINGS
@@ -491,8 +492,32 @@ signal(r) ::= SG name(sig_name) mux COLON
 #endif
 }
 
-mux ::= .
-mux ::= MUX .
+%type mux { dbc_mux_info_t * }
+%destructor mux { dbc_free_mux_info($$); }
+
+mux(r) ::= .
+{
+    r = NULL;
+}
+
+mux(r) ::= MUX(v) .
+{
+    r = g_new0(dbc_mux_info_t, 1);
+
+    r->is_muxed = (v[0] == 'm');
+    r->is_muxer = (v[strlen(v) - 1] == 'M');
+
+    if (r->is_muxed)
+    {
+        const guint32         value       = strtoul(v + 1, NULL, 10);
+        const dbc_mux_value_t muxer_value = { value, value };
+
+        r->muxer_values = g_array_new(FALSE, FALSE, sizeof(dbc_mux_value_t));
+        g_array_append_val(r->muxer_values, muxer_value);
+    }
+
+    g_free(v);
+}
 
 %type endianess { dbc_signal_endianess_t }
 endianess(r) ::= ZERO . { r = DBC_SIGNAL_ENDIANESS_MOTOROLA; }
@@ -973,29 +998,70 @@ signal_value_type ::= SIG_VALTYPE uint(msg_id) name(sig_name) COLON value_type(s
 signal_multiplexing_definitions ::= .
 signal_multiplexing_definitions ::= signal_multiplexing_definitions signal_multiplexing_definition .
 
-signal_multiplexing_definition ::= SG_MUL_VAL uint(msg_id) name(sig_name) name(mux_name) mux_values SEMICOLON .
+signal_multiplexing_definition ::= SG_MUL_VAL uint(msg_id) name(sig_name) name(mux_name) mux_values(mux_values) SEMICOLON .
 {
     dbc_signal_t *signal = dbc_find_signal(state->dbc, msg_id, sig_name);
-    dbc_signal_t *mux    = dbc_find_signal(state->dbc, msg_id, mux_name);
+    dbc_signal_t *muxer  = dbc_find_signal(state->dbc, msg_id, mux_name);
 
     if (!signal)
     {
         dbc_error(state, "error: multiplexed signal %s in message %" G_GINT64_FORMAT " not found", sig_name, msg_id);
     }
 
-    if (!mux)
+    if (!muxer)
     {
         dbc_error(state, "error: multiplexer signal %s in message %" G_GINT64_FORMAT " not found", mux_name, msg_id);
+    }
+
+    if (signal && muxer)
+    {
+        if (!signal->mux_info)
+            signal->mux_info = g_new0(dbc_mux_info_t, 1);
+
+        g_free(signal->mux_info->muxer_name);
+        g_array_free(signal->mux_info->muxer_values, TRUE);
+
+        signal->mux_info->is_muxed     = TRUE;
+        signal->mux_info->muxer_name   = mux_name;
+        signal->mux_info->muxer_values = mux_values;
+
+        if (!muxer->mux_info)
+            muxer->mux_info = g_new0(dbc_mux_info_t, 1);
+
+        muxer->mux_info->is_muxer = TRUE;
+    }
+    else
+    {
+        g_array_free(mux_values, TRUE);
     }
 
     g_free(sig_name);
     g_free(mux_name);
 }
 
-mux_values ::= mux_value .
-mux_values ::= mux_values COMMA mux_value .
+%type mux_values { GArray * }
+%destructor mux_values { g_array_free($$, TRUE); }
 
-mux_value ::= uint MINUS uint .
+mux_values(r) ::= mux_value(v) .
+{
+    r = g_array_new(FALSE, FALSE, sizeof(dbc_mux_value_t));
+
+    g_array_append_val(r, v);
+}
+
+mux_values(r) ::= mux_values(l) COMMA mux_value(v) .
+{
+    r = l;
+    g_array_append_val(r, v);
+}
+
+%type mux_value { dbc_mux_value_t }
+
+mux_value(r) ::= uint(v_min) MINUS uint(v_max) .
+{
+    r.min = v_min;
+    r.max = v_max;
+}
 
 %code {
 
