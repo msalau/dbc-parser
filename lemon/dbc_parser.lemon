@@ -1,7 +1,7 @@
 %include {
 
 #include <string.h>
-#include "dbc-info.h"
+#include "dbc.h"
 #include "dbc_parser_priv.h"
 
 extern void *DbcParserAlloc(void *(*mallocProc)(size_t));

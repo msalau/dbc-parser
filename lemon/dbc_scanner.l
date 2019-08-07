@@ -19,10 +19,8 @@
 
 %{
 #include <gmodule.h>
-#include <stdio.h>
-#include <stdbool.h>
 #include "value_string.h"
-#include "dbc-info.h"
+#include "dbc.h"
 #include "dbc_parser.h"
 #include "dbc_parser_priv.h"
 

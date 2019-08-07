@@ -2,6 +2,7 @@
 #define DBC_PARSER_PRIV_H__
 
 #include <gmodule.h>
+#include <stdio.h>
 
 #define DBC_WARNINGS
 //#define DBC_DEBUG

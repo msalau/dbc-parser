@@ -22,7 +22,7 @@ clean:
 
 .PRECIOUS: %.c %.h %.out
 
-parse: dbc_scanner.o dbc_parser.o dbc-info.o
+parse: dbc_scanner.o dbc_parser.o dbc.o
 		$(CC) $(LDFLAGS) -o $@ $^ $(LIBS)
 
 %.c %_lex.h: %.l

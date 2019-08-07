@@ -1,5 +1,5 @@
-#ifndef DBC_INFO_H__
-#define DBC_INFO_H__
+#ifndef DBC_H__
+#define DBC_H__
 
 #include <stdint.h>
 #include "value_string.h"
@@ -134,4 +134,4 @@ void dbc_free_signal(dbc_signal_t *signal);
 void dbc_free_mux_info(dbc_mux_info_t *mux);
 void free_value_string(gpointer data);
 
-#endif /* DBC_INFO_H__ */
+#endif /* DBC_H__ */

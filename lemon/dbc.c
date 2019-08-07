@@ -1,5 +1,4 @@
-#include "dbc-info.h"
-#include <stdio.h>
+#include "dbc.h"
 
 dbc_file_t *dbc_new(const char *filepath)
 {
