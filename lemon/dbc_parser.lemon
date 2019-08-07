@@ -1014,7 +1014,8 @@ signal_multiplexing_definition ::= SG_MUL_VAL uint(msg_id) name(sig_name) name(m
         if (!signal->mux_info)
             signal->mux_info = g_new0(dbc_mux_info_t, 1);
 
-        g_array_free(signal->mux_info->muxer_values, TRUE);
+        if (signal->mux_info->muxer_values)
+            g_array_free(signal->mux_info->muxer_values, TRUE);
 
         signal->mux_info->is_muxed     = TRUE;
         signal->mux_info->muxer        = muxer;
