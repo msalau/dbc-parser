@@ -48,9 +48,19 @@ dbc_signal_t *dbc_find_signal(const dbc_file_t *file, uint32_t id, const char *n
     return elem ? elem->data : NULL;
 }
 
-void free_value_string(gpointer data)
+gint dbc_compare_value_strings(gconstpointer a, gconstpointer b)
 {
-    g_free(((value_string *)data)->strptr);
+    const dbc_value_string_t *va = (const dbc_value_string_t *)a;
+    const dbc_value_string_t *vb = (const dbc_value_string_t *)b;
+
+    return va->value - vb->value;
+}
+
+void dbc_free_value_string(gpointer data)
+{
+    dbc_value_string_t *v = (dbc_value_string_t *)data;
+
+    g_free(v->strptr);
 }
 
 void dbc_free(dbc_file_t *file)
@@ -95,8 +105,8 @@ void dbc_free_signal(dbc_signal_t *signal)
 
     if (signal->values)
     {
-        for (value_string *val = signal->values; val->strptr; val++)
-            free_value_string(val);
+        for (dbc_value_string_t *val = signal->values; val->strptr; val++)
+            dbc_free_value_string(val);
         g_free(signal->values);
     }
 

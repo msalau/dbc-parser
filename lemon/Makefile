@@ -3,7 +3,6 @@ CFLAGS+=-Wall -Wextra -Wformat -Wformat-security -Warray-bounds -Werror
 CFLAGS:=-Wconversion
 CFLAGS+=-fsanitize=leak
 CFLAGS+=$(shell pkg-config --cflags glib-2.0)
-CFLAGS+=-I../common
 CFLAGS+=-MMD
 LDFLAGS:=-fsanitize=leak
 LIBS=-llsan $(shell pkg-config --libs glib-2.0)

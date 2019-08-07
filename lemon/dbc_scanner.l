@@ -18,8 +18,6 @@
 %option noyyfree
 
 %{
-#include <gmodule.h>
-#include "value_string.h"
 #include "dbc.h"
 #include "dbc_parser.h"
 #include "dbc_parser_priv.h"

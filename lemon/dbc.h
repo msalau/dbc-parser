@@ -2,7 +2,6 @@
 #define DBC_H__
 
 #include <stdint.h>
-#include "value_string.h"
 #include <gmodule.h>
 
 #define DBC_MAX_SYMBOL_NAME_LENGTH 32
@@ -98,6 +97,11 @@ typedef struct {
     GArray   *muxer_values;
 } dbc_mux_info_t;
 
+typedef struct {
+    gint32  value;
+    gchar  *strptr;
+} dbc_value_string_t;
+
 typedef struct
 {
     char     *name;
@@ -118,7 +122,7 @@ typedef struct
 
     dbc_mux_info_t *mux_info;
 
-    value_string *values;
+    dbc_value_string_t *values;
 } dbc_signal_t;
 
 dbc_file_t *dbc_new(const char *filepath);
@@ -132,6 +136,8 @@ void dbc_free_node(dbc_node_t *node);
 void dbc_free_message(dbc_message_t *message);
 void dbc_free_signal(dbc_signal_t *signal);
 void dbc_free_mux_info(dbc_mux_info_t *mux);
-void free_value_string(gpointer data);
+
+gint dbc_compare_value_strings(gconstpointer a, gconstpointer b);
+void dbc_free_value_string(gpointer data);
 
 #endif /* DBC_H__ */

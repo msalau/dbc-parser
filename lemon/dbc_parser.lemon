@@ -14,12 +14,6 @@ extern void DbcParserTrace(FILE *TraceFILE, char *zTracePrompt);
 
 #undef NDEBUG
 
-static int
-compare_value_strings(gconstpointer a, gconstpointer b)
-{
-    return ((const value_string *)a)->value - ((const value_string *)b)->value;
-}
-
 #ifdef DBC_WARNINGS
 G_GNUC_PRINTF(2, 3)
 static void
@@ -316,8 +310,8 @@ value_table ::= VAL_TABLE name values SEMICOLON .
 
 values(r) ::= .
 {
-    r = g_array_new(TRUE, TRUE, sizeof(value_string));
-    g_array_set_clear_func(r, free_value_string);
+    r = g_array_new(TRUE, TRUE, sizeof(dbc_value_string_t));
+    g_array_set_clear_func(r, dbc_free_value_string);
 }
 
 values(r) ::= values(a) value(v) .
@@ -329,10 +323,10 @@ values(r) ::= values(a) value(v) .
                     v.strptr,
                     DBC_MAX_SYMBOL_NAME_LENGTH);
 
-    const value_string *av = (const value_string *)a->data;
+    const dbc_value_string_t *av = (const dbc_value_string_t *)a->data;
     for (guint i = 0; i < a->len; ++av, ++i)
     {
-        if (compare_value_strings(av, &v) == 0)
+        if (dbc_compare_value_strings(av, &v) == 0)
         {
             dbc_warning(state,
                         "warning: value '%" G_GINT32_FORMAT "' is already present",
@@ -345,8 +339,8 @@ values(r) ::= values(a) value(v) .
     r = g_array_append_val(a, v);
 }
 
-%type value { value_string }
-%destructor value { free_value_string(&($$)); }
+%type value { dbc_value_string_t }
+%destructor value { dbc_free_value_string(&($$)); }
 
 value(r) ::= sint(v) TEXT(t) .
 {
@@ -919,8 +913,8 @@ value_definition ::= VAL uint(msg_id) name(sig_name) values(sig_values) SEMICOLO
     {
         if (signal->values)
         {
-            for (value_string *v = signal->values; v->strptr; v++)
-                free_value_string(v);
+            for (dbc_value_string_t *v = signal->values; v->strptr; v++)
+                dbc_free_value_string(v);
             g_free(signal->values);
 
 #ifdef DBC_WARNINGS
@@ -929,8 +923,8 @@ value_definition ::= VAL uint(msg_id) name(sig_name) values(sig_values) SEMICOLO
         }
 
         /* No sorting needed */
-        g_array_sort(sig_values, compare_value_strings);
-        signal->values = (value_string *)g_array_free(sig_values, FALSE);
+        g_array_sort(sig_values, dbc_compare_value_strings);
+        signal->values = (dbc_value_string_t *)g_array_free(sig_values, FALSE);
     }
     else
     {
