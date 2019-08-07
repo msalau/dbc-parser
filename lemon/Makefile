@@ -1,5 +1,6 @@
 CFLAGS:=-g3 -O0
 CFLAGS+=-Wall -Wextra -Wformat -Wformat-security -Warray-bounds -Werror
+CFLAGS:=-Wconversion
 CFLAGS+=-fsanitize=leak
 CFLAGS+=$(shell pkg-config --cflags glib-2.0)
 CFLAGS+=-I../common
