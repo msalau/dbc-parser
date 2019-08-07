@@ -469,10 +469,23 @@ signal(r) ::= SG name(sig_name) mux COLON
                     r->name,
                     DBC_MAX_SYMBOL_NAME_LENGTH);
     }
-    if (r->length <= 8 && (r->start / 8) != ((r->start + r->length - 1) / 8))
+    if (r->length <= 8 &&
+        ((((r->endianess == DBC_SIGNAL_ENDIANESS_INTEL) &&
+           ((r->start / 8) != ((r->start + r->length - 1) / 8)))) ||
+         (((r->endianess == DBC_SIGNAL_ENDIANESS_MOTOROLA) &&
+           ((r->start / 8) != ((r->start - r->length + 1) / 8))))))
     {
         dbc_warning(state,
                     "warning: signal '%s' <= 8 bits crosses byte boundary",
+                    r->name);
+    }
+    /* In case of BE, LSB must be aligned */
+    if (r->length > 8 &&
+        ((((r->endianess == DBC_SIGNAL_ENDIANESS_INTEL) && ((r->start % 16) != 0))) ||
+         (((r->endianess == DBC_SIGNAL_ENDIANESS_MOTOROLA) && (((r->start + 8 - r->length % 8) % 16 ) != 7)))))
+    {
+        dbc_warning(state,
+                    "warning: signal '%s' > 8 bits is not aligned to 2 byte boundary",
                     r->name);
     }
 #endif

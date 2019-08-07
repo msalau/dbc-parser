@@ -40,6 +40,14 @@ VAL_TABLE_ NUMBERS 0 "Zero" +5 "PlusFive" -1 "MinusOne" 1.5 "OneAndAHalf" -3.14 
 VAL_TABLE_ EmptyValueTable ;
 VAL_TABLE_ FooSignalValues ;
 
+BO_ 60 TestMsg0Le: 8 ECU0
+ SG_ TestMsg0BigEndian8 : 0|8@1+ (1,0) [0|255] ""  ECU1
+ SG_ TestMsg0BigEndian12 : 16|12@1+ (1,0) [0|255] ""  ECU1
+
+BO_ 61 TestMsg0Be: 8 ECU0
+ SG_ TestMsg0BigEndian8 : 7|8@0+ (1,0) [0|255] ""  ECU1
+ SG_ TestMsg0BigEndian12 : 19|12@0+ (1,0) [0|255] ""  ECU1
+
 BO_ 66 TestMsg1: 8 ECU1
  SG_ TestMsg1Voltage : 0|16@1- (0.001,0) [-32.768|32.767] "V" ECU2,ECU1,ECU0
  SG_ TestMsg1Current : 16|16@1- (0.001,0) [-32.768|32.767] "A" ECU2
