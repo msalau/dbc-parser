@@ -89,11 +89,14 @@ typedef struct {
     guint32 max;
 } dbc_mux_value_t;
 
+struct dbc_signal;
+typedef struct dbc_signal dbc_signal_t;
+
 typedef struct {
-    gboolean  is_muxer;
-    gboolean  is_muxed;
-    gchar    *muxer_name;
-    GArray   *muxer_values;
+    gboolean      is_muxer;
+    gboolean      is_muxed;
+    dbc_signal_t *muxer;
+    GArray       *muxer_values;
 } dbc_mux_info_t;
 
 typedef struct {
@@ -101,7 +104,7 @@ typedef struct {
     gchar  *strptr;
 } dbc_value_string_t;
 
-typedef struct
+typedef struct dbc_signal
 {
     gchar     *name;
     gchar     *long_name;

@@ -121,6 +121,5 @@ void dbc_free_mux_info(dbc_mux_info_t *mux)
     if (mux->muxer_values)
         g_array_free(mux->muxer_values, TRUE);
 
-    g_free(mux->muxer_name);
     g_free(mux);
 }
