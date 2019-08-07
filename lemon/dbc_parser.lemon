@@ -17,11 +17,11 @@ extern void DbcParserTrace(FILE *TraceFILE, char *zTracePrompt);
 #ifdef DBC_WARNINGS
 G_GNUC_PRINTF(2, 3)
 static void
-dbc_warning(dbc_state_t *state, const char *format, ...)
+dbc_warning(dbc_state_t *state, const gchar *format, ...)
 {
     va_list ap;
     va_start(ap, format);
-    char *str = g_strdup_vprintf(format, ap);
+    gchar *str = g_strdup_vprintf(format, ap);
     va_end(ap);
 
     state->warnings = g_slist_append(state->warnings, str);
@@ -30,11 +30,11 @@ dbc_warning(dbc_state_t *state, const char *format, ...)
 
 G_GNUC_PRINTF(2, 3)
 static void
-dbc_error(dbc_state_t *state, const char *format, ...)
+dbc_error(dbc_state_t *state, const gchar *format, ...)
 {
     va_list ap;
     va_start(ap, format);
-    char *str = g_strdup_vprintf(format, ap);
+    gchar *str = g_strdup_vprintf(format, ap);
     va_end(ap);
 
     state->errors = g_slist_append(state->errors, str);

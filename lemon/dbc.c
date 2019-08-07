@@ -1,6 +1,6 @@
 #include "dbc.h"
 
-dbc_file_t *dbc_new(const char *filepath)
+dbc_file_t *dbc_new(const gchar *filepath)
 {
     dbc_file_t *dbc = g_new0(dbc_file_t, 1);
 
@@ -16,7 +16,7 @@ static gint dbc_find_node_helper(gconstpointer node, gconstpointer name)
     return g_strcmp0(((const dbc_node_t *)node)->name, name);
 }
 
-dbc_node_t *dbc_find_node(const dbc_file_t *file, const char *name)
+dbc_node_t *dbc_find_node(const dbc_file_t *file, const gchar *name)
 {
     GSList *elem = g_slist_find_custom(file->nodes, name, dbc_find_node_helper);
     return elem ? elem->data : NULL;
@@ -27,7 +27,7 @@ static gint dbc_find_message_helper(gconstpointer message, gconstpointer id)
     return ((const dbc_message_t *)message)->id == GPOINTER_TO_UINT(id) ? 0 : 1;
 }
 
-dbc_message_t *dbc_find_message(const dbc_file_t *file, uint32_t id)
+dbc_message_t *dbc_find_message(const dbc_file_t *file, guint32 id)
 {
     GSList *elem = g_slist_find_custom(file->messages, GUINT_TO_POINTER(id), dbc_find_message_helper);
     return elem ? elem->data : NULL;
@@ -38,7 +38,7 @@ static gint dbc_find_signal_helper(gconstpointer signal, gconstpointer name)
     return g_strcmp0(((const dbc_signal_t *)signal)->name, name);
 }
 
-dbc_signal_t *dbc_find_signal(const dbc_file_t *file, uint32_t id, const char *name)
+dbc_signal_t *dbc_find_signal(const dbc_file_t *file, guint32 id, const gchar *name)
 {
     dbc_message_t *message = dbc_find_message(file, id);
     if (!message)

@@ -1,26 +1,25 @@
 #ifndef DBC_H__
 #define DBC_H__
 
-#include <stdint.h>
 #include <gmodule.h>
 
 #define DBC_MAX_SYMBOL_NAME_LENGTH 32
 
 typedef struct
 {
-    char   *filepath;
-    char   *comment;
-    char   *version;
+    gchar  *filepath;
+    gchar  *comment;
+    gchar  *version;
     GSList *nodes;
     GSList *messages;
-    int     j1939_type_num;
-    int     cyclic_send_type_num;
+    gint    j1939_type_num;
+    gint    cyclic_send_type_num;
 } dbc_file_t;
 
 typedef struct
 {
-    char *name;
-    char *long_name;
+    gchar *name;
+    gchar *long_name;
 } dbc_node_t;
 
 typedef enum
@@ -53,14 +52,14 @@ typedef enum
 
 typedef struct
 {
-    uint32_t                 id;
-    uint32_t                 length;
+    guint32                  id;
+    guint32                  length;
     dbc_message_type_t       type;
     dbc_message_send_type_t  send_type;
-    int64_t                  cycle_time;
-    char                    *name;
-    char                    *long_name;
-    char                    *comment;
+    gint64                   cycle_time;
+    gchar                   *name;
+    gchar                   *long_name;
+    gchar                   *comment;
     GSList                  *senders;
     GSList                  *signals;
 } dbc_message_t;
@@ -104,11 +103,11 @@ typedef struct {
 
 typedef struct
 {
-    char     *name;
-    char     *long_name;
-    char     *comment;
-    uint32_t  start;
-    uint32_t  length;
+    gchar     *name;
+    gchar     *long_name;
+    gchar     *comment;
+    guint32   start;
+    guint32   length;
 
     dbc_signal_endianess_t endianess;
     dbc_signal_signess_t   signess;
@@ -118,18 +117,18 @@ typedef struct
     double  offset;
     double  min;
     double  max;
-    char   *unit;
+    gchar  *unit;
 
     dbc_mux_info_t *mux_info;
 
     dbc_value_string_t *values;
 } dbc_signal_t;
 
-dbc_file_t *dbc_new(const char *filepath);
+dbc_file_t *dbc_new(const gchar *filepath);
 
-dbc_node_t *dbc_find_node(const dbc_file_t *file, const char *name);
-dbc_message_t *dbc_find_message(const dbc_file_t *file, uint32_t id);
-dbc_signal_t *dbc_find_signal(const dbc_file_t *file, uint32_t id, const char *name);
+dbc_node_t *dbc_find_node(const dbc_file_t *file, const gchar *name);
+dbc_message_t *dbc_find_message(const dbc_file_t *file, guint32 id);
+dbc_signal_t *dbc_find_signal(const dbc_file_t *file, guint32 id, const gchar *name);
 
 void dbc_free(dbc_file_t *file);
 void dbc_free_node(dbc_node_t *node);
