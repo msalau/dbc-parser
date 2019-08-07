@@ -344,15 +344,17 @@ values(r) ::= values(a) value(v) .
 
 value(r) ::= sint(v) TEXT(t) .
 {
-    r.value  = v;
+    r.value  = (v > G_MAXINT32 || v < G_MININT32) ? G_MININT32 : (gint32)v;
     r.strptr = t;
 }
 
-value(r) ::= FLOAT(v) TEXT(t) .
+value(r) ::= FLOAT(f) TEXT(t) .
 {
-    r.value  = (gint64)strtod(v, NULL);
+    const gint64 v = (gint64)strtod(f, NULL);
+    g_free(f);
+
+    r.value  = (v > G_MAXINT32 || v < G_MININT32) ? G_MININT32 : (gint32)v;
     r.strptr = t;
-    g_free(v);
 }
 
 %type uint { guint64 }
