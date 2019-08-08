@@ -1,6 +1,7 @@
 %include {
 
 #include <string.h>
+#include <errno.h>
 #include "dbc.h"
 #include "dbc_parser_priv.h"
 
@@ -60,7 +61,6 @@ dbc_find_enum_value(GSList *enum_values, const gchar *value)
     return ret;
 }
 
-
 typedef enum {
     DBC_ATTRIBUTE_INT,
     DBC_ATTRIBUTE_HEX,
@@ -73,8 +73,8 @@ typedef struct {
     dbc_attribute_type_t type;
     union {
         struct {
-            gint64 min;
-            gint64 max;
+            gint32 min;
+            gint32 max;
         } ival;
         struct {
             double min;
@@ -83,9 +83,6 @@ typedef struct {
         GSList *enum_values;
     };
 } dbc_attribute_t;
-
-_Pragma("GCC diagnostic push")
-_Pragma("GCC diagnostic ignored \"-Wsign-compare\"")
 
 }
 
@@ -344,7 +341,7 @@ values(r) ::= values(a) value(v) .
 
 value(r) ::= sint(v) TEXT(t) .
 {
-    r.value  = (v > G_MAXINT32 || v < G_MININT32) ? G_MININT32 : (gint32)v;
+    r.value  = v;
     r.strptr = t;
 }
 
@@ -357,14 +354,23 @@ value(r) ::= FLOAT(f) TEXT(t) .
     r.strptr = t;
 }
 
-%type uint { guint64 }
+%type uint { gint32 }
 
 uint(r) ::= ZERO .    { r = 0; }
 uint(r) ::= ONE .     { r = 1; }
 uint(r) ::= TWO .     { r = 2; }
-uint(r) ::= UINT(v) . { r = strtoull(v, NULL, 10); g_free(v); }
+uint(r) ::= UINT(v) .
+{
+    errno = 0;
+    r     = (gint32)strtol(v, NULL, 10);
 
-%type sint { gint64 }
+    if (errno || r < G_MININT32 || r > G_MAXINT32)
+        r = G_MININT32;
+
+    g_free(v);
+}
+
+%type sint { gint32 }
 
 sint(r) ::= uint(v) .       { r = v; }
 sint(r) ::= PLUS uint(v) .  { r = v; }
@@ -375,10 +381,17 @@ sint(r) ::= MINUS uint(v) . { r = 0 - v; }
 float(r) ::= sint(v) .       { r = v; }
 float(r) ::= FLOAT(v) .      { r = strtod(v, NULL); g_free(v); }
 
+%type msg_id { guint32 }
+
+msg_id(r) ::= ZERO .    { r = 0; }
+msg_id(r) ::= ONE .     { r = 1; }
+msg_id(r) ::= TWO .     { r = 2; }
+msg_id(r) ::= UINT(v) . { r = (guint32)strtoul(v, NULL, 10); g_free(v); }
+
 messages ::= .
 messages ::= messages message .
 
-message ::= BO uint(msg_id) name(msg_name) COLON
+message ::= BO msg_id(msg_id) name(msg_name) COLON
             uint(msg_length) name(msg_sender)
             signals(msg_signals)
             .
@@ -505,7 +518,7 @@ mux(r) ::= MUX(v) .
 
     if (r->is_muxed)
     {
-        const guint32         value       = strtoul(v + 1, NULL, 10);
+        const gint32          value       = (gint32)strtoul(v + 1, NULL, 10);
         const dbc_mux_value_t muxer_value = { value, value };
 
         r->muxer_values = g_array_new(FALSE, FALSE, sizeof(dbc_mux_value_t));
@@ -526,7 +539,7 @@ signess(r) ::= MINUS . { r = DBC_SIGNAL_SIGNESS_SIGNED; }
 message_sender_lists ::= .
 message_sender_lists ::= message_sender_lists message_sender_list .
 
-message_sender_list ::= BO_TX_BU uint(msg_id) COLON
+message_sender_list ::= BO_TX_BU msg_id(msg_id) COLON
                         comma_separated_names(msg_senders) SEMICOLON
                         .
 {
@@ -534,7 +547,7 @@ message_sender_list ::= BO_TX_BU uint(msg_id) COLON
 
     if (!msg)
     {
-        dbc_error(state, "Message with id %" G_GINT64_FORMAT " not found", msg_id);
+        dbc_error(state, "Message with id %" G_GUINT32_FORMAT " not found", msg_id);
     }
     else
     {
@@ -623,7 +636,7 @@ comment ::= CM TEXT(text) SEMICOLON .
     state->dbc->comment = text;
 }
 
-comment ::= CM BO uint(msg_id) TEXT(text) SEMICOLON .
+comment ::= CM BO msg_id(msg_id) TEXT(text) SEMICOLON .
 {
     dbc_message_t *msg = dbc_find_message(state->dbc, msg_id);
 
@@ -634,7 +647,7 @@ comment ::= CM BO uint(msg_id) TEXT(text) SEMICOLON .
             g_free(msg->comment);
 
 #ifdef DBC_WARNINGS
-            dbc_warning(state, "warning: Message %" G_GINT64_FORMAT " comment redefined", msg_id);
+            dbc_warning(state, "warning: Message %" G_GUINT32_FORMAT " comment redefined", msg_id);
 #endif
         }
 
@@ -643,11 +656,11 @@ comment ::= CM BO uint(msg_id) TEXT(text) SEMICOLON .
     else
     {
         g_free(text);
-        dbc_error(state, "error: Message %" G_GINT64_FORMAT " not found", msg_id);
+        dbc_error(state, "error: Message %" G_GUINT32_FORMAT " not found", msg_id);
     }
 }
 
-comment ::= CM SG uint(msg_id) name(sig_name) TEXT(text) SEMICOLON .
+comment ::= CM SG msg_id(msg_id) name(sig_name) TEXT(text) SEMICOLON .
 {
     dbc_signal_t *sig = dbc_find_signal(state->dbc, msg_id, sig_name);
 
@@ -658,7 +671,7 @@ comment ::= CM SG uint(msg_id) name(sig_name) TEXT(text) SEMICOLON .
             g_free(sig->comment);
 
 #ifdef DBC_WARNINGS
-            dbc_warning(state, "warning: Signal %s message %" G_GINT64_FORMAT " comment redefined",
+            dbc_warning(state, "warning: Signal %s message %" G_GUINT32_FORMAT " comment redefined",
                         sig_name, msg_id);
 #endif
         }
@@ -668,7 +681,7 @@ comment ::= CM SG uint(msg_id) name(sig_name) TEXT(text) SEMICOLON .
     else
     {
         g_free(text);
-        dbc_error(state, "error: Signal %s in message %" G_GINT64_FORMAT " not found",
+        dbc_error(state, "error: Signal %s in message %" G_GUINT32_FORMAT " not found",
                   sig_name, msg_id);
     }
 
@@ -801,15 +814,15 @@ attribute_value ::= BA TEXT(attr_name) BU name(node_name) TEXT(attr_value) SEMIC
     g_free(attr_name);
 }
 
-attribute_value ::= BA TEXT /*name*/ SG uint name sint /*value*/ SEMICOLON .
-attribute_value ::= BA TEXT /*name*/ SG uint name FLOAT /*value*/ SEMICOLON .
-attribute_value ::= BA TEXT(attr_name) SG uint(msg_id) name(sig_name) TEXT(attr_value) SEMICOLON .
+attribute_value ::= BA TEXT /*name*/ SG msg_id /*msg_id*/ name /*sig_name*/ sint /*value*/ SEMICOLON .
+attribute_value ::= BA TEXT /*name*/ SG msg_id /*msg_id*/ name /*sig_name*/ FLOAT /*value*/ SEMICOLON .
+attribute_value ::= BA TEXT(attr_name) SG msg_id(msg_id) name(sig_name) TEXT(attr_value) SEMICOLON .
 {
     dbc_signal_t *sig = dbc_find_signal(state->dbc, msg_id, sig_name);
 
     if (!sig)
     {
-        dbc_error(state, "error: Signal %s in message %" G_GINT64_FORMAT " not found", sig_name, msg_id);
+        dbc_error(state, "error: Signal %s in message %" G_GUINT32_FORMAT " not found", sig_name, msg_id);
         g_free(attr_value);
     }
     else if (g_strcmp0(attr_name, DBC_SIGNAL_LONG_NAME_ATTRIBUTE_NAME) == 0)
@@ -825,14 +838,14 @@ attribute_value ::= BA TEXT(attr_name) SG uint(msg_id) name(sig_name) TEXT(attr_
     g_free(attr_name);
 }
 
-attribute_value ::= BA TEXT /*name*/ BO uint /*msg_id*/ FLOAT /*value*/ SEMICOLON .
-attribute_value ::= BA TEXT(attr_name) BO uint(msg_id) TEXT(attr_value) SEMICOLON .
+attribute_value ::= BA TEXT /*name*/ BO msg_id /*msg_id*/ FLOAT /*value*/ SEMICOLON .
+attribute_value ::= BA TEXT(attr_name) BO msg_id(msg_id) TEXT(attr_value) SEMICOLON .
 {
     dbc_message_t *msg = dbc_find_message(state->dbc, msg_id);
 
     if (!msg)
     {
-        dbc_error(state, "error: Message %" G_GINT64_FORMAT " not found", msg_id);
+        dbc_error(state, "error: Message %" G_GUINT32_FORMAT " not found", msg_id);
         g_free(attr_value);
     }
     else if (g_strcmp0(attr_name, DBC_MESSAGE_LONG_NAME_ATTRIBUTE_NAME) == 0)
@@ -847,20 +860,20 @@ attribute_value ::= BA TEXT(attr_name) BO uint(msg_id) TEXT(attr_value) SEMICOLO
     g_free(attr_name);
 }
 
-attribute_value ::= BA TEXT(attr_name) BO uint(msg_id) sint(attr_value) SEMICOLON .
+attribute_value ::= BA TEXT(attr_name) BO msg_id(msg_id) sint(attr_value) SEMICOLON .
 {
     dbc_message_t *msg = dbc_find_message(state->dbc, msg_id);
 
     if (!msg)
     {
-        dbc_error(state, "error: Message %" G_GINT64_FORMAT " not found", msg_id);
+        dbc_error(state, "error: Message %" G_GUINT32_FORMAT " not found", msg_id);
     }
     else if ((g_strcmp0(attr_name, DBC_MESSAGE_TYPE_ATTRIBUTE_NAME) == 0) &&
              (state->dbc->j1939_type_num >= 0))
     {
 #ifdef DBC_WARNINGS
         if (msg->type != DBC_MESSAGE_TYPE_UNDEFINED)
-            dbc_warning(state, "warning: Message %" G_GINT64_FORMAT " type redefined", msg_id);
+            dbc_warning(state, "warning: Message %" G_GUINT32_FORMAT " type redefined", msg_id);
 #endif
 
         msg->type = (state->dbc->j1939_type_num == attr_value)
@@ -872,7 +885,7 @@ attribute_value ::= BA TEXT(attr_name) BO uint(msg_id) sint(attr_value) SEMICOLO
     {
 #ifdef DBC_WARNINGS
         if (msg->send_type != DBC_MESSAGE_SEND_TYPE_UNDEFINED)
-            dbc_warning(state, "warning: Message %" G_GINT64_FORMAT " send_type redefined", msg_id);
+            dbc_warning(state, "warning: Message %" G_GUINT32_FORMAT " send_type redefined", msg_id);
 #endif
 
         msg->send_type = (state->dbc->cyclic_send_type_num == attr_value)
@@ -883,7 +896,7 @@ attribute_value ::= BA TEXT(attr_name) BO uint(msg_id) sint(attr_value) SEMICOLO
     {
 #ifdef DBC_WARNINGS
         if (msg->cycle_time != DBC_MESSAGE_CYCLE_TIME_UNDEFINED)
-            dbc_warning(state, "warning: Message %" G_GINT64_FORMAT " cycle time redefined", msg_id);
+            dbc_warning(state, "warning: Message %" G_GUINT32_FORMAT " cycle time redefined", msg_id);
 #endif
 
         msg->cycle_time = attr_value;
@@ -897,7 +910,7 @@ attribute_value ::= BA_SGTYPE TEXT /*name*/ SGTYPE name /*type*/ attribute_objec
 
 attribute_rel_object ::= BU_EV_REL name name .
 attribute_rel_object ::= BU_BO_REL name uint .
-attribute_rel_object ::= BU_SG_REL name SG uint name .
+attribute_rel_object ::= BU_SG_REL name SG msg_id name .
 
 attribute_object_value ::= sint .
 attribute_object_value ::= FLOAT .
@@ -907,7 +920,7 @@ value_definitions ::= .
 value_definitions ::= value_definitions value_definition .
 
 value_definition ::= VAL name /*environment-variable-name*/ values SEMICOLON .
-value_definition ::= VAL uint(msg_id) name(sig_name) values(sig_values) SEMICOLON .
+value_definition ::= VAL msg_id(msg_id) name(sig_name) values(sig_values) SEMICOLON .
 {
     dbc_signal_t *signal = dbc_find_signal(state->dbc, msg_id, sig_name);
 
@@ -920,7 +933,7 @@ value_definition ::= VAL uint(msg_id) name(sig_name) values(sig_values) SEMICOLO
             g_free(signal->values);
 
 #ifdef DBC_WARNINGS
-            dbc_warning(state, "warning: signal %s in message %" G_GINT64_FORMAT " values redefined", sig_name, msg_id);
+            dbc_warning(state, "warning: signal %s in message %" G_GUINT32_FORMAT " values redefined", sig_name, msg_id);
 #endif
         }
 
@@ -931,7 +944,7 @@ value_definition ::= VAL uint(msg_id) name(sig_name) values(sig_values) SEMICOLO
     else
     {
         g_array_free(sig_values, TRUE);
-        dbc_error(state, "error: signal %s in message %" G_GINT64_FORMAT " not found", sig_name, msg_id);
+        dbc_error(state, "error: signal %s in message %" G_GUINT32_FORMAT " not found", sig_name, msg_id);
     }
     g_free(sig_name);
 }
@@ -960,17 +973,17 @@ uints ::= uints uint .
 signal_type_referencies ::= .
 signal_type_referencies ::= signal_type_referencies signal_type_reference .
 
-signal_type_reference ::= SIG_TYPE_REF uint /*msg_id*/ name /*sig_name*/ COLON name /*type*/ SEMICOLON .
+signal_type_reference ::= SIG_TYPE_REF msg_id /*msg_id*/ name /*sig_name*/ COLON name /*type*/ SEMICOLON .
 
 signal_groups ::= .
 signal_groups ::= signal_groups signal_group .
 
-signal_group ::= SIG_GROUP uint /*msg_id*/ name /*group_name*/ uint /*repetitions*/ COLON names /*signal_names*/ SEMICOLON .
+signal_group ::= SIG_GROUP msg_id /*msg_id*/ name /*group_name*/ uint /*repetitions*/ COLON names /*signal_names*/ SEMICOLON .
 
 signal_value_types ::= .
 signal_value_types ::= signal_value_types signal_value_type .
 
-signal_value_type ::= SIG_VALTYPE uint(msg_id) name(sig_name) COLON value_type(sig_type) SEMICOLON .
+signal_value_type ::= SIG_VALTYPE msg_id(msg_id) name(sig_name) COLON value_type(sig_type) SEMICOLON .
 {
     dbc_signal_t *signal = dbc_find_signal(state->dbc, msg_id, sig_name);
 
@@ -978,14 +991,14 @@ signal_value_type ::= SIG_VALTYPE uint(msg_id) name(sig_name) COLON value_type(s
     {
 #ifdef DBC_WARNINGS
         if (signal->type != DBC_SIGNAL_TYPE_UNDEFINED)
-            dbc_warning(state, "warning: signal %s in message %" G_GINT64_FORMAT " type redefined", sig_name, msg_id);
+            dbc_warning(state, "warning: signal %s in message %" G_GUINT32_FORMAT " type redefined", sig_name, msg_id);
 #endif
 
         signal->type = sig_type;
     }
     else
     {
-        dbc_error(state, "error: signal %s in message %" G_GINT64_FORMAT " not found", sig_name, msg_id);
+        dbc_error(state, "error: signal %s in message %" G_GUINT32_FORMAT " not found", sig_name, msg_id);
     }
 
     g_free(sig_name);
@@ -994,19 +1007,19 @@ signal_value_type ::= SIG_VALTYPE uint(msg_id) name(sig_name) COLON value_type(s
 signal_multiplexing_definitions ::= .
 signal_multiplexing_definitions ::= signal_multiplexing_definitions signal_multiplexing_definition .
 
-signal_multiplexing_definition ::= SG_MUL_VAL uint(msg_id) name(sig_name) name(mux_name) mux_values(mux_values) SEMICOLON .
+signal_multiplexing_definition ::= SG_MUL_VAL msg_id(msg_id) name(sig_name) name(mux_name) mux_values(mux_values) SEMICOLON .
 {
     dbc_signal_t *signal = dbc_find_signal(state->dbc, msg_id, sig_name);
     dbc_signal_t *muxer  = dbc_find_signal(state->dbc, msg_id, mux_name);
 
     if (!signal)
     {
-        dbc_error(state, "error: multiplexed signal %s in message %" G_GINT64_FORMAT " not found", sig_name, msg_id);
+        dbc_error(state, "error: multiplexed signal %s in message %" G_GUINT32_FORMAT " not found", sig_name, msg_id);
     }
 
     if (!muxer)
     {
-        dbc_error(state, "error: multiplexer signal %s in message %" G_GINT64_FORMAT " not found", mux_name, msg_id);
+        dbc_error(state, "error: multiplexer signal %s in message %" G_GUINT32_FORMAT " not found", mux_name, msg_id);
     }
 
     if (signal && muxer)
@@ -1060,8 +1073,6 @@ mux_value(r) ::= uint(v_min) MINUS uint(v_max) .
 }
 
 %code {
-
-_Pragma("GCC diagnostic pop")
 
 #include "dbc_scanner_lex.h"
 

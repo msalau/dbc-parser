@@ -53,10 +53,10 @@ typedef enum
 typedef struct
 {
     guint32                  id;
-    guint32                  length;
+    gint32                   length;
     dbc_message_type_t       type;
     dbc_message_send_type_t  send_type;
-    gint64                   cycle_time;
+    gint32                   cycle_time;
     gchar                   *name;
     gchar                   *long_name;
     gchar                   *comment;
@@ -85,8 +85,8 @@ typedef enum
 } dbc_value_type_t;
 
 typedef struct {
-    guint32 min;
-    guint32 max;
+    gint32 min;
+    gint32 max;
 } dbc_mux_value_t;
 
 struct dbc_signal;
@@ -109,8 +109,8 @@ typedef struct dbc_signal
     gchar     *name;
     gchar     *long_name;
     gchar     *comment;
-    guint32   start;
-    guint32   length;
+    gint32    start;
+    gint32    length;
 
     dbc_signal_endianess_t endianess;
     dbc_signal_signess_t   signess;
