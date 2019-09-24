@@ -1,6 +1,7 @@
 %include {
 
 #include <string.h>
+#include <stdlib.h>
 #include <errno.h>
 #include "dbc.h"
 #include "dbc_parser_priv.h"
