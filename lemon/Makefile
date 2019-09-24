@@ -1,11 +1,15 @@
 CFLAGS:=-g3 -O0
 CFLAGS+=-Wall -Wextra -Wformat -Wformat-security -Warray-bounds -Werror
 CFLAGS:=-Wconversion
-CFLAGS+=-fsanitize=leak
 CFLAGS+=$(shell pkg-config --cflags glib-2.0)
 CFLAGS+=-MMD
-LDFLAGS:=-fsanitize=leak
-LIBS=-llsan $(shell pkg-config --libs glib-2.0)
+LIBS=$(shell pkg-config --libs glib-2.0)
+
+ifneq ($(LSAN),n)
+CFLAGS  += -fsanitize=leak
+LDFLAGS += -fsanitize=leak
+LIBS    += -llsan
+endif
 
 .PHONY: all test fuzz clean
 
