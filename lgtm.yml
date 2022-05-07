@@ -1,12 +1,17 @@
+path_classifiers:
+  library:
+    - exclude: ./lemon/lemon.c
+    - exclude: ./lemon/lempar.c
+
 extraction:
   cpp:
     prepare:
       packages:
-      - "flex"
-      - "bison"
-      - "make"
-      - "libglib2.0-dev"
+        - "flex"
+        - "bison"
+        - "make"
+        - "libglib2.0-dev"
     index:
       build_command:
-      - "make -C ./bison"
-      - "make -C ./lemon"
+        - "make -C ./bison"
+        - "make -C ./lemon"
