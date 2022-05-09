@@ -1,7 +1,7 @@
 path_classifiers:
   library:
-    - exclude: ./lemon/lemon.c
-    - exclude: ./lemon/lempar.c
+    - ./lemon/lemon.c
+    - ./lemon/lempar.c
 
 extraction:
   cpp:
